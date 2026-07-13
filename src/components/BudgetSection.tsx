@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
+import { formatCurrency } from '../lib/format'
 import type { BudgetSection, Category, CategoryEntry } from '../types'
 import { SECTION_LABELS } from '../types'
 import { CategoryRow } from './CategoryRow'
@@ -47,6 +48,23 @@ export function BudgetSectionView({
   const [adding, setAdding] = useState(false)
   const [newName, setNewName] = useState('')
 
+  const totals = useMemo(() => {
+    const budgeted = categories.reduce((sum, c) => sum + c.budgeted_amount, 0)
+    const spent = categories.reduce((sum, c) => sum + c.actual_amount, 0)
+    return {
+      budgeted,
+      spent,
+      remaining: budgeted - spent,
+    }
+  }, [categories])
+
+  const remainingClass =
+    totals.remaining > 0
+      ? 'positive'
+      : totals.remaining < 0
+        ? 'negative'
+        : ''
+
   async function handleAdd(e: FormEvent) {
     e.preventDefault()
     await onAdd(section, newName.trim() || 'New category')
@@ -58,6 +76,28 @@ export function BudgetSectionView({
     <section className="budget-section">
       <header className="section-header">
         <h2>{SECTION_LABELS[section]}</h2>
+        {!isIncome && (
+          <div className="section-totals" aria-label={`${SECTION_LABELS[section]} totals`}>
+            <div>
+              <span className="section-total-label">Budgeted</span>
+              <span className="section-total-value">
+                {formatCurrency(totals.budgeted)}
+              </span>
+            </div>
+            <div>
+              <span className="section-total-label">Spent</span>
+              <span className="section-total-value">
+                {formatCurrency(totals.spent)}
+              </span>
+            </div>
+            <div>
+              <span className="section-total-label">Left over</span>
+              <span className={`section-total-value ${remainingClass}`}>
+                {formatCurrency(totals.remaining)}
+              </span>
+            </div>
+          </div>
+        )}
       </header>
 
       <div className="table-wrap">
