@@ -30,6 +30,7 @@ interface BudgetSectionProps {
     >,
   ) => Promise<void>
   onDeleteEntry: (entryId: string, categoryId: string) => Promise<void>
+  onMoveCategory: (id: string, direction: 'up' | 'down') => Promise<void>
   busy?: boolean
 }
 
@@ -43,6 +44,7 @@ export function BudgetSectionView({
   onAddEntry,
   onUpdateEntry,
   onDeleteEntry,
+  onMoveCategory,
   busy,
 }: BudgetSectionProps) {
   const isIncome = section === 'income'
@@ -90,13 +92,13 @@ export function BudgetSectionView({
           <div className="section-totals" aria-label={`${SECTION_LABELS[section]} totals`}>
             <div>
               <span className="section-total-label">Budgeted</span>
-              <span className="section-total-value">
+              <span className="section-total-value amount-budgeted">
                 {formatCurrency(totals.budgeted)}
               </span>
             </div>
             <div>
               <span className="section-total-label">Spent</span>
-              <span className="section-total-value">
+              <span className="section-total-value amount-spent">
                 {formatCurrency(totals.spent)}
               </span>
             </div>
@@ -114,13 +116,14 @@ export function BudgetSectionView({
         <table>
           <thead>
             <tr>
+              <th className="reorder-col" aria-label="Reorder" />
               <th>Category</th>
               {isIncome ? (
                 <th className="num">Amount</th>
               ) : (
                 <>
-                  <th className="num">Budgeted</th>
-                  <th className="num">Spent</th>
+                  <th className="num th-budgeted">Budgeted</th>
+                  <th className="num th-spent">Spent</th>
                   <th className="num">Remaining</th>
                 </>
               )}
@@ -130,17 +133,20 @@ export function BudgetSectionView({
           <tbody>
             {categories.length === 0 && (
               <tr>
-                <td colSpan={isIncome ? 3 : 5} className="empty">
+                <td colSpan={isIncome ? 4 : 6} className="empty">
                   No categories yet.
                 </td>
               </tr>
             )}
-            {categories.map((cat) => (
+            {categories.map((cat, index) => (
               <CategoryRow
                 key={cat.id}
                 category={cat}
                 entries={entriesByCategory[cat.id] ?? []}
                 isIncome={isIncome}
+                canMoveUp={index > 0}
+                canMoveDown={index < categories.length - 1}
+                onMove={isIncome ? undefined : onMoveCategory}
                 onSave={onSave}
                 onDelete={isIncome ? undefined : onDelete}
                 onAddEntry={isIncome ? undefined : onAddEntry}

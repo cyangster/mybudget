@@ -25,6 +25,7 @@ function BudgetApp() {
     addCategory,
     updateCategory,
     deleteCategory,
+    moveCategory,
     addEntry,
     updateEntry,
     deleteEntry,
@@ -105,6 +106,7 @@ function BudgetApp() {
                 onAddEntry={addEntry}
                 onUpdateEntry={updateEntry}
                 onDeleteEntry={deleteEntry}
+                onMoveCategory={moveCategory}
                 busy={busy}
               />
             ))}

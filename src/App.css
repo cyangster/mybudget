@@ -393,6 +393,23 @@
   font-variant-numeric: tabular-nums;
 }
 
+.section-total-value.amount-budgeted,
+.th-budgeted,
+.amount-budgeted {
+  color: #1d4ed8;
+}
+
+.section-total-value.amount-spent,
+.th-spent,
+.amount-spent {
+  color: #c2410c;
+}
+
+.amount-income {
+  color: var(--income);
+  font-weight: 700;
+}
+
 .section-total-value.positive {
   color: var(--positive);
 }
@@ -454,6 +471,100 @@ tbody tr:last-child td {
 
 .actions-cell .ghost.small {
   margin-right: 0.15rem;
+  vertical-align: middle;
+}
+
+.reorder-col,
+.reorder-cell {
+  width: 2.75rem;
+  padding-left: 0.45rem !important;
+  padding-right: 0.2rem !important;
+  vertical-align: middle;
+}
+
+.reorder-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  min-height: 2.4rem;
+}
+
+.grip-dots {
+  width: 0.28rem;
+  align-self: stretch;
+  min-height: 2rem;
+  border-radius: 999px;
+  background: repeating-linear-gradient(
+    to bottom,
+    #94a3b8 0 3px,
+    transparent 3px 6px
+  );
+  opacity: 0.85;
+}
+
+.reorder-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.reorder-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.1rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.reorder-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: var(--text);
+  border-color: #cbd5e1;
+}
+
+.reorder-spacer {
+  display: inline-block;
+  width: 1.5rem;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  vertical-align: middle;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.action-btn.edit {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.action-btn.edit:hover:not(:disabled) {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.action-btn.delete {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #c2410c;
+}
+
+.action-btn.delete:hover:not(:disabled) {
+  background: #ffedd5;
+  border-color: #fdba74;
 }
 
 .name-cell {

@@ -7,11 +7,20 @@ import {
 } from '../lib/format'
 import { amountStatus, statusLabel } from '../lib/status'
 import type { Category, CategoryEntry } from '../types'
+import {
+  IconChevronDown,
+  IconChevronUp,
+  IconEdit,
+  IconTrash,
+} from './Icons'
 
 interface CategoryRowProps {
   category: Category
   entries?: CategoryEntry[]
   isIncome?: boolean
+  canMoveUp?: boolean
+  canMoveDown?: boolean
+  onMove?: (id: string, direction: 'up' | 'down') => Promise<void>
   onSave: (
     id: string,
     patch: Partial<Pick<Category, 'name' | 'budgeted_amount' | 'actual_amount'>>,
@@ -39,6 +48,9 @@ export function CategoryRow({
   category,
   entries = [],
   isIncome,
+  canMoveUp,
+  canMoveDown,
+  onMove,
   onSave,
   onDelete,
   onAddEntry,
@@ -61,6 +73,7 @@ export function CategoryRow({
   const [editDate, setEditDate] = useState(todayDateInput())
   const [editNotes, setEditNotes] = useState('')
 
+  const colCount = isIncome ? 4 : 6
   const remaining = category.budgeted_amount - category.actual_amount
   const status = isIncome
     ? 'empty'
@@ -133,7 +146,7 @@ export function CategoryRow({
   if (editing) {
     return (
       <tr className="category-row editing">
-        <td colSpan={isIncome ? 3 : 5}>
+        <td colSpan={colCount}>
           <form className="inline-edit" onSubmit={save}>
             {!isIncome && (
               <label>
@@ -186,6 +199,35 @@ export function CategoryRow({
   return (
     <>
       <tr className={`category-row ${expanded ? 'expanded' : ''} row-${status}`}>
+        <td className="reorder-cell">
+          {!isIncome && onMove ? (
+            <div className="reorder-bar" aria-label={`Reorder ${category.name}`}>
+              <span className="grip-dots" aria-hidden="true" />
+              <div className="reorder-actions">
+                <button
+                  type="button"
+                  className="reorder-btn"
+                  aria-label={`Move ${category.name} up`}
+                  disabled={busy || !canMoveUp}
+                  onClick={() => void onMove(category.id, 'up')}
+                >
+                  <IconChevronUp />
+                </button>
+                <button
+                  type="button"
+                  className="reorder-btn"
+                  aria-label={`Move ${category.name} down`}
+                  disabled={busy || !canMoveDown}
+                  onClick={() => void onMove(category.id, 'down')}
+                >
+                  <IconChevronDown />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <span className="reorder-spacer" />
+          )}
+        </td>
         <td className="name-cell">
           {!isIncome ? (
             <button
@@ -211,11 +253,17 @@ export function CategoryRow({
           )}
         </td>
         {isIncome ? (
-          <td className="num">{formatCurrency(category.actual_amount)}</td>
+          <td className="num amount-income">
+            {formatCurrency(category.actual_amount)}
+          </td>
         ) : (
           <>
-            <td className="num">{formatCurrency(category.budgeted_amount)}</td>
-            <td className="num">{formatCurrency(category.actual_amount)}</td>
+            <td className="num amount-budgeted">
+              {formatCurrency(category.budgeted_amount)}
+            </td>
+            <td className="num amount-spent">
+              {formatCurrency(category.actual_amount)}
+            </td>
             <td className={`num ${remainingClass}`}>
               {formatCurrency(remaining)}
             </td>
@@ -235,24 +283,24 @@ export function CategoryRow({
           )}
           <button
             type="button"
-            className="icon-btn"
+            className="action-btn edit"
             aria-label={`Edit ${category.name}`}
             onClick={startEdit}
             disabled={busy}
             title="Edit"
           >
-            ✎
+            <IconEdit />
           </button>
           {!isIncome && onDelete && (
             <button
               type="button"
-              className="icon-btn danger"
+              className="action-btn delete"
               aria-label={`Delete ${category.name}`}
               onClick={() => void onDelete(category.id)}
               disabled={busy}
               title="Delete"
             >
-              ×
+              <IconTrash />
             </button>
           )}
         </td>
@@ -260,7 +308,7 @@ export function CategoryRow({
 
       {!isIncome && expanded && (
         <tr className="entry-panel-row">
-          <td colSpan={5}>
+          <td colSpan={colCount}>
             <div className="entry-panel">
               <div className="entry-panel-header">
                 <strong>Costs in {category.name}</strong>
@@ -336,30 +384,32 @@ export function CategoryRow({
                             <span className="entry-notes">{entry.notes}</span>
                           ) : null}
                         </div>
-                        <span className="num">{formatCurrency(entry.amount)}</span>
+                        <span className="num amount-spent">
+                          {formatCurrency(entry.amount)}
+                        </span>
                         {onUpdateEntry && (
                           <button
                             type="button"
-                            className="icon-btn"
+                            className="action-btn edit"
                             aria-label="Edit cost"
                             disabled={busy}
                             title="Edit"
                             onClick={() => startEditEntry(entry)}
                           >
-                            ✎
+                            <IconEdit />
                           </button>
                         )}
                         {onDeleteEntry && (
                           <button
                             type="button"
-                            className="icon-btn danger"
+                            className="action-btn delete"
                             aria-label="Delete cost"
                             disabled={busy}
                             onClick={() =>
                               void onDeleteEntry(entry.id, category.id)
                             }
                           >
-                            ×
+                            <IconTrash />
                           </button>
                         )}
                       </li>

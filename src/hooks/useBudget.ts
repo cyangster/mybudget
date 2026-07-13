@@ -327,6 +327,53 @@ export function useBudget(userId: string) {
     [selectedMonthId, categories, loadCategories],
   )
 
+  const moveCategory = useCallback(
+    async (id: string, direction: 'up' | 'down') => {
+      if (!selectedMonthId) return
+      const target = categories.find((c) => c.id === id)
+      if (!target || target.section === 'income') return
+
+      const sectionCats = categories
+        .filter((c) => c.section === target.section)
+        .sort((a, b) => a.sort_order - b.sort_order)
+
+      const index = sectionCats.findIndex((c) => c.id === id)
+      const swapWith =
+        direction === 'up' ? sectionCats[index - 1] : sectionCats[index + 1]
+      if (!swapWith) return
+
+      setBusy(true)
+      setError(null)
+
+      const aOrder = target.sort_order
+      const bOrder = swapWith.sort_order
+
+      const { error: errA } = await supabase
+        .from('categories')
+        .update({ sort_order: bOrder })
+        .eq('id', target.id)
+
+      if (errA) {
+        setBusy(false)
+        setError(errA.message)
+        return
+      }
+
+      const { error: errB } = await supabase
+        .from('categories')
+        .update({ sort_order: aOrder })
+        .eq('id', swapWith.id)
+
+      setBusy(false)
+      if (errB) {
+        setError(errB.message)
+        return
+      }
+      await loadCategories(selectedMonthId)
+    },
+    [selectedMonthId, categories, loadCategories],
+  )
+
   const addEntry = useCallback(
     async (
       categoryId: string,
@@ -507,6 +554,7 @@ export function useBudget(userId: string) {
     addCategory,
     updateCategory,
     deleteCategory,
+    moveCategory,
     addEntry,
     updateEntry,
     deleteEntry,
