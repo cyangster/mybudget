@@ -59,12 +59,9 @@
 }
 
 .income-header {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-}
-
-.income-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -72,13 +69,38 @@
   padding: 0.85rem 1rem;
 }
 
-.income-block h2 {
-  margin: 0 0 0.55rem;
+.income-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.income-header-title {
+  margin: 0;
   font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--muted);
+}
+
+.income-header-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.income-block {
+  background: #f7f9fb;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.7rem 0.85rem;
+}
+
+.income-block h3 {
+  margin: 0 0 0.45rem;
+  font-size: 0.95rem;
 }
 
 .income-figures {
@@ -103,6 +125,29 @@
   font-weight: 700;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
+}
+
+.income-edit-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.income-edit-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  flex: 1;
+  min-width: 9rem;
+}
+
+.income-hint {
+  margin: 0;
+  width: 100%;
+  font-size: 0.85rem;
 }
 
 .summary {
@@ -525,7 +570,7 @@ button.icon-btn.danger:hover:not(:disabled) {
     position: static;
   }
 
-  .income-header,
+  .income-header-grid,
   .income-figures,
   .summary {
     grid-template-columns: 1fr;

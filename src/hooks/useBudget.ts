@@ -467,6 +467,8 @@ export function useBudget(userId: string) {
       grossMonthly,
       netMonthly,
       netIncome: netSemi,
+      grossCategoryId: gross?.id ?? null,
+      netCategoryId: net?.id ?? null,
     }
   }, [categories])
 

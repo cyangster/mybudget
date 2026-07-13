@@ -78,6 +78,12 @@ function BudgetApp() {
               netSemi={summary.netSemi}
               grossMonthly={summary.grossMonthly}
               netMonthly={summary.netMonthly}
+              grossCategoryId={summary.grossCategoryId}
+              netCategoryId={summary.netCategoryId}
+              onSaveIncome={(id, amount) =>
+                updateCategory(id, { actual_amount: amount })
+              }
+              busy={busy}
             />
             <Summary
               totalBudgeted={summary.totalBudgeted}
