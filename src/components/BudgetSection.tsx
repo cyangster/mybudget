@@ -18,11 +18,14 @@ interface BudgetSectionProps {
     amount: number,
     label?: string,
     entryDate?: string,
+    notes?: string,
   ) => Promise<void>
   onUpdateEntry: (
     entryId: string,
     categoryId: string,
-    patch: Partial<Pick<CategoryEntry, 'label' | 'amount' | 'entry_date'>>,
+    patch: Partial<
+      Pick<CategoryEntry, 'label' | 'amount' | 'entry_date' | 'notes'>
+    >,
   ) => Promise<void>
   onDeleteEntry: (entryId: string, categoryId: string) => Promise<void>
   busy?: boolean

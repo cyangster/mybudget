@@ -28,6 +28,7 @@ export interface CategoryEntry {
   label: string
   amount: number
   entry_date: string
+  notes: string
   sort_order: number
   created_at: string
 }

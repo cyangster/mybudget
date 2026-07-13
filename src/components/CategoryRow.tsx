@@ -21,11 +21,14 @@ interface CategoryRowProps {
     amount: number,
     label?: string,
     entryDate?: string,
+    notes?: string,
   ) => Promise<void>
   onUpdateEntry?: (
     entryId: string,
     categoryId: string,
-    patch: Partial<Pick<CategoryEntry, 'label' | 'amount' | 'entry_date'>>,
+    patch: Partial<
+      Pick<CategoryEntry, 'label' | 'amount' | 'entry_date' | 'notes'>
+    >,
   ) => Promise<void>
   onDeleteEntry?: (entryId: string, categoryId: string) => Promise<void>
   busy?: boolean
@@ -51,9 +54,11 @@ export function CategoryRow({
   const [entryAmount, setEntryAmount] = useState('')
   const [entryLabel, setEntryLabel] = useState('')
   const [entryDate, setEntryDate] = useState(todayDateInput())
+  const [entryNotes, setEntryNotes] = useState('')
   const [editLabel, setEditLabel] = useState('')
   const [editAmount, setEditAmount] = useState('')
   const [editDate, setEditDate] = useState(todayDateInput())
+  const [editNotes, setEditNotes] = useState('')
 
   const remaining = category.budgeted_amount - category.actual_amount
   const remainingClass =
@@ -75,6 +80,7 @@ export function CategoryRow({
     setEditLabel(entry.label)
     setEditAmount(String(entry.amount))
     setEditDate(entry.entry_date || todayDateInput())
+    setEditNotes(entry.notes ?? '')
   }
 
   async function save(e: FormEvent) {
@@ -95,10 +101,11 @@ export function CategoryRow({
     if (!onAddEntry) return
     const amount = parseAmount(entryAmount)
     if (amount === 0 && entryAmount.trim() === '') return
-    await onAddEntry(category.id, amount, entryLabel, entryDate)
+    await onAddEntry(category.id, amount, entryLabel, entryDate, entryNotes)
     setEntryAmount('')
     setEntryLabel('')
     setEntryDate(todayDateInput())
+    setEntryNotes('')
   }
 
   async function handleUpdateEntry(e: FormEvent) {
@@ -108,6 +115,7 @@ export function CategoryRow({
       label: editLabel.trim(),
       amount: parseAmount(editAmount),
       entry_date: editDate,
+      notes: editNotes.trim(),
     })
     setEditingEntryId(null)
   }
@@ -278,27 +286,41 @@ export function CategoryRow({
                             onChange={(e) => setEditAmount(e.target.value)}
                             required
                           />
-                          <button type="submit" disabled={busy}>
-                            Save
-                          </button>
-                          <button
-                            type="button"
-                            className="ghost"
-                            disabled={busy}
-                            onClick={() => setEditingEntryId(null)}
-                          >
-                            Cancel
-                          </button>
+                          <textarea
+                            className="entry-notes-input"
+                            placeholder="Note (optional)"
+                            value={editNotes}
+                            onChange={(e) => setEditNotes(e.target.value)}
+                            rows={2}
+                          />
+                          <div className="inline-actions">
+                            <button type="submit" disabled={busy}>
+                              Save
+                            </button>
+                            <button
+                              type="button"
+                              className="ghost"
+                              disabled={busy}
+                              onClick={() => setEditingEntryId(null)}
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </form>
                       </li>
                     ) : (
-                      <li key={entry.id}>
+                      <li key={entry.id} className="entry-item">
                         <span className="entry-date">
                           {displayEntryDate(entry.entry_date)}
                         </span>
-                        <span className="entry-label">
-                          {entry.label || `Payment ${i + 1}`}
-                        </span>
+                        <div className="entry-main">
+                          <span className="entry-label">
+                            {entry.label || `Payment ${i + 1}`}
+                          </span>
+                          {entry.notes ? (
+                            <span className="entry-notes">{entry.notes}</span>
+                          ) : null}
+                        </div>
                         <span className="num">{formatCurrency(entry.amount)}</span>
                         {onUpdateEntry && (
                           <button
@@ -354,6 +376,13 @@ export function CategoryRow({
                     value={entryAmount}
                     onChange={(e) => setEntryAmount(e.target.value)}
                     required
+                  />
+                  <textarea
+                    className="entry-notes-input"
+                    placeholder="Note (optional)"
+                    value={entryNotes}
+                    onChange={(e) => setEntryNotes(e.target.value)}
+                    rows={2}
                   />
                   <button type="submit" disabled={busy}>
                     + Add cost

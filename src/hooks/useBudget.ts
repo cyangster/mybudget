@@ -27,6 +27,7 @@ function toEntry(row: CategoryEntry): CategoryEntry {
     amount: Number(row.amount),
     label: row.label ?? '',
     entry_date: row.entry_date ?? '',
+    notes: row.notes ?? '',
   }
 }
 
@@ -332,6 +333,7 @@ export function useBudget(userId: string) {
       amount: number,
       label = '',
       entryDate?: string,
+      notes = '',
     ) => {
       if (!selectedMonthId) return
       setBusy(true)
@@ -348,6 +350,7 @@ export function useBudget(userId: string) {
         amount,
         label: label.trim(),
         entry_date: entryDate || new Date().toISOString().slice(0, 10),
+        notes: notes.trim(),
         sort_order,
       })
 
@@ -400,7 +403,7 @@ export function useBudget(userId: string) {
     async (
       entryId: string,
       categoryId: string,
-      patch: Partial<Pick<CategoryEntry, 'label' | 'amount' | 'entry_date'>>,
+      patch: Partial<Pick<CategoryEntry, 'label' | 'amount' | 'entry_date' | 'notes'>>,
     ) => {
       if (!selectedMonthId) return
       setBusy(true)
