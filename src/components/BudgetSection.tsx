@@ -1,26 +1,32 @@
 import { useState, type FormEvent } from 'react'
-import type { BudgetSection, Category } from '../types'
+import type { BudgetSection, Category, CategoryEntry } from '../types'
 import { SECTION_LABELS } from '../types'
 import { CategoryRow } from './CategoryRow'
 
 interface BudgetSectionProps {
   section: BudgetSection
   categories: Category[]
+  entriesByCategory: Record<string, CategoryEntry[]>
   onAdd: (section: BudgetSection, name: string) => Promise<void>
   onSave: (
     id: string,
     patch: Partial<Pick<Category, 'name' | 'budgeted_amount' | 'actual_amount'>>,
   ) => Promise<void>
   onDelete: (id: string) => Promise<void>
+  onAddEntry: (categoryId: string, amount: number, label?: string) => Promise<void>
+  onDeleteEntry: (entryId: string, categoryId: string) => Promise<void>
   busy?: boolean
 }
 
 export function BudgetSectionView({
   section,
   categories,
+  entriesByCategory,
   onAdd,
   onSave,
   onDelete,
+  onAddEntry,
+  onDeleteEntry,
   busy,
 }: BudgetSectionProps) {
   const isIncome = section === 'income'
@@ -50,7 +56,8 @@ export function BudgetSectionView({
               ) : (
                 <>
                   <th className="num">Budgeted</th>
-                  <th className="num">Actual</th>
+                  <th className="num">Spent</th>
+                  <th className="num">Remaining</th>
                 </>
               )}
               <th className="actions-col" />
@@ -59,7 +66,7 @@ export function BudgetSectionView({
           <tbody>
             {categories.length === 0 && (
               <tr>
-                <td colSpan={isIncome ? 3 : 4} className="empty">
+                <td colSpan={isIncome ? 3 : 5} className="empty">
                   No categories yet.
                 </td>
               </tr>
@@ -68,9 +75,12 @@ export function BudgetSectionView({
               <CategoryRow
                 key={cat.id}
                 category={cat}
+                entries={entriesByCategory[cat.id] ?? []}
                 isIncome={isIncome}
                 onSave={onSave}
                 onDelete={isIncome ? undefined : onDelete}
+                onAddEntry={isIncome ? undefined : onAddEntry}
+                onDeleteEntry={isIncome ? undefined : onDeleteEntry}
                 busy={busy}
               />
             ))}

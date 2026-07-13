@@ -152,6 +152,14 @@ tbody tr:last-child td {
   white-space: nowrap;
 }
 
+.num.positive {
+  color: var(--positive);
+}
+
+.num.negative {
+  color: var(--negative);
+}
+
 .actions-col,
 .actions-cell {
   width: 5.5rem;
@@ -161,6 +169,109 @@ tbody tr:last-child td {
 
 .name-cell {
   font-weight: 500;
+}
+
+.expand-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 500;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.expand-btn:hover {
+  color: var(--accent);
+}
+
+.chevron {
+  display: inline-block;
+  width: 0.9rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.entry-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: #e8eef3;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.entry-panel-row td {
+  background: #f7f9fb;
+  padding: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.entry-panel {
+  padding: 0.85rem 1rem 1rem 2rem;
+}
+
+.entry-panel-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.entry-empty {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+}
+
+.entry-list {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.entry-list li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.4rem 0.55rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.entry-label {
+  font-size: 0.92rem;
+}
+
+.add-entry-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.add-entry-form input[type='text'] {
+  flex: 1;
+  min-width: 8rem;
+}
+
+.add-entry-form input[type='number'] {
+  width: 7.5rem;
 }
 
 .empty {

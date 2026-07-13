@@ -22,6 +22,15 @@ export interface Category {
   sort_order: number
 }
 
+export interface CategoryEntry {
+  id: string
+  category_id: string
+  label: string
+  amount: number
+  sort_order: number
+  created_at: string
+}
+
 export const SECTION_ORDER: BudgetSection[] = [
   'income',
   'fixed',

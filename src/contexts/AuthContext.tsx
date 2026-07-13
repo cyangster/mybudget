@@ -8,7 +8,7 @@ import {
 } from 'react'
 import type { ReactNode } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
-import { supabase } from '../lib/supabase'
+import { supabase, supabaseConfigured } from '../lib/supabase'
 
 interface AuthContextValue {
   user: User | null
@@ -25,6 +25,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!supabaseConfigured) {
+      setLoading(false)
+      return
+    }
+
     let mounted = true
 
     supabase.auth.getSession().then(({ data }) => {
@@ -47,11 +52,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signIn = useCallback(async (email: string, password: string) => {
+    if (!supabaseConfigured) {
+      return 'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel, then redeploy.'
+    }
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     return error?.message ?? null
   }, [])
 
   const signOut = useCallback(async () => {
+    if (!supabaseConfigured) return
     await supabase.auth.signOut()
   }, [])
 

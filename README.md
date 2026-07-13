@@ -5,7 +5,9 @@ Personal budgeting web app for a single user. React (Vite) frontend + Supabase (
 ## Setup
 
 1. Create a [Supabase](https://supabase.com) project.
-2. In the SQL Editor, run `supabase/migrations/001_initial_schema.sql`.
+2. In the SQL Editor, run these migrations in order:
+   - `supabase/migrations/001_initial_schema.sql`
+   - `supabase/migrations/002_category_entries.sql`
 3. Create your user under **Authentication → Users** (email/password). Sign-up is not exposed in the app.
 4. Copy env vars:
 
@@ -34,5 +36,6 @@ In Supabase **Authentication → URL Configuration**, add your Vercel URL to Sit
 ## Features
 
 - Sections: Income, Fixed Costs, Variable Costs, Investments, Savings
+- Per-category cost breakdown: expand a category to add multiple payments; Spent is the sum, Remaining = Budgeted − Spent
 - Summary: Total Budgeted, Total Spent, Leftover (Net Income − Total Spent)
 - Month navigation with copy-forward of categories/budgeted amounts on **+ New Month**

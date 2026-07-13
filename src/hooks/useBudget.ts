@@ -5,7 +5,12 @@ import {
   nextMonthLabel,
 } from '../lib/format'
 import { supabase } from '../lib/supabase'
-import type { BudgetSection, Category, Month } from '../types'
+import type {
+  BudgetSection,
+  Category,
+  CategoryEntry,
+  Month,
+} from '../types'
 import { SPEND_SECTIONS } from '../types'
 
 function toCategory(row: Category): Category {
@@ -16,10 +21,21 @@ function toCategory(row: Category): Category {
   }
 }
 
+function toEntry(row: CategoryEntry): CategoryEntry {
+  return {
+    ...row,
+    amount: Number(row.amount),
+    label: row.label ?? '',
+  }
+}
+
 export function useBudget(userId: string) {
   const [months, setMonths] = useState<Month[]>([])
   const [selectedMonthId, setSelectedMonthId] = useState<string | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
+  const [entriesByCategory, setEntriesByCategory] = useState<
+    Record<string, CategoryEntry[]>
+  >({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -56,10 +72,39 @@ export function useBudget(userId: string) {
     if (err) {
       setError(err.message)
       setCategories([])
+      setEntriesByCategory({})
       return
     }
 
-    setCategories((data ?? []).map((row) => toCategory(row as Category)))
+    const cats = (data ?? []).map((row) => toCategory(row as Category))
+    setCategories(cats)
+
+    if (cats.length === 0) {
+      setEntriesByCategory({})
+      return
+    }
+
+    const ids = cats.map((c) => c.id)
+    const { data: entryRows, error: entryErr } = await supabase
+      .from('category_entries')
+      .select('*')
+      .in('category_id', ids)
+      .order('sort_order', { ascending: true })
+
+    if (entryErr) {
+      // Table may not exist yet if migration 002 hasn't been run
+      setError(entryErr.message)
+      setEntriesByCategory({})
+      return
+    }
+
+    const map: Record<string, CategoryEntry[]> = {}
+    for (const id of ids) map[id] = []
+    for (const row of entryRows ?? []) {
+      const entry = toEntry(row as CategoryEntry)
+      map[entry.category_id].push(entry)
+    }
+    setEntriesByCategory(map)
   }, [])
 
   useEffect(() => {
@@ -74,6 +119,7 @@ export function useBudget(userId: string) {
       if (list.length === 0) {
         setSelectedMonthId(null)
         setCategories([])
+        setEntriesByCategory({})
         setLoading(false)
         return
       }
@@ -94,6 +140,27 @@ export function useBudget(userId: string) {
     if (!selectedMonthId) return
     void loadCategories(selectedMonthId)
   }, [selectedMonthId, loadCategories])
+
+  const syncCategoryActual = useCallback(async (categoryId: string) => {
+    const { data, error: err } = await supabase
+      .from('category_entries')
+      .select('amount')
+      .eq('category_id', categoryId)
+
+    if (err) return err.message
+
+    const total = (data ?? []).reduce(
+      (sum, row) => sum + Number(row.amount),
+      0,
+    )
+
+    const { error: updateErr } = await supabase
+      .from('categories')
+      .update({ actual_amount: total })
+      .eq('id', categoryId)
+
+    return updateErr?.message ?? null
+  }, [])
 
   const createMonth = useCallback(
     async (label?: string) => {
@@ -144,8 +211,6 @@ export function useBudget(userId: string) {
               section: cat.section,
               name: cat.name,
               budgeted_amount: cat.budgeted_amount,
-              // Income amounts live in actual_amount — carry them forward.
-              // Spend sections reset actual to 0.
               actual_amount:
                 cat.section === 'income' ? cat.actual_amount : 0,
               sort_order: cat.sort_order,
@@ -259,6 +324,70 @@ export function useBudget(userId: string) {
     [selectedMonthId, categories, loadCategories],
   )
 
+  const addEntry = useCallback(
+    async (categoryId: string, amount: number, label = '') => {
+      if (!selectedMonthId) return
+      setBusy(true)
+      setError(null)
+
+      const existing = entriesByCategory[categoryId] ?? []
+      const sort_order =
+        existing.length > 0
+          ? Math.max(...existing.map((e) => e.sort_order)) + 1
+          : 0
+
+      const { error: err } = await supabase.from('category_entries').insert({
+        category_id: categoryId,
+        amount,
+        label: label.trim(),
+        sort_order,
+      })
+
+      if (err) {
+        setBusy(false)
+        setError(err.message)
+        return
+      }
+
+      const syncErr = await syncCategoryActual(categoryId)
+      setBusy(false)
+      if (syncErr) {
+        setError(syncErr)
+        return
+      }
+      await loadCategories(selectedMonthId)
+    },
+    [selectedMonthId, entriesByCategory, syncCategoryActual, loadCategories],
+  )
+
+  const deleteEntry = useCallback(
+    async (entryId: string, categoryId: string) => {
+      if (!selectedMonthId) return
+      setBusy(true)
+      setError(null)
+
+      const { error: err } = await supabase
+        .from('category_entries')
+        .delete()
+        .eq('id', entryId)
+
+      if (err) {
+        setBusy(false)
+        setError(err.message)
+        return
+      }
+
+      const syncErr = await syncCategoryActual(categoryId)
+      setBusy(false)
+      if (syncErr) {
+        setError(syncErr)
+        return
+      }
+      await loadCategories(selectedMonthId)
+    },
+    [selectedMonthId, syncCategoryActual, loadCategories],
+  )
+
   const summary = useMemo(() => {
     const spend = categories.filter((c) => SPEND_SECTIONS.includes(c.section))
     const totalBudgeted = spend.reduce((sum, c) => sum + c.budgeted_amount, 0)
@@ -301,6 +430,7 @@ export function useBudget(userId: string) {
     selectedMonthId,
     setSelectedMonthId,
     categoriesBySection,
+    entriesByCategory,
     summary,
     loading,
     busy,
@@ -309,5 +439,7 @@ export function useBudget(userId: string) {
     addCategory,
     updateCategory,
     deleteCategory,
+    addEntry,
+    deleteEntry,
   }
 }

@@ -4,6 +4,7 @@ import { MonthNav } from './components/MonthNav'
 import { Summary } from './components/Summary'
 import { BudgetSectionView } from './components/BudgetSection'
 import { useBudget } from './hooks/useBudget'
+import { supabaseConfigured } from './lib/supabase'
 import { SECTION_ORDER } from './types'
 import './App.css'
 
@@ -14,6 +15,7 @@ function BudgetApp() {
     selectedMonthId,
     setSelectedMonthId,
     categoriesBySection,
+    entriesByCategory,
     summary,
     loading,
     busy,
@@ -22,6 +24,8 @@ function BudgetApp() {
     addCategory,
     updateCategory,
     deleteCategory,
+    addEntry,
+    deleteEntry,
   } = useBudget(user!.id)
 
   if (loading) {
@@ -78,9 +82,12 @@ function BudgetApp() {
                 key={section}
                 section={section}
                 categories={categoriesBySection[section]}
+                entriesByCategory={entriesByCategory}
                 onAdd={addCategory}
                 onSave={updateCategory}
                 onDelete={deleteCategory}
+                onAddEntry={addEntry}
+                onDeleteEntry={deleteEntry}
                 busy={busy}
               />
             ))}
@@ -106,7 +113,27 @@ function Gate() {
   return <BudgetApp />
 }
 
+function MissingConfig() {
+  return (
+    <div className="app-shell">
+      <div className="empty-state">
+        <h1>Missing Supabase config</h1>
+        <p>
+          Set <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> in
+          Vercel → Project Settings → Environment Variables, then redeploy.
+        </p>
+        <p className="muted">
+          Use the project URL only (no <code>/rest/v1/</code>), then trigger a new
+          deployment so Vite can bake the values into the build.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export default function App() {
+  if (!supabaseConfigured) return <MissingConfig />
+
   return (
     <AuthProvider>
       <Gate />
