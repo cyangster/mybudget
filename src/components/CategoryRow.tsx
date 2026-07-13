@@ -1,12 +1,8 @@
 import { useState, type FormEvent } from 'react'
-import {
-  displayEntryDate,
-  formatCurrency,
-  parseAmount,
-  todayDateInput,
-} from '../lib/format'
+import { formatCurrency, parseAmount } from '../lib/format'
 import { amountStatus, statusLabel } from '../lib/status'
 import type { Category, CategoryEntry } from '../types'
+import { CategoryCostsModal } from './CategoryCostsModal'
 import { IconEdit, IconTrash } from './Icons'
 
 interface CategoryRowProps {
@@ -60,19 +56,10 @@ export function CategoryRow({
   busy,
 }: CategoryRowProps) {
   const [editing, setEditing] = useState(false)
-  const [expanded, setExpanded] = useState(false)
-  const [editingEntryId, setEditingEntryId] = useState<string | null>(null)
+  const [costsOpen, setCostsOpen] = useState(false)
   const [name, setName] = useState(category.name)
   const [budgeted, setBudgeted] = useState(String(category.budgeted_amount))
   const [actual, setActual] = useState(String(category.actual_amount))
-  const [entryAmount, setEntryAmount] = useState('')
-  const [entryLabel, setEntryLabel] = useState('')
-  const [entryDate, setEntryDate] = useState(todayDateInput())
-  const [entryNotes, setEntryNotes] = useState('')
-  const [editLabel, setEditLabel] = useState('')
-  const [editAmount, setEditAmount] = useState('')
-  const [editDate, setEditDate] = useState(todayDateInput())
-  const [editNotes, setEditNotes] = useState('')
 
   const colCount = isIncome ? 3 : 6
   const remaining = category.budgeted_amount - category.actual_amount
@@ -99,14 +86,6 @@ export function CategoryRow({
     setEditing(false)
   }
 
-  function startEditEntry(entry: CategoryEntry) {
-    setEditingEntryId(entry.id)
-    setEditLabel(entry.label)
-    setEditAmount(String(entry.amount))
-    setEditDate(entry.entry_date || todayDateInput())
-    setEditNotes(entry.notes ?? '')
-  }
-
   async function save(e: FormEvent) {
     e.preventDefault()
     if (isIncome) {
@@ -118,30 +97,6 @@ export function CategoryRow({
       })
     }
     setEditing(false)
-  }
-
-  async function handleAddEntry(e: FormEvent) {
-    e.preventDefault()
-    if (!onAddEntry) return
-    const amount = parseAmount(entryAmount)
-    if (amount === 0 && entryAmount.trim() === '') return
-    await onAddEntry(category.id, amount, entryLabel, entryDate, entryNotes)
-    setEntryAmount('')
-    setEntryLabel('')
-    setEntryDate(todayDateInput())
-    setEntryNotes('')
-  }
-
-  async function handleUpdateEntry(e: FormEvent) {
-    e.preventDefault()
-    if (!onUpdateEntry || !editingEntryId) return
-    await onUpdateEntry(editingEntryId, category.id, {
-      label: editLabel.trim(),
-      amount: parseAmount(editAmount),
-      entry_date: editDate,
-      notes: editNotes.trim(),
-    })
-    setEditingEntryId(null)
   }
 
   if (editing) {
@@ -200,7 +155,7 @@ export function CategoryRow({
   return (
     <>
       <tr
-        className={`category-row ${expanded ? 'expanded' : ''} row-${status} ${isDragging ? 'dragging' : ''} ${isDropTarget ? 'drop-target' : ''}`}
+        className={`category-row row-${status} ${isDragging ? 'dragging' : ''} ${isDropTarget ? 'drop-target' : ''}`}
         onDragOver={(e) => {
           if (!onDragOver) return
           e.preventDefault()
@@ -237,11 +192,12 @@ export function CategoryRow({
             <button
               type="button"
               className="expand-btn"
-              aria-expanded={expanded}
-              aria-label={expanded ? 'Hide costs' : 'Show costs'}
-              onClick={() => setExpanded((v) => !v)}
+              aria-haspopup="dialog"
+              aria-expanded={costsOpen}
+              aria-label={`Open costs for ${category.name}`}
+              onClick={() => setCostsOpen(true)}
             >
-              <span className="chevron">{expanded ? '▾' : '▸'}</span>
+              <span className="chevron">▸</span>
               {category.name}
               {entries.length > 0 && (
                 <span className="entry-count">{entries.length}</span>
@@ -278,11 +234,12 @@ export function CategoryRow({
             <button
               type="button"
               className="ghost small"
-              aria-expanded={expanded}
-              onClick={() => setExpanded((v) => !v)}
+              aria-haspopup="dialog"
+              aria-expanded={costsOpen}
+              onClick={() => setCostsOpen(true)}
               disabled={busy}
             >
-              {expanded ? 'Hide costs' : 'Costs'}
+              Costs
             </button>
           )}
           <button
@@ -310,157 +267,17 @@ export function CategoryRow({
         </td>
       </tr>
 
-      {!isIncome && expanded && (
-        <tr className="entry-panel-row">
-          <td colSpan={colCount}>
-            <div className="entry-panel">
-              <div className="entry-panel-header">
-                <strong>Costs in {category.name}</strong>
-                <span className="muted">
-                  Remaining {formatCurrency(remaining)}
-                </span>
-              </div>
-
-              {entries.length === 0 ? (
-                <p className="muted entry-empty">
-                  No costs yet. Add each payment (e.g. $400 + $400).
-                </p>
-              ) : (
-                <ul className="entry-list">
-                  {entries.map((entry, i) =>
-                    editingEntryId === entry.id ? (
-                      <li key={entry.id} className="entry-editing">
-                        <form className="edit-entry-form" onSubmit={handleUpdateEntry}>
-                          <input
-                            type="date"
-                            value={editDate}
-                            onChange={(e) => setEditDate(e.target.value)}
-                            required
-                            aria-label="Date"
-                          />
-                          <input
-                            type="text"
-                            placeholder="Label"
-                            value={editLabel}
-                            onChange={(e) => setEditLabel(e.target.value)}
-                            autoFocus
-                          />
-                          <input
-                            type="number"
-                            step="0.01"
-                            inputMode="decimal"
-                            value={editAmount}
-                            onChange={(e) => setEditAmount(e.target.value)}
-                            required
-                          />
-                          <textarea
-                            className="entry-notes-input"
-                            placeholder="Note (optional)"
-                            value={editNotes}
-                            onChange={(e) => setEditNotes(e.target.value)}
-                            rows={2}
-                          />
-                          <div className="inline-actions">
-                            <button type="submit" disabled={busy}>
-                              Save
-                            </button>
-                            <button
-                              type="button"
-                              className="ghost"
-                              disabled={busy}
-                              onClick={() => setEditingEntryId(null)}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </form>
-                      </li>
-                    ) : (
-                      <li key={entry.id} className="entry-item">
-                        <span className="entry-date">
-                          {displayEntryDate(entry.entry_date)}
-                        </span>
-                        <div className="entry-main">
-                          <span className="entry-label">
-                            {entry.label || `Payment ${i + 1}`}
-                          </span>
-                          {entry.notes ? (
-                            <span className="entry-notes">{entry.notes}</span>
-                          ) : null}
-                        </div>
-                        <span className="num amount-spent">
-                          {formatCurrency(entry.amount)}
-                        </span>
-                        {onUpdateEntry && (
-                          <button
-                            type="button"
-                            className="action-btn edit"
-                            aria-label="Edit cost"
-                            disabled={busy}
-                            title="Edit"
-                            onClick={() => startEditEntry(entry)}
-                          >
-                            <IconEdit />
-                          </button>
-                        )}
-                        {onDeleteEntry && (
-                          <button
-                            type="button"
-                            className="action-btn delete"
-                            aria-label="Delete cost"
-                            disabled={busy}
-                            onClick={() =>
-                              void onDeleteEntry(entry.id, category.id)
-                            }
-                          >
-                            <IconTrash />
-                          </button>
-                        )}
-                      </li>
-                    ),
-                  )}
-                </ul>
-              )}
-
-              {onAddEntry && (
-                <form className="add-entry-form" onSubmit={handleAddEntry}>
-                  <input
-                    type="date"
-                    value={entryDate}
-                    onChange={(e) => setEntryDate(e.target.value)}
-                    required
-                    aria-label="Date"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Label (optional)"
-                    value={entryLabel}
-                    onChange={(e) => setEntryLabel(e.target.value)}
-                  />
-                  <input
-                    type="number"
-                    step="0.01"
-                    inputMode="decimal"
-                    placeholder="Amount"
-                    value={entryAmount}
-                    onChange={(e) => setEntryAmount(e.target.value)}
-                    required
-                  />
-                  <textarea
-                    className="entry-notes-input"
-                    placeholder="Note (optional)"
-                    value={entryNotes}
-                    onChange={(e) => setEntryNotes(e.target.value)}
-                    rows={2}
-                  />
-                  <button type="submit" disabled={busy}>
-                    + Add cost
-                  </button>
-                </form>
-              )}
-            </div>
-          </td>
-        </tr>
+      {!isIncome && (
+        <CategoryCostsModal
+          category={category}
+          entries={entries}
+          open={costsOpen}
+          onClose={() => setCostsOpen(false)}
+          onAddEntry={onAddEntry}
+          onUpdateEntry={onUpdateEntry}
+          onDeleteEntry={onDeleteEntry}
+          busy={busy}
+        />
       )}
     </>
   )

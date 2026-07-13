@@ -550,6 +550,24 @@ export function useBudget(userId: string) {
     return map
   }, [categories])
 
+  const dailySpendTotals = useMemo(() => {
+    const spendIds = new Set(
+      categories
+        .filter((c) => SPEND_SECTIONS.includes(c.section))
+        .map((c) => c.id),
+    )
+    const totals: Record<string, number> = {}
+    for (const [categoryId, entries] of Object.entries(entriesByCategory)) {
+      if (!spendIds.has(categoryId)) continue
+      for (const entry of entries) {
+        if (!entry.entry_date) continue
+        totals[entry.entry_date] =
+          (totals[entry.entry_date] ?? 0) + entry.amount
+      }
+    }
+    return totals
+  }, [categories, entriesByCategory])
+
   return {
     months,
     selectedMonth,
@@ -557,6 +575,7 @@ export function useBudget(userId: string) {
     setSelectedMonthId,
     categoriesBySection,
     entriesByCategory,
+    dailySpendTotals,
     summary,
     loading,
     busy,

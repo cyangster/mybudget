@@ -4,6 +4,7 @@ import { MonthNav } from './components/MonthNav'
 import { IncomeHeader } from './components/IncomeHeader'
 import { Summary } from './components/Summary'
 import { BudgetSectionView } from './components/BudgetSection'
+import { SpendCalendar } from './components/SpendCalendar'
 import { useBudget } from './hooks/useBudget'
 import { supabaseConfigured } from './lib/supabase'
 import { DASHBOARD_SECTIONS } from './types'
@@ -13,10 +14,12 @@ function BudgetApp() {
   const { user, signOut } = useAuth()
   const {
     months,
+    selectedMonth,
     selectedMonthId,
     setSelectedMonthId,
     categoriesBySection,
     entriesByCategory,
+    dailySpendTotals,
     summary,
     loading,
     busy,
@@ -75,44 +78,55 @@ function BudgetApp() {
         </div>
       ) : (
         <>
-          <div className="sticky-top">
-            <IncomeHeader
-              grossSemi={summary.grossSemi}
-              netSemi={summary.netSemi}
-              grossMonthly={summary.grossMonthly}
-              netMonthly={summary.netMonthly}
-              grossCategoryId={summary.grossCategoryId}
-              netCategoryId={summary.netCategoryId}
-              onSaveIncome={(id, amount) =>
-                updateCategory(id, { actual_amount: amount })
-              }
-              busy={busy}
-            />
-            <Summary
-              totalBudgeted={summary.totalBudgeted}
-              totalSpent={summary.totalSpent}
-              leftover={summary.leftover}
-            />
-          </div>
+          <div className="dashboard-body">
+            <div className="dashboard-main">
+              <div className="sticky-top">
+                <IncomeHeader
+                  grossSemi={summary.grossSemi}
+                  netSemi={summary.netSemi}
+                  grossMonthly={summary.grossMonthly}
+                  netMonthly={summary.netMonthly}
+                  grossCategoryId={summary.grossCategoryId}
+                  netCategoryId={summary.netCategoryId}
+                  onSaveIncome={(id, amount) =>
+                    updateCategory(id, { actual_amount: amount })
+                  }
+                  busy={busy}
+                />
+                <Summary
+                  totalBudgeted={summary.totalBudgeted}
+                  totalSpent={summary.totalSpent}
+                  leftover={summary.leftover}
+                />
+              </div>
 
-          <main className="sections-grid">
-            {DASHBOARD_SECTIONS.map((section) => (
-              <BudgetSectionView
-                key={section}
-                section={section}
-                categories={categoriesBySection[section]}
-                entriesByCategory={entriesByCategory}
-                onAdd={addCategory}
-                onSave={updateCategory}
-                onDelete={deleteCategory}
-                onAddEntry={addEntry}
-                onUpdateEntry={updateEntry}
-                onDeleteEntry={deleteEntry}
-                onReorder={reorderCategories}
-                busy={busy}
+              <main className="sections-grid">
+                {DASHBOARD_SECTIONS.map((section) => (
+                  <BudgetSectionView
+                    key={section}
+                    section={section}
+                    categories={categoriesBySection[section]}
+                    entriesByCategory={entriesByCategory}
+                    onAdd={addCategory}
+                    onSave={updateCategory}
+                    onDelete={deleteCategory}
+                    onAddEntry={addEntry}
+                    onUpdateEntry={updateEntry}
+                    onDeleteEntry={deleteEntry}
+                    onReorder={reorderCategories}
+                    busy={busy}
+                  />
+                ))}
+              </main>
+            </div>
+
+            {selectedMonth && (
+              <SpendCalendar
+                monthLabel={selectedMonth.label}
+                dailyTotals={dailySpendTotals}
               />
-            ))}
-          </main>
+            )}
+          </div>
         </>
       )}
     </div>
