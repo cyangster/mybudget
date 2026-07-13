@@ -1,17 +1,22 @@
 .app-shell {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0.85rem 1rem 1rem;
-  min-height: 100vh;
+  padding: 0.65rem 1rem 0.75rem;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.55rem;
 }
 
 .app-header {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
   margin-bottom: 0;
   flex-shrink: 0;
 }
@@ -20,12 +25,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .brand h1 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   letter-spacing: -0.02em;
 }
 
@@ -52,14 +57,14 @@
 }
 
 .sticky-top {
-  position: sticky;
+  position: relative;
   top: 0;
   z-index: 10;
-  padding: 0.35rem 0 0.5rem;
+  padding: 0;
   margin-bottom: 0;
-  background: linear-gradient(to bottom, var(--bg) 85%, transparent);
-  display: flex;
-  flex-direction: column;
+  background: none;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
   gap: 0.65rem;
   flex-shrink: 0;
 }
@@ -67,13 +72,13 @@
 .income-header {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.4rem;
   background: linear-gradient(135deg, #f0fdfa 0%, var(--surface) 55%);
   border: 1px solid #99f6e4;
   border-left: 4px solid var(--income);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 0.85rem 1rem;
+  padding: 0.55rem 0.75rem;
 }
 
 .income-header-top {
@@ -128,7 +133,7 @@
 }
 
 .income-amount {
-  font-size: clamp(1.1rem, 2.5vw, 1.45rem);
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
   font-weight: 700;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
@@ -172,10 +177,10 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 1rem 1.1rem;
+  padding: 0.55rem 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.15rem;
   position: relative;
 }
 
@@ -207,7 +212,7 @@
 }
 
 .summary-value {
-  font-size: clamp(1.35rem, 3vw, 1.85rem);
+  font-size: clamp(1.1rem, 2vw, 1.45rem);
   font-weight: 700;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
@@ -231,11 +236,9 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
-  gap: 0.85rem;
+  gap: 0.75rem;
   flex: 1 1 auto;
   min-height: 0;
-  height: calc(100dvh - 14.5rem);
-  max-height: calc(100dvh - 14.5rem);
   overflow: hidden;
 }
 
@@ -260,6 +263,16 @@
 
 .sections-grid .section-footer {
   min-height: 0;
+  padding: 0.45rem 0.75rem 0.55rem;
+}
+
+.sections-grid th,
+.sections-grid td {
+  padding: 0.45rem 0.65rem;
+}
+
+.sections-grid .category-row .actions-cell {
+  min-width: 7.5rem;
 }
 
 .budget-section {
@@ -292,13 +305,13 @@
 }
 
 .section-header {
-  padding: 0.85rem 1rem;
+  padding: 0.55rem 0.75rem;
   border-bottom: 1px solid var(--border);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem 1.25rem;
+  gap: 0.4rem 0.85rem;
 }
 
 .section-income .section-header {
@@ -936,6 +949,16 @@ button.icon-btn.danger:hover:not(:disabled) {
 }
 
 @media (max-width: 900px) {
+  .app-shell {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .sticky-top {
+    grid-template-columns: 1fr;
+  }
+
   .sections-grid {
     grid-template-columns: 1fr;
     grid-template-rows: none;
@@ -945,7 +968,7 @@ button.icon-btn.danger:hover:not(:disabled) {
   }
 
   .sections-grid > .budget-section {
-    max-height: 22rem;
+    max-height: 26rem;
     height: auto;
     display: flex;
     flex-direction: column;
