@@ -17,11 +17,13 @@ function formatDayKey(year: number, monthIndex: number, day: number): string {
 }
 
 function formatDaySpend(amount: number): string {
-  if (amount >= 1000) {
-    const k = amount / 1000
-    return `$${k.toFixed(k >= 10 ? 0 : 1)}k`
+  const dollars = Math.round(amount)
+  if (dollars >= 1000) {
+    const k = dollars / 1000
+    return `$${k >= 10 ? Math.round(k) : k.toFixed(1)}k`
   }
-  return formatCurrency(amount).replace(/\.00$/, '')
+  // Pad visually via CSS; keep short numeric text.
+  return `$${dollars}`
 }
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
