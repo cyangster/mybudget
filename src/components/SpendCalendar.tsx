@@ -18,11 +18,6 @@ function formatDayKey(year: number, monthIndex: number, day: number): string {
 
 function formatDaySpend(amount: number): string {
   const dollars = Math.round(amount)
-  if (dollars >= 1000) {
-    const k = dollars / 1000
-    return `$${k >= 10 ? Math.round(k) : k.toFixed(1)}k`
-  }
-  // Pad visually via CSS; keep short numeric text.
   return `$${dollars}`
 }
 
