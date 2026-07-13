@@ -396,6 +396,42 @@ export function useBudget(userId: string) {
     [selectedMonthId, syncCategoryActual, loadCategories],
   )
 
+  const updateEntry = useCallback(
+    async (
+      entryId: string,
+      categoryId: string,
+      patch: Partial<Pick<CategoryEntry, 'label' | 'amount' | 'entry_date'>>,
+    ) => {
+      if (!selectedMonthId) return
+      setBusy(true)
+      setError(null)
+
+      const { error: err } = await supabase
+        .from('category_entries')
+        .update(patch)
+        .eq('id', entryId)
+
+      if (err) {
+        setBusy(false)
+        setError(err.message)
+        return
+      }
+
+      if (patch.amount !== undefined) {
+        const syncErr = await syncCategoryActual(categoryId)
+        if (syncErr) {
+          setBusy(false)
+          setError(syncErr)
+          return
+        }
+      }
+
+      setBusy(false)
+      await loadCategories(selectedMonthId)
+    },
+    [selectedMonthId, syncCategoryActual, loadCategories],
+  )
+
   const summary = useMemo(() => {
     const spend = categories.filter((c) => SPEND_SECTIONS.includes(c.section))
     const totalBudgeted = spend.reduce((sum, c) => sum + c.budgeted_amount, 0)
@@ -448,6 +484,7 @@ export function useBudget(userId: string) {
     updateCategory,
     deleteCategory,
     addEntry,
+    updateEntry,
     deleteEntry,
   }
 }

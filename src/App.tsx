@@ -25,6 +25,7 @@ function BudgetApp() {
     updateCategory,
     deleteCategory,
     addEntry,
+    updateEntry,
     deleteEntry,
   } = useBudget(user!.id)
 
@@ -87,6 +88,7 @@ function BudgetApp() {
                 onSave={updateCategory}
                 onDelete={deleteCategory}
                 onAddEntry={addEntry}
+                onUpdateEntry={updateEntry}
                 onDeleteEntry={deleteEntry}
                 busy={busy}
               />

@@ -19,6 +19,11 @@ interface BudgetSectionProps {
     label?: string,
     entryDate?: string,
   ) => Promise<void>
+  onUpdateEntry: (
+    entryId: string,
+    categoryId: string,
+    patch: Partial<Pick<CategoryEntry, 'label' | 'amount' | 'entry_date'>>,
+  ) => Promise<void>
   onDeleteEntry: (entryId: string, categoryId: string) => Promise<void>
   busy?: boolean
 }
@@ -31,6 +36,7 @@ export function BudgetSectionView({
   onSave,
   onDelete,
   onAddEntry,
+  onUpdateEntry,
   onDeleteEntry,
   busy,
 }: BudgetSectionProps) {
@@ -85,6 +91,7 @@ export function BudgetSectionView({
                 onSave={onSave}
                 onDelete={isIncome ? undefined : onDelete}
                 onAddEntry={isIncome ? undefined : onAddEntry}
+                onUpdateEntry={isIncome ? undefined : onUpdateEntry}
                 onDeleteEntry={isIncome ? undefined : onDeleteEntry}
                 busy={busy}
               />

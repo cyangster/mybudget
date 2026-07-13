@@ -22,6 +22,11 @@ interface CategoryRowProps {
     label?: string,
     entryDate?: string,
   ) => Promise<void>
+  onUpdateEntry?: (
+    entryId: string,
+    categoryId: string,
+    patch: Partial<Pick<CategoryEntry, 'label' | 'amount' | 'entry_date'>>,
+  ) => Promise<void>
   onDeleteEntry?: (entryId: string, categoryId: string) => Promise<void>
   busy?: boolean
 }
@@ -33,17 +38,22 @@ export function CategoryRow({
   onSave,
   onDelete,
   onAddEntry,
+  onUpdateEntry,
   onDeleteEntry,
   busy,
 }: CategoryRowProps) {
   const [editing, setEditing] = useState(false)
   const [expanded, setExpanded] = useState(false)
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null)
   const [name, setName] = useState(category.name)
   const [budgeted, setBudgeted] = useState(String(category.budgeted_amount))
   const [actual, setActual] = useState(String(category.actual_amount))
   const [entryAmount, setEntryAmount] = useState('')
   const [entryLabel, setEntryLabel] = useState('')
   const [entryDate, setEntryDate] = useState(todayDateInput())
+  const [editLabel, setEditLabel] = useState('')
+  const [editAmount, setEditAmount] = useState('')
+  const [editDate, setEditDate] = useState(todayDateInput())
 
   const remaining = category.budgeted_amount - category.actual_amount
   const remainingClass =
@@ -58,6 +68,13 @@ export function CategoryRow({
 
   function cancel() {
     setEditing(false)
+  }
+
+  function startEditEntry(entry: CategoryEntry) {
+    setEditingEntryId(entry.id)
+    setEditLabel(entry.label)
+    setEditAmount(String(entry.amount))
+    setEditDate(entry.entry_date || todayDateInput())
   }
 
   async function save(e: FormEvent) {
@@ -82,6 +99,17 @@ export function CategoryRow({
     setEntryAmount('')
     setEntryLabel('')
     setEntryDate(todayDateInput())
+  }
+
+  async function handleUpdateEntry(e: FormEvent) {
+    e.preventDefault()
+    if (!onUpdateEntry || !editingEntryId) return
+    await onUpdateEntry(editingEntryId, category.id, {
+      label: editLabel.trim(),
+      amount: parseAmount(editAmount),
+      entry_date: editDate,
+    })
+    setEditingEntryId(null)
   }
 
   if (editing) {
@@ -224,30 +252,82 @@ export function CategoryRow({
                 </p>
               ) : (
                 <ul className="entry-list">
-                  {entries.map((entry, i) => (
-                    <li key={entry.id}>
-                      <span className="entry-date">
-                        {displayEntryDate(entry.entry_date)}
-                      </span>
-                      <span className="entry-label">
-                        {entry.label || `Payment ${i + 1}`}
-                      </span>
-                      <span className="num">{formatCurrency(entry.amount)}</span>
-                      {onDeleteEntry && (
-                        <button
-                          type="button"
-                          className="icon-btn danger"
-                          aria-label="Delete cost"
-                          disabled={busy}
-                          onClick={() =>
-                            void onDeleteEntry(entry.id, category.id)
-                          }
-                        >
-                          ×
-                        </button>
-                      )}
-                    </li>
-                  ))}
+                  {entries.map((entry, i) =>
+                    editingEntryId === entry.id ? (
+                      <li key={entry.id} className="entry-editing">
+                        <form className="edit-entry-form" onSubmit={handleUpdateEntry}>
+                          <input
+                            type="date"
+                            value={editDate}
+                            onChange={(e) => setEditDate(e.target.value)}
+                            required
+                            aria-label="Date"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Label"
+                            value={editLabel}
+                            onChange={(e) => setEditLabel(e.target.value)}
+                            autoFocus
+                          />
+                          <input
+                            type="number"
+                            step="0.01"
+                            inputMode="decimal"
+                            value={editAmount}
+                            onChange={(e) => setEditAmount(e.target.value)}
+                            required
+                          />
+                          <button type="submit" disabled={busy}>
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            className="ghost"
+                            disabled={busy}
+                            onClick={() => setEditingEntryId(null)}
+                          >
+                            Cancel
+                          </button>
+                        </form>
+                      </li>
+                    ) : (
+                      <li key={entry.id}>
+                        <span className="entry-date">
+                          {displayEntryDate(entry.entry_date)}
+                        </span>
+                        <span className="entry-label">
+                          {entry.label || `Payment ${i + 1}`}
+                        </span>
+                        <span className="num">{formatCurrency(entry.amount)}</span>
+                        {onUpdateEntry && (
+                          <button
+                            type="button"
+                            className="icon-btn"
+                            aria-label="Edit cost"
+                            disabled={busy}
+                            title="Edit"
+                            onClick={() => startEditEntry(entry)}
+                          >
+                            ✎
+                          </button>
+                        )}
+                        {onDeleteEntry && (
+                          <button
+                            type="button"
+                            className="icon-btn danger"
+                            aria-label="Delete cost"
+                            disabled={busy}
+                            onClick={() =>
+                              void onDeleteEntry(entry.id, category.id)
+                            }
+                          >
+                            ×
+                          </button>
+                        )}
+                      </li>
+                    ),
+                  )}
                 </ul>
               )}
 
