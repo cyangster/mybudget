@@ -17,7 +17,6 @@ function formatDayKey(year: number, monthIndex: number, day: number): string {
 }
 
 function formatDaySpend(amount: number): string {
-  if (!amount) return ''
   if (amount >= 1000) {
     const k = amount / 1000
     return `$${k.toFixed(k >= 10 ? 0 : 1)}k`
@@ -74,12 +73,8 @@ export function SpendCalendar({ monthLabel, dailyTotals }: SpendCalendarProps) {
           ) : (
             <div
               key={cell.key}
-              className={`spend-day ${cell.amount > 0 ? 'has-spend' : ''}`}
-              title={
-                cell.amount > 0
-                  ? `${formatCurrency(cell.amount)} on day ${cell.day}`
-                  : `Day ${cell.day}`
-              }
+              className="spend-day"
+              title={`${formatCurrency(cell.amount)} on day ${cell.day}`}
             >
               <span className="spend-day-num">{cell.day}</span>
               <span className="spend-day-amt">
