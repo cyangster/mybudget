@@ -7,20 +7,18 @@ import {
 } from '../lib/format'
 import { amountStatus, statusLabel } from '../lib/status'
 import type { Category, CategoryEntry } from '../types'
-import {
-  IconChevronDown,
-  IconChevronUp,
-  IconEdit,
-  IconTrash,
-} from './Icons'
+import { IconEdit, IconTrash } from './Icons'
 
 interface CategoryRowProps {
   category: Category
   entries?: CategoryEntry[]
   isIncome?: boolean
-  canMoveUp?: boolean
-  canMoveDown?: boolean
-  onMove?: (id: string, direction: 'up' | 'down') => Promise<void>
+  isDragging?: boolean
+  isDropTarget?: boolean
+  onDragStart?: (id: string) => void
+  onDragOver?: (id: string) => void
+  onDrop?: (id: string) => void
+  onDragEnd?: () => void
   onSave: (
     id: string,
     patch: Partial<Pick<Category, 'name' | 'budgeted_amount' | 'actual_amount'>>,
@@ -48,9 +46,12 @@ export function CategoryRow({
   category,
   entries = [],
   isIncome,
-  canMoveUp,
-  canMoveDown,
-  onMove,
+  isDragging,
+  isDropTarget,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
   onSave,
   onDelete,
   onAddEntry,
@@ -73,7 +74,7 @@ export function CategoryRow({
   const [editDate, setEditDate] = useState(todayDateInput())
   const [editNotes, setEditNotes] = useState('')
 
-  const colCount = isIncome ? 4 : 6
+  const colCount = isIncome ? 3 : 6
   const remaining = category.budgeted_amount - category.actual_amount
   const status = isIncome
     ? 'empty'
@@ -198,36 +199,39 @@ export function CategoryRow({
 
   return (
     <>
-      <tr className={`category-row ${expanded ? 'expanded' : ''} row-${status}`}>
-        <td className="reorder-cell">
-          {!isIncome && onMove ? (
-            <div className="reorder-bar" aria-label={`Reorder ${category.name}`}>
+      <tr
+        className={`category-row ${expanded ? 'expanded' : ''} row-${status} ${isDragging ? 'dragging' : ''} ${isDropTarget ? 'drop-target' : ''}`}
+        onDragOver={(e) => {
+          if (!onDragOver) return
+          e.preventDefault()
+          onDragOver(category.id)
+        }}
+        onDrop={(e) => {
+          if (!onDrop) return
+          e.preventDefault()
+          onDrop(category.id)
+        }}
+      >
+        {!isIncome && (
+          <td className="reorder-cell">
+            <button
+              type="button"
+              className="drag-handle"
+              draggable={!busy}
+              aria-label={`Drag to reorder ${category.name}`}
+              title="Drag to reorder"
+              disabled={busy}
+              onDragStart={(e) => {
+                e.dataTransfer.effectAllowed = 'move'
+                e.dataTransfer.setData('text/plain', category.id)
+                onDragStart?.(category.id)
+              }}
+              onDragEnd={() => onDragEnd?.()}
+            >
               <span className="grip-dots" aria-hidden="true" />
-              <div className="reorder-actions">
-                <button
-                  type="button"
-                  className="reorder-btn"
-                  aria-label={`Move ${category.name} up`}
-                  disabled={busy || !canMoveUp}
-                  onClick={() => void onMove(category.id, 'up')}
-                >
-                  <IconChevronUp />
-                </button>
-                <button
-                  type="button"
-                  className="reorder-btn"
-                  aria-label={`Move ${category.name} down`}
-                  disabled={busy || !canMoveDown}
-                  onClick={() => void onMove(category.id, 'down')}
-                >
-                  <IconChevronDown />
-                </button>
-              </div>
-            </div>
-          ) : (
-            <span className="reorder-spacer" />
-          )}
-        </td>
+            </button>
+          </td>
+        )}
         <td className="name-cell">
           {!isIncome ? (
             <button

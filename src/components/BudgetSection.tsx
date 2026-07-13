@@ -30,7 +30,7 @@ interface BudgetSectionProps {
     >,
   ) => Promise<void>
   onDeleteEntry: (entryId: string, categoryId: string) => Promise<void>
-  onMoveCategory: (id: string, direction: 'up' | 'down') => Promise<void>
+  onReorder: (section: BudgetSection, orderedIds: string[]) => Promise<void>
   busy?: boolean
 }
 
@@ -44,12 +44,14 @@ export function BudgetSectionView({
   onAddEntry,
   onUpdateEntry,
   onDeleteEntry,
-  onMoveCategory,
+  onReorder,
   busy,
 }: BudgetSectionProps) {
   const isIncome = section === 'income'
   const [adding, setAdding] = useState(false)
   const [newName, setNewName] = useState('')
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null)
 
   const totals = useMemo(() => {
     const budgeted = categories.reduce((sum, c) => sum + c.budgeted_amount, 0)
@@ -75,6 +77,45 @@ export function BudgetSectionView({
     await onAdd(section, newName.trim() || 'New category')
     setNewName('')
     setAdding(false)
+  }
+
+  function handleDragStart(id: string) {
+    setDraggingId(id)
+  }
+
+  function handleDragOver(id: string) {
+    if (!draggingId || draggingId === id) return
+    setDropTargetId(id)
+  }
+
+  async function handleDrop(targetId: string) {
+    if (!draggingId || draggingId === targetId) {
+      setDraggingId(null)
+      setDropTargetId(null)
+      return
+    }
+
+    const ids = categories.map((c) => c.id)
+    const from = ids.indexOf(draggingId)
+    const to = ids.indexOf(targetId)
+    if (from < 0 || to < 0) {
+      setDraggingId(null)
+      setDropTargetId(null)
+      return
+    }
+
+    const next = [...ids]
+    const [moved] = next.splice(from, 1)
+    next.splice(to, 0, moved)
+
+    setDraggingId(null)
+    setDropTargetId(null)
+    await onReorder(section, next)
+  }
+
+  function handleDragEnd() {
+    setDraggingId(null)
+    setDropTargetId(null)
   }
 
   return (
@@ -116,7 +157,7 @@ export function BudgetSectionView({
         <table>
           <thead>
             <tr>
-              <th className="reorder-col" aria-label="Reorder" />
+              {!isIncome && <th className="reorder-col" aria-label="Reorder" />}
               <th>Category</th>
               {isIncome ? (
                 <th className="num">Amount</th>
@@ -133,20 +174,23 @@ export function BudgetSectionView({
           <tbody>
             {categories.length === 0 && (
               <tr>
-                <td colSpan={isIncome ? 4 : 6} className="empty">
+                <td colSpan={isIncome ? 3 : 6} className="empty">
                   No categories yet.
                 </td>
               </tr>
             )}
-            {categories.map((cat, index) => (
+            {categories.map((cat) => (
               <CategoryRow
                 key={cat.id}
                 category={cat}
                 entries={entriesByCategory[cat.id] ?? []}
                 isIncome={isIncome}
-                canMoveUp={index > 0}
-                canMoveDown={index < categories.length - 1}
-                onMove={isIncome ? undefined : onMoveCategory}
+                isDragging={draggingId === cat.id}
+                isDropTarget={dropTargetId === cat.id}
+                onDragStart={isIncome ? undefined : handleDragStart}
+                onDragOver={isIncome ? undefined : handleDragOver}
+                onDrop={isIncome ? undefined : handleDrop}
+                onDragEnd={isIncome ? undefined : handleDragEnd}
                 onSave={onSave}
                 onDelete={isIncome ? undefined : onDelete}
                 onAddEntry={isIncome ? undefined : onAddEntry}

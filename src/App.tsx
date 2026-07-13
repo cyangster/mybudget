@@ -25,7 +25,8 @@ function BudgetApp() {
     addCategory,
     updateCategory,
     deleteCategory,
-    moveCategory,
+    reorderCategories,
+    deleteMonth,
     addEntry,
     updateEntry,
     deleteEntry,
@@ -53,6 +54,7 @@ function BudgetApp() {
           selectedMonthId={selectedMonthId}
           onSelect={setSelectedMonthId}
           onNewMonth={() => void createMonth()}
+          onDeleteMonth={(id) => void deleteMonth(id)}
           busy={busy}
         />
       </header>
@@ -106,7 +108,7 @@ function BudgetApp() {
                 onAddEntry={addEntry}
                 onUpdateEntry={updateEntry}
                 onDeleteEntry={deleteEntry}
-                onMoveCategory={moveCategory}
+                onReorder={reorderCategories}
                 busy={busy}
               />
             ))}

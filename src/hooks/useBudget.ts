@@ -327,51 +327,62 @@ export function useBudget(userId: string) {
     [selectedMonthId, categories, loadCategories],
   )
 
-  const moveCategory = useCallback(
-    async (id: string, direction: 'up' | 'down') => {
-      if (!selectedMonthId) return
-      const target = categories.find((c) => c.id === id)
-      if (!target || target.section === 'income') return
-
-      const sectionCats = categories
-        .filter((c) => c.section === target.section)
-        .sort((a, b) => a.sort_order - b.sort_order)
-
-      const index = sectionCats.findIndex((c) => c.id === id)
-      const swapWith =
-        direction === 'up' ? sectionCats[index - 1] : sectionCats[index + 1]
-      if (!swapWith) return
+  const reorderCategories = useCallback(
+    async (section: BudgetSection, orderedIds: string[]) => {
+      if (!selectedMonthId || section === 'income') return
 
       setBusy(true)
       setError(null)
 
-      const aOrder = target.sort_order
-      const bOrder = swapWith.sort_order
+      const updates = orderedIds.map((id, index) =>
+        supabase.from('categories').update({ sort_order: index }).eq('id', id),
+      )
 
-      const { error: errA } = await supabase
-        .from('categories')
-        .update({ sort_order: bOrder })
-        .eq('id', target.id)
-
-      if (errA) {
-        setBusy(false)
-        setError(errA.message)
-        return
-      }
-
-      const { error: errB } = await supabase
-        .from('categories')
-        .update({ sort_order: aOrder })
-        .eq('id', swapWith.id)
+      const results = await Promise.all(updates)
+      const firstError = results.find((r) => r.error)?.error
 
       setBusy(false)
-      if (errB) {
-        setError(errB.message)
+      if (firstError) {
+        setError(firstError.message)
         return
       }
       await loadCategories(selectedMonthId)
     },
-    [selectedMonthId, categories, loadCategories],
+    [selectedMonthId, loadCategories],
+  )
+
+  const deleteMonth = useCallback(
+    async (monthId: string) => {
+      setBusy(true)
+      setError(null)
+
+      const { error: err } = await supabase
+        .from('months')
+        .delete()
+        .eq('id', monthId)
+
+      if (err) {
+        setBusy(false)
+        setError(err.message)
+        return
+      }
+
+      const list = await loadMonths()
+      if (list.length === 0) {
+        setSelectedMonthId(null)
+        setCategories([])
+        setEntriesByCategory({})
+        setBusy(false)
+        return
+      }
+
+      const next =
+        list.find((m) => m.id === selectedMonthId) ?? list[list.length - 1]
+      setSelectedMonthId(next.id)
+      await loadCategories(next.id)
+      setBusy(false)
+    },
+    [loadMonths, loadCategories, selectedMonthId],
   )
 
   const addEntry = useCallback(
@@ -554,7 +565,8 @@ export function useBudget(userId: string) {
     addCategory,
     updateCategory,
     deleteCategory,
-    moveCategory,
+    reorderCategories,
+    deleteMonth,
     addEntry,
     updateEntry,
     deleteEntry,
