@@ -26,6 +26,7 @@ function toEntry(row: CategoryEntry): CategoryEntry {
     ...row,
     amount: Number(row.amount),
     label: row.label ?? '',
+    entry_date: row.entry_date ?? '',
   }
 }
 
@@ -89,6 +90,7 @@ export function useBudget(userId: string) {
       .from('category_entries')
       .select('*')
       .in('category_id', ids)
+      .order('entry_date', { ascending: true })
       .order('sort_order', { ascending: true })
 
     if (entryErr) {
@@ -325,7 +327,12 @@ export function useBudget(userId: string) {
   )
 
   const addEntry = useCallback(
-    async (categoryId: string, amount: number, label = '') => {
+    async (
+      categoryId: string,
+      amount: number,
+      label = '',
+      entryDate?: string,
+    ) => {
       if (!selectedMonthId) return
       setBusy(true)
       setError(null)
@@ -340,6 +347,7 @@ export function useBudget(userId: string) {
         category_id: categoryId,
         amount,
         label: label.trim(),
+        entry_date: entryDate || new Date().toISOString().slice(0, 10),
         sort_order,
       })
 

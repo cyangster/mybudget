@@ -13,7 +13,12 @@ interface BudgetSectionProps {
     patch: Partial<Pick<Category, 'name' | 'budgeted_amount' | 'actual_amount'>>,
   ) => Promise<void>
   onDelete: (id: string) => Promise<void>
-  onAddEntry: (categoryId: string, amount: number, label?: string) => Promise<void>
+  onAddEntry: (
+    categoryId: string,
+    amount: number,
+    label?: string,
+    entryDate?: string,
+  ) => Promise<void>
   onDeleteEntry: (entryId: string, categoryId: string) => Promise<void>
   busy?: boolean
 }

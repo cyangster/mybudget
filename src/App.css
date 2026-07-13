@@ -250,13 +250,19 @@ tbody tr:last-child td {
 
 .entry-list li {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 7.5rem 1fr auto auto;
   gap: 0.75rem;
   align-items: center;
   padding: 0.4rem 0.55rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
+}
+
+.entry-date {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .entry-label {
@@ -268,6 +274,14 @@ tbody tr:last-child td {
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
+}
+
+.add-entry-form input[type='date'] {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text);
 }
 
 .add-entry-form input[type='text'] {

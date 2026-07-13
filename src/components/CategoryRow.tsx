@@ -1,5 +1,10 @@
 import { useState, type FormEvent } from 'react'
-import { formatCurrency, parseAmount } from '../lib/format'
+import {
+  displayEntryDate,
+  formatCurrency,
+  parseAmount,
+  todayDateInput,
+} from '../lib/format'
 import type { Category, CategoryEntry } from '../types'
 
 interface CategoryRowProps {
@@ -11,7 +16,12 @@ interface CategoryRowProps {
     patch: Partial<Pick<Category, 'name' | 'budgeted_amount' | 'actual_amount'>>,
   ) => Promise<void>
   onDelete?: (id: string) => Promise<void>
-  onAddEntry?: (categoryId: string, amount: number, label?: string) => Promise<void>
+  onAddEntry?: (
+    categoryId: string,
+    amount: number,
+    label?: string,
+    entryDate?: string,
+  ) => Promise<void>
   onDeleteEntry?: (entryId: string, categoryId: string) => Promise<void>
   busy?: boolean
 }
@@ -33,6 +43,7 @@ export function CategoryRow({
   const [actual, setActual] = useState(String(category.actual_amount))
   const [entryAmount, setEntryAmount] = useState('')
   const [entryLabel, setEntryLabel] = useState('')
+  const [entryDate, setEntryDate] = useState(todayDateInput())
 
   const remaining = category.budgeted_amount - category.actual_amount
   const remainingClass =
@@ -67,9 +78,10 @@ export function CategoryRow({
     if (!onAddEntry) return
     const amount = parseAmount(entryAmount)
     if (amount === 0 && entryAmount.trim() === '') return
-    await onAddEntry(category.id, amount, entryLabel)
+    await onAddEntry(category.id, amount, entryLabel, entryDate)
     setEntryAmount('')
     setEntryLabel('')
+    setEntryDate(todayDateInput())
   }
 
   if (editing) {
@@ -214,6 +226,9 @@ export function CategoryRow({
                 <ul className="entry-list">
                   {entries.map((entry, i) => (
                     <li key={entry.id}>
+                      <span className="entry-date">
+                        {displayEntryDate(entry.entry_date)}
+                      </span>
                       <span className="entry-label">
                         {entry.label || `Payment ${i + 1}`}
                       </span>
@@ -238,6 +253,13 @@ export function CategoryRow({
 
               {onAddEntry && (
                 <form className="add-entry-form" onSubmit={handleAddEntry}>
+                  <input
+                    type="date"
+                    value={entryDate}
+                    onChange={(e) => setEntryDate(e.target.value)}
+                    required
+                    aria-label="Date"
+                  />
                   <input
                     type="text"
                     placeholder="Label (optional)"

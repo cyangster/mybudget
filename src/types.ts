@@ -27,6 +27,7 @@ export interface CategoryEntry {
   category_id: string
   label: string
   amount: number
+  entry_date: string
   sort_order: number
   created_at: string
 }

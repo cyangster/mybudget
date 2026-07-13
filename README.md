@@ -8,6 +8,7 @@ Personal budgeting web app for a single user. React (Vite) frontend + Supabase (
 2. In the SQL Editor, run these migrations in order:
    - `supabase/migrations/001_initial_schema.sql`
    - `supabase/migrations/002_category_entries.sql`
+   - `supabase/migrations/003_entry_date.sql`
 3. Create your user under **Authentication → Users** (email/password). Sign-up is not exposed in the app.
 4. Copy env vars:
 
