@@ -21,7 +21,7 @@ export function Summary({ totalBudgeted, totalSpent, leftover }: SummaryProps) {
         <span className="summary-value">{formatCurrency(totalSpent)}</span>
       </div>
       <div className="summary-item">
-        <span className="summary-label">Leftover</span>
+        <span className="summary-label">Leftover (monthly)</span>
         <span className={`summary-value ${leftoverClass}`}>
           {formatCurrency(leftover)}
         </span>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { FIRST_MONTH_SEED, NET_INCOME_NAME } from '../lib/defaults'
+import { FIRST_MONTH_SEED, GROSS_INCOME_NAME, NET_INCOME_NAME } from '../lib/defaults'
 import {
   currentMonthLabel,
   nextMonthLabel,
@@ -437,18 +437,37 @@ export function useBudget(userId: string) {
     const totalBudgeted = spend.reduce((sum, c) => sum + c.budgeted_amount, 0)
     const totalSpent = spend.reduce((sum, c) => sum + c.actual_amount, 0)
 
+    const incomeCats = categories
+      .filter((c) => c.section === 'income')
+      .sort((a, b) => a.sort_order - b.sort_order)
+
+    const gross =
+      categories.find(
+        (c) => c.section === 'income' && c.name === GROSS_INCOME_NAME,
+      ) ?? incomeCats[0]
+
     const net =
       categories.find(
         (c) => c.section === 'income' && c.name === NET_INCOME_NAME,
-      ) ??
-      categories
-        .filter((c) => c.section === 'income')
-        .sort((a, b) => a.sort_order - b.sort_order)[1]
+      ) ?? incomeCats[1]
 
-    const netIncome = net?.actual_amount ?? 0
-    const leftover = netIncome - totalSpent
+    const grossSemi = gross?.actual_amount ?? 0
+    const netSemi = net?.actual_amount ?? 0
+    const grossMonthly = grossSemi * 2
+    const netMonthly = netSemi * 2
+    // Costs are monthly; leftover uses monthly net.
+    const leftover = netMonthly - totalSpent
 
-    return { totalBudgeted, totalSpent, leftover, netIncome }
+    return {
+      totalBudgeted,
+      totalSpent,
+      leftover,
+      grossSemi,
+      netSemi,
+      grossMonthly,
+      netMonthly,
+      netIncome: netSemi,
+    }
   }, [categories])
 
   const categoriesBySection = useMemo(() => {

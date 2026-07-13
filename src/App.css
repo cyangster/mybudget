@@ -46,16 +46,73 @@
   background: var(--surface);
 }
 
+.sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 0.5rem 0 0.75rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(to bottom, var(--bg) 85%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.income-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.income-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 0.85rem 1rem;
+}
+
+.income-block h2 {
+  margin: 0 0 0.55rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.income-figures {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.income-figures > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.income-period {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.income-amount {
+  font-size: clamp(1.1rem, 2.5vw, 1.45rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
 .summary {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
-  margin-bottom: 1.5rem;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  padding: 0.75rem 0;
-  background: linear-gradient(to bottom, var(--bg) 70%, transparent);
+  margin-bottom: 0;
+  position: static;
+  padding: 0;
+  background: none;
 }
 
 .summary-item {
@@ -464,9 +521,14 @@ button.icon-btn.danger:hover:not(:disabled) {
 }
 
 @media (max-width: 640px) {
+  .sticky-top {
+    position: static;
+  }
+
+  .income-header,
+  .income-figures,
   .summary {
     grid-template-columns: 1fr;
-    position: static;
   }
 
   .month-nav {

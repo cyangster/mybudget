@@ -55,3 +55,4 @@ export const FIRST_MONTH_SEED: SeedCategory[] = [
 ]
 
 export const NET_INCOME_NAME = 'Net Income'
+export const GROSS_INCOME_NAME = 'Gross Semi-Monthly Income'

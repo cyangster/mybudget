@@ -1,6 +1,7 @@
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { Login } from './components/Login'
 import { MonthNav } from './components/MonthNav'
+import { IncomeHeader } from './components/IncomeHeader'
 import { Summary } from './components/Summary'
 import { BudgetSectionView } from './components/BudgetSection'
 import { useBudget } from './hooks/useBudget'
@@ -71,11 +72,19 @@ function BudgetApp() {
         </div>
       ) : (
         <>
-          <Summary
-            totalBudgeted={summary.totalBudgeted}
-            totalSpent={summary.totalSpent}
-            leftover={summary.leftover}
-          />
+          <div className="sticky-top">
+            <IncomeHeader
+              grossSemi={summary.grossSemi}
+              netSemi={summary.netSemi}
+              grossMonthly={summary.grossMonthly}
+              netMonthly={summary.netMonthly}
+            />
+            <Summary
+              totalBudgeted={summary.totalBudgeted}
+              totalSpent={summary.totalSpent}
+              leftover={summary.leftover}
+            />
+          </div>
 
           <main className="sections">
             {SECTION_ORDER.map((section) => (
