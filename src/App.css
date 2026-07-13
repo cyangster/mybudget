@@ -62,8 +62,9 @@
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: linear-gradient(135deg, #f0fdfa 0%, var(--surface) 55%);
+  border: 1px solid #99f6e4;
+  border-left: 4px solid var(--income);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 0.85rem 1rem;
@@ -82,7 +83,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--muted);
+  color: var(--income);
 }
 
 .income-header-grid {
@@ -92,8 +93,8 @@
 }
 
 .income-block {
-  background: #f7f9fb;
-  border: 1px solid var(--border);
+  background: var(--income-soft);
+  border: 1px solid #99f6e4;
   border-radius: 8px;
   padding: 0.7rem 0.85rem;
 }
@@ -169,6 +170,26 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  position: relative;
+}
+
+.summary-item.tone-done {
+  background: var(--done-bg);
+  border-color: var(--done-border);
+}
+
+.summary-item.tone-open {
+  background: var(--open-bg);
+  border-color: var(--open-border);
+}
+
+.summary-item.tone-over {
+  background: var(--over-bg);
+  border-color: var(--over-border);
+}
+
+.summary-item .status-pill {
+  align-self: flex-start;
 }
 
 .summary-label {
@@ -206,12 +227,32 @@
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   overflow: hidden;
+  border-left: 4px solid var(--border);
+}
+
+.budget-section.section-income {
+  border-left-color: var(--income);
+}
+
+.budget-section.section-fixed {
+  border-left-color: var(--fixed);
+}
+
+.budget-section.section-variable {
+  border-left-color: var(--variable);
+}
+
+.budget-section.section-investments {
+  border-left-color: var(--investments);
+}
+
+.budget-section.section-savings {
+  border-left-color: var(--savings);
 }
 
 .section-header {
   padding: 0.85rem 1rem;
   border-bottom: 1px solid var(--border);
-  background: #f8fafb;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -219,9 +260,110 @@
   gap: 0.75rem 1.25rem;
 }
 
+.section-income .section-header {
+  background: var(--income-soft);
+}
+
+.section-fixed .section-header {
+  background: var(--fixed-soft);
+}
+
+.section-variable .section-header {
+  background: var(--variable-soft);
+}
+
+.section-investments .section-header {
+  background: var(--investments-soft);
+}
+
+.section-savings .section-header {
+  background: var(--savings-soft);
+}
+
+.section-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
 .section-header h2 {
   margin: 0;
   font-size: 1.05rem;
+}
+
+.section-income .section-header h2 {
+  color: var(--income);
+}
+
+.section-fixed .section-header h2 {
+  color: var(--fixed);
+}
+
+.section-variable .section-header h2 {
+  color: var(--variable);
+}
+
+.section-investments .section-header h2 {
+  color: var(--investments);
+}
+
+.section-savings .section-header h2 {
+  color: var(--savings);
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+.status-pill.status-done {
+  background: #bbf7d0;
+  color: #166534;
+}
+
+.status-pill.status-open {
+  background: #fde68a;
+  color: #92400e;
+}
+
+.status-pill.status-over {
+  background: #fed7aa;
+  color: #9a3412;
+}
+
+.category-row.row-done td {
+  background: color-mix(in srgb, var(--done-bg) 70%, transparent);
+}
+
+.category-row.row-open td {
+  background: color-mix(in srgb, var(--open-bg) 55%, transparent);
+}
+
+.category-row.row-over td {
+  background: color-mix(in srgb, var(--over-bg) 75%, transparent);
+}
+
+.num.status-done {
+  color: var(--done);
+  font-weight: 700;
+}
+
+.num.status-open {
+  color: var(--open);
+  font-weight: 700;
+}
+
+.num.status-over {
+  color: var(--danger);
+  font-weight: 700;
 }
 
 .section-totals {
@@ -531,6 +673,10 @@ button[type='submit'] {
   border-radius: 8px;
   padding: 0.5rem 0.9rem;
   font-weight: 600;
+}
+
+.expand-btn .status-pill {
+  margin-left: 0.15rem;
 }
 
 button.primary:hover:not(:disabled),

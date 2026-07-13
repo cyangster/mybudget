@@ -1,5 +1,6 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { formatCurrency } from '../lib/format'
+import { amountStatus, statusLabel } from '../lib/status'
 import type { BudgetSection, Category, CategoryEntry } from '../types'
 import { SECTION_LABELS } from '../types'
 import { CategoryRow } from './CategoryRow'
@@ -65,6 +66,8 @@ export function BudgetSectionView({
         ? 'negative'
         : ''
 
+  const sectionStatus = amountStatus(totals.budgeted, totals.spent)
+
   async function handleAdd(e: FormEvent) {
     e.preventDefault()
     await onAdd(section, newName.trim() || 'New category')
@@ -73,9 +76,16 @@ export function BudgetSectionView({
   }
 
   return (
-    <section className="budget-section">
+    <section className={`budget-section section-${section} status-${isIncome ? 'empty' : sectionStatus}`}>
       <header className="section-header">
-        <h2>{SECTION_LABELS[section]}</h2>
+        <div className="section-title-row">
+          <h2>{SECTION_LABELS[section]}</h2>
+          {!isIncome && sectionStatus !== 'empty' && (
+            <span className={`status-pill status-${sectionStatus}`}>
+              {statusLabel(sectionStatus)}
+            </span>
+          )}
+        </div>
         {!isIncome && (
           <div className="section-totals" aria-label={`${SECTION_LABELS[section]} totals`}>
             <div>

@@ -5,6 +5,7 @@ import {
   parseAmount,
   todayDateInput,
 } from '../lib/format'
+import { amountStatus, statusLabel } from '../lib/status'
 import type { Category, CategoryEntry } from '../types'
 
 interface CategoryRowProps {
@@ -61,8 +62,17 @@ export function CategoryRow({
   const [editNotes, setEditNotes] = useState('')
 
   const remaining = category.budgeted_amount - category.actual_amount
+  const status = isIncome
+    ? 'empty'
+    : amountStatus(category.budgeted_amount, category.actual_amount)
   const remainingClass =
-    remaining > 0 ? 'positive' : remaining < 0 ? 'negative' : ''
+    status === 'done'
+      ? 'status-done'
+      : status === 'over'
+        ? 'status-over'
+        : status === 'open'
+          ? 'status-open'
+          : ''
 
   function startEdit() {
     setName(category.name)
@@ -175,7 +185,7 @@ export function CategoryRow({
 
   return (
     <>
-      <tr className={`category-row ${expanded ? 'expanded' : ''}`}>
+      <tr className={`category-row ${expanded ? 'expanded' : ''} row-${status}`}>
         <td className="name-cell">
           {!isIncome ? (
             <button
@@ -189,6 +199,11 @@ export function CategoryRow({
               {category.name}
               {entries.length > 0 && (
                 <span className="entry-count">{entries.length}</span>
+              )}
+              {status !== 'empty' && (
+                <span className={`status-pill status-${status}`}>
+                  {statusLabel(status)}
+                </span>
               )}
             </button>
           ) : (

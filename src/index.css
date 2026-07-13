@@ -1,17 +1,37 @@
 :root {
   color-scheme: light;
-  --bg: #f3f5f7;
+  --bg: #eef2f4;
   --surface: #ffffff;
-  --text: #1a2330;
-  --muted: #5c6b7a;
-  --border: #d5dde5;
-  --accent: #1f6f5b;
-  --accent-hover: #185a4a;
-  --danger: #b42318;
-  --positive: #1f6f5b;
-  --negative: #b42318;
-  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 12px rgba(16, 24, 40, 0.04);
-  --radius: 10px;
+  --text: #15202b;
+  --muted: #5a6b7a;
+  --border: #d0dae3;
+  --accent: #0f766e;
+  --accent-hover: #0d5f59;
+  --danger: #c2410c;
+  --positive: #15803d;
+  --negative: #c2410c;
+  --open: #b45309;
+  --done: #15803d;
+  --done-bg: #ecfdf3;
+  --done-border: #86efac;
+  --open-bg: #fffbeb;
+  --open-border: #fcd34d;
+  --over-bg: #fff7ed;
+  --over-border: #fdba74;
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 6px 16px rgba(15, 23, 42, 0.05);
+  --radius: 12px;
+
+  --income: #0f766e;
+  --income-soft: #ccfbf1;
+  --fixed: #1d4ed8;
+  --fixed-soft: #dbeafe;
+  --variable: #c2410c;
+  --variable-soft: #ffedd5;
+  --investments: #047857;
+  --investments-soft: #d1fae5;
+  --savings: #0369a1;
+  --savings-soft: #e0f2fe;
+
   font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.45;
   font-weight: 400;
@@ -33,7 +53,8 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background:
-    radial-gradient(ellipse at top, #e8eef3 0%, transparent 55%),
+    radial-gradient(ellipse at top left, #dce9ef 0%, transparent 45%),
+    radial-gradient(ellipse at top right, #e4efe8 0%, transparent 40%),
     var(--bg);
 }
 
@@ -43,7 +64,8 @@ body {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
