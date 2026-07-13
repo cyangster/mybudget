@@ -6,7 +6,7 @@ import { Summary } from './components/Summary'
 import { BudgetSectionView } from './components/BudgetSection'
 import { useBudget } from './hooks/useBudget'
 import { supabaseConfigured } from './lib/supabase'
-import { SECTION_ORDER } from './types'
+import { DASHBOARD_SECTIONS } from './types'
 import './App.css'
 
 function BudgetApp() {
@@ -95,8 +95,8 @@ function BudgetApp() {
             />
           </div>
 
-          <main className="sections">
-            {SECTION_ORDER.map((section) => (
+          <main className="sections-grid">
+            {DASHBOARD_SECTIONS.map((section) => (
               <BudgetSectionView
                 key={section}
                 section={section}

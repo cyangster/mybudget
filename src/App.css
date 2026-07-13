@@ -1,14 +1,19 @@
 .app-shell {
-  max-width: 920px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 1.25rem 1rem 3rem;
+  padding: 0.85rem 1rem 1rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .app-header {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
+  gap: 0.75rem;
+  margin-bottom: 0;
+  flex-shrink: 0;
 }
 
 .brand {
@@ -50,12 +55,13 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  padding: 0.5rem 0 0.75rem;
-  margin-bottom: 1rem;
+  padding: 0.35rem 0 0.5rem;
+  margin-bottom: 0;
   background: linear-gradient(to bottom, var(--bg) 85%, transparent);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.65rem;
+  flex-shrink: 0;
 }
 
 .income-header {
@@ -219,6 +225,34 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+.sections-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.85rem;
+  flex: 1;
+  min-height: 0;
+  /* Fill remaining viewport under header + income/summary */
+  height: calc(100vh - 15.5rem);
+}
+
+.sections-grid > .budget-section {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sections-grid .table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.sections-grid .section-footer {
+  flex-shrink: 0;
 }
 
 .budget-section {
@@ -894,6 +928,18 @@ button.icon-btn.danger:hover:not(:disabled) {
   margin: 0;
 }
 
+@media (max-width: 900px) {
+  .sections-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    height: auto;
+  }
+
+  .sections-grid > .budget-section {
+    max-height: 22rem;
+  }
+}
+
 @media (max-width: 640px) {
   .sticky-top {
     position: static;
@@ -916,5 +962,9 @@ button.icon-btn.danger:hover:not(:disabled) {
 
   .month-nav select {
     flex: 1;
+  }
+
+  .sections-grid > .budget-section {
+    max-height: none;
   }
 }

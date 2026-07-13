@@ -41,6 +41,14 @@ export const SECTION_ORDER: BudgetSection[] = [
   'savings',
 ]
 
+/** Four cost panels shown in the 2×2 dashboard grid (income lives in the header). */
+export const DASHBOARD_SECTIONS: BudgetSection[] = [
+  'fixed',
+  'variable',
+  'investments',
+  'savings',
+]
+
 export const SECTION_LABELS: Record<BudgetSection, string> = {
   income: 'Income',
   fixed: 'Fixed Costs',
