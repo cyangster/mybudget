@@ -2,13 +2,13 @@
   max-width: none;
   width: 100%;
   margin: 0 auto;
-  padding: 0.65rem 1.25rem 0.75rem;
+  padding: 0.4rem 1.25rem 0.5rem;
   height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.4rem;
   box-sizing: border-box;
 }
 
@@ -18,7 +18,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem 1rem;
+  gap: 0.35rem 1rem;
   margin-bottom: 0;
   flex-shrink: 0;
 }
@@ -32,7 +32,7 @@
 
 .brand h1 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   letter-spacing: -0.02em;
 }
 
@@ -66,33 +66,33 @@
   margin-bottom: 0;
   background: none;
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 0.65rem;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 0.45rem;
   flex-shrink: 0;
 }
 
 .income-header {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.25rem;
   background: linear-gradient(135deg, #f0fdfa 0%, var(--surface) 55%);
   border: 1px solid #99f6e4;
   border-left: 4px solid var(--income);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 0.55rem 0.75rem;
+  padding: 0.4rem 0.65rem;
 }
 
 .income-header-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .income-header-title {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -102,40 +102,40 @@
 .income-header-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  gap: 0.45rem;
 }
 
 .income-block {
   background: var(--income-soft);
   border: 1px solid #99f6e4;
   border-radius: 8px;
-  padding: 0.7rem 0.85rem;
+  padding: 0.35rem 0.55rem;
 }
 
 .income-block h3 {
-  margin: 0 0 0.45rem;
-  font-size: 0.95rem;
+  margin: 0 0 0.2rem;
+  font-size: 0.82rem;
 }
 
 .income-figures {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  gap: 0.45rem;
 }
 
 .income-figures > div {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.05rem;
 }
 
 .income-period {
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   color: var(--muted);
 }
 
 .income-amount {
-  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  font-size: clamp(0.95rem, 1.5vw, 1.15rem);
   font-weight: 700;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
@@ -179,10 +179,10 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 0.55rem 0.75rem;
+  padding: 0.4rem 0.6rem;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.1rem;
   position: relative;
 }
 
@@ -207,14 +207,14 @@
 
 .summary-label {
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .summary-value {
-  font-size: clamp(1.1rem, 2vw, 1.45rem);
+  font-size: clamp(1rem, 1.7vw, 1.3rem);
   font-weight: 700;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
@@ -238,7 +238,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
-  gap: 0.75rem;
+  gap: 0.55rem;
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
@@ -357,13 +357,18 @@
 }
 
 .section-header {
-  padding: 0.55rem 0.75rem;
+  padding: 0.4rem 0.65rem;
   border-bottom: 1px solid var(--border);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.4rem 0.85rem;
+  gap: 0.3rem 0.75rem;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 0.95rem;
 }
 
 .section-income .section-header {
@@ -391,11 +396,6 @@
   align-items: center;
   gap: 0.55rem;
   flex-wrap: wrap;
-}
-
-.section-header h2 {
-  margin: 0;
-  font-size: 1.05rem;
 }
 
 .section-income .section-header h2 {
