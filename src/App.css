@@ -1,13 +1,15 @@
 .app-shell {
-  max-width: 1400px;
+  max-width: none;
+  width: 100%;
   margin: 0 auto;
-  padding: 0.65rem 1rem 0.75rem;
+  padding: 0.65rem 1.25rem 0.75rem;
   height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
+  box-sizing: border-box;
 }
 
 .app-header {
@@ -257,7 +259,8 @@
 
 .sections-grid .table-wrap {
   min-height: 0;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   overscroll-behavior: contain;
 }
 
@@ -266,13 +269,62 @@
   padding: 0.45rem 0.75rem 0.55rem;
 }
 
+.sections-grid table {
+  table-layout: fixed;
+  width: 100%;
+}
+
 .sections-grid th,
 .sections-grid td {
-  padding: 0.45rem 0.65rem;
+  padding: 0.4rem 0.4rem;
+}
+
+.sections-grid .reorder-col,
+.sections-grid .reorder-cell {
+  width: 1.75rem;
+  padding-left: 0.3rem !important;
+  padding-right: 0 !important;
+}
+
+.sections-grid .name-cell {
+  width: auto;
+  overflow: hidden;
+}
+
+.sections-grid .expand-btn {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.sections-grid .num {
+  width: 5.25rem;
+  padding-left: 0.25rem;
+  padding-right: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.sections-grid .actions-col,
+.sections-grid .actions-cell {
+  width: 7.25rem;
+  min-width: 0;
 }
 
 .sections-grid .category-row .actions-cell {
-  min-width: 7.5rem;
+  min-width: 0;
+}
+
+.sections-grid .actions-cell .ghost.small {
+  padding: 0.25rem 0.4rem;
+  font-size: 0.75rem;
+}
+
+.sections-grid .action-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.sections-grid .status-pill {
+  display: none;
 }
 
 .budget-section {
