@@ -159,6 +159,17 @@ export function CategoryRow({
           </>
         )}
         <td className="actions-cell">
+          {!isIncome && (
+            <button
+              type="button"
+              className="ghost small"
+              aria-expanded={expanded}
+              onClick={() => setExpanded((v) => !v)}
+              disabled={busy}
+            >
+              {expanded ? 'Hide costs' : 'Costs'}
+            </button>
+          )}
           <button
             type="button"
             className="icon-btn"

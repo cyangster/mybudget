@@ -162,9 +162,14 @@ tbody tr:last-child td {
 
 .actions-col,
 .actions-cell {
-  width: 5.5rem;
+  width: auto;
+  min-width: 9rem;
   text-align: right;
   white-space: nowrap;
+}
+
+.actions-cell .ghost.small {
+  margin-right: 0.15rem;
 }
 
 .name-cell {
