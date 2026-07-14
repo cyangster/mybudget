@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { FIRST_MONTH_SEED, GROSS_INCOME_NAME, NET_INCOME_NAME } from '../lib/defaults'
+import { MONTHLY_SPEND_BUFFER } from '../lib/buffer'
 import {
   currentMonthLabel,
   nextMonthLabel,
@@ -517,12 +518,10 @@ export function useBudget(userId: string) {
     const grossMonthly = grossSemi * 2
     const netMonthly = netSemi * 2
 
-    // Free cash if every section stays within its budget envelope.
-    const canSpendOnBudget = netMonthly - totalBudgeted
+    // Unbudgeted = monthly net left after all budgeted sections.
+    const unbudgeted = netMonthly - totalBudgeted
 
-    // Overruns by main section (Fixed / Variable / Investments / Savings)
-    // eat into free cash. Underspend stays in that section — it does not
-    // inflate "can spend".
+    // Overruns by main section eat into that unbudgeted pool.
     let sectionOverage = 0
     for (const section of SPEND_SECTIONS) {
       const inSection = spend.filter((c) => c.section === section)
@@ -531,16 +530,19 @@ export function useBudget(userId: string) {
       sectionOverage += Math.max(0, spent - budgeted)
     }
 
-    const canSpendNow = canSpendOnBudget - sectionOverage
+    // What you can actually spend on extras while always keeping $200 unspent.
+    const canSpend = unbudgeted - sectionOverage - MONTHLY_SPEND_BUFFER
     const leftover = netMonthly - totalSpent
 
     return {
       totalBudgeted,
       totalSpent,
       leftover,
+      unbudgeted,
       sectionOverage,
-      canSpendOnBudget,
-      canSpendNow,
+      canSpend,
+      canSpendOnBudget: unbudgeted,
+      canSpendNow: unbudgeted - sectionOverage,
       grossSemi,
       netSemi,
       grossMonthly,

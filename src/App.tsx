@@ -96,9 +96,9 @@ function BudgetApp() {
                 <Summary
                   totalBudgeted={summary.totalBudgeted}
                   totalSpent={summary.totalSpent}
-                  canSpendOnBudget={summary.canSpendOnBudget}
-                  canSpendNow={summary.canSpendNow}
+                  unbudgeted={summary.unbudgeted}
                   sectionOverage={summary.sectionOverage}
+                  canSpend={summary.canSpend}
                 />
               </div>
 

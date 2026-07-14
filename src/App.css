@@ -170,7 +170,7 @@
 
 .summary {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.35rem;
   margin-bottom: 0;
   position: static;
@@ -256,6 +256,13 @@
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--muted);
+}
+
+.summary-buffer-detail {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--muted);
+  line-height: 1.25;
 }
 
 .summary-buffer-value {
