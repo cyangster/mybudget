@@ -233,6 +233,14 @@
   color: var(--negative);
 }
 
+.summary-note {
+  margin-top: 0.1rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--negative);
+  letter-spacing: 0.02em;
+}
+
 .dashboard-body {
   flex: 1 1 auto;
   min-height: 0;
@@ -370,6 +378,51 @@
   justify-content: center;
   gap: 0.2rem;
   box-sizing: border-box;
+}
+
+.spend-day.tone-none {
+  background: #f8fafc;
+  border-color: var(--border);
+}
+
+.spend-day.tone-low {
+  background: var(--done-bg);
+  border-color: color-mix(in srgb, var(--done) 40%, var(--border));
+}
+
+.spend-day.tone-low .spend-day-amt {
+  color: var(--done);
+}
+
+.spend-day.tone-mid {
+  background: var(--open-bg);
+  border-color: color-mix(in srgb, var(--open) 40%, var(--border));
+}
+
+.spend-day.tone-mid .spend-day-amt {
+  color: var(--open);
+}
+
+.spend-day.tone-high {
+  background: var(--over-bg);
+  border-color: color-mix(in srgb, #c2410c 45%, var(--border));
+}
+
+.spend-day.tone-high .spend-day-amt {
+  color: #c2410c;
+}
+
+.spend-day.tone-spike {
+  background: #fef2f2;
+  border-color: color-mix(in srgb, var(--negative) 50%, var(--border));
+}
+
+.spend-day.tone-spike .spend-day-amt {
+  color: var(--negative);
+}
+
+.spend-day.is-today {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--text) 35%, transparent);
 }
 
 .spend-day.empty {

@@ -516,15 +516,29 @@ export function useBudget(userId: string) {
     const netSemi = net?.actual_amount ?? 0
     const grossMonthly = grossSemi * 2
     const netMonthly = netSemi * 2
-    // Costs are monthly; free cash uses monthly net.
+
+    // Free cash if every section stays within its budget envelope.
     const canSpendOnBudget = netMonthly - totalBudgeted
-    const canSpendNow = netMonthly - totalSpent
-    const leftover = canSpendNow
+
+    // Overruns by main section (Fixed / Variable / Investments / Savings)
+    // eat into free cash. Underspend stays in that section — it does not
+    // inflate "can spend".
+    let sectionOverage = 0
+    for (const section of SPEND_SECTIONS) {
+      const inSection = spend.filter((c) => c.section === section)
+      const budgeted = inSection.reduce((sum, c) => sum + c.budgeted_amount, 0)
+      const spent = inSection.reduce((sum, c) => sum + c.actual_amount, 0)
+      sectionOverage += Math.max(0, spent - budgeted)
+    }
+
+    const canSpendNow = canSpendOnBudget - sectionOverage
+    const leftover = netMonthly - totalSpent
 
     return {
       totalBudgeted,
       totalSpent,
       leftover,
+      sectionOverage,
       canSpendOnBudget,
       canSpendNow,
       grossSemi,
