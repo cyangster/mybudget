@@ -4,13 +4,25 @@ import { amountStatus, statusLabel } from '../lib/status'
 interface SummaryProps {
   totalBudgeted: number
   totalSpent: number
-  leftover: number
+  canSpendOnBudget: number
+  canSpendNow: number
 }
 
-export function Summary({ totalBudgeted, totalSpent, leftover }: SummaryProps) {
+export function Summary({
+  totalBudgeted,
+  totalSpent,
+  canSpendOnBudget,
+  canSpendNow,
+}: SummaryProps) {
   const spendStatus = amountStatus(totalBudgeted, totalSpent)
-  const leftoverClass =
-    leftover > 0 ? 'positive' : leftover < 0 ? 'negative' : 'positive'
+  const onBudgetClass =
+    canSpendOnBudget > 0
+      ? 'positive'
+      : canSpendOnBudget < 0
+        ? 'negative'
+        : 'positive'
+  const nowClass =
+    canSpendNow > 0 ? 'positive' : canSpendNow < 0 ? 'negative' : 'positive'
 
   return (
     <section className="summary" aria-label="Budget summary">
@@ -28,11 +40,21 @@ export function Summary({ totalBudgeted, totalSpent, leftover }: SummaryProps) {
         )}
       </div>
       <div
-        className={`summary-item ${leftover >= 0 ? 'tone-done' : 'tone-over'}`}
+        className={`summary-item ${canSpendOnBudget >= 0 ? 'tone-done' : 'tone-over'}`}
+        title="Monthly net income minus everything you've budgeted. If you stick to every budget, this is what's left to spend freely."
       >
-        <span className="summary-label">Leftover (monthly)</span>
-        <span className={`summary-value ${leftoverClass}`}>
-          {formatCurrency(leftover)}
+        <span className="summary-label">Can spend (on budget)</span>
+        <span className={`summary-value ${onBudgetClass}`}>
+          {formatCurrency(canSpendOnBudget)}
+        </span>
+      </div>
+      <div
+        className={`summary-item ${canSpendNow >= 0 ? 'tone-done' : 'tone-over'}`}
+        title="Monthly net income minus what you've actually spent so far this month."
+      >
+        <span className="summary-label">Can spend (now)</span>
+        <span className={`summary-value ${nowClass}`}>
+          {formatCurrency(canSpendNow)}
         </span>
       </div>
     </section>

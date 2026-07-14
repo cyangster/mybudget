@@ -516,13 +516,17 @@ export function useBudget(userId: string) {
     const netSemi = net?.actual_amount ?? 0
     const grossMonthly = grossSemi * 2
     const netMonthly = netSemi * 2
-    // Costs are monthly; leftover uses monthly net.
-    const leftover = netMonthly - totalSpent
+    // Costs are monthly; free cash uses monthly net.
+    const canSpendOnBudget = netMonthly - totalBudgeted
+    const canSpendNow = netMonthly - totalSpent
+    const leftover = canSpendNow
 
     return {
       totalBudgeted,
       totalSpent,
       leftover,
+      canSpendOnBudget,
+      canSpendNow,
       grossSemi,
       netSemi,
       grossMonthly,
