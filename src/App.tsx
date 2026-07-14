@@ -125,6 +125,7 @@ function BudgetApp() {
               <SpendCalendar
                 monthLabel={selectedMonth.label}
                 dailyTotals={dailySpendTotals}
+                totalBudgeted={summary.totalBudgeted}
               />
             )}
           </div>

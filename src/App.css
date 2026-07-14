@@ -288,6 +288,54 @@
   color: var(--text);
 }
 
+.spend-calendar-pace {
+  font-size: 0.68rem !important;
+  font-weight: 500 !important;
+  color: var(--muted) !important;
+}
+
+.spend-calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.spend-legend-item {
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.15rem 0.35rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: #f8fafc;
+}
+
+.spend-legend-item.tone-low {
+  background: var(--done-bg);
+  border-color: color-mix(in srgb, var(--done) 35%, var(--border));
+  color: var(--done);
+}
+
+.spend-legend-item.tone-mid {
+  background: var(--open-bg);
+  border-color: color-mix(in srgb, var(--open) 35%, var(--border));
+  color: var(--open);
+}
+
+.spend-legend-item.tone-high {
+  background: var(--over-bg);
+  border-color: color-mix(in srgb, #c2410c 35%, var(--border));
+  color: #c2410c;
+}
+
+.spend-legend-item.tone-spike {
+  background: #fef2f2;
+  border-color: color-mix(in srgb, var(--negative) 40%, var(--border));
+  color: var(--negative);
+}
+
 .spend-calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
