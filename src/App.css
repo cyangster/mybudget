@@ -241,6 +241,38 @@
   letter-spacing: 0.02em;
 }
 
+.summary-buffer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  margin-top: 0.25rem;
+  padding-top: 0.25rem;
+  border-top: 1px dashed var(--border);
+}
+
+.summary-buffer-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.summary-buffer-value {
+  font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-buffer-value.positive {
+  color: var(--positive);
+}
+
+.summary-buffer-value.negative {
+  color: var(--negative);
+}
+
 .dashboard-body {
   flex: 1 1 auto;
   min-height: 0;

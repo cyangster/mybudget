@@ -1,5 +1,6 @@
 import { formatCurrency } from '../lib/format'
 import { amountStatus, statusLabel } from '../lib/status'
+import { MONTHLY_SPEND_BUFFER } from '../lib/buffer'
 
 interface SummaryProps {
   totalBudgeted: number
@@ -7,6 +8,10 @@ interface SummaryProps {
   canSpendOnBudget: number
   canSpendNow: number
   sectionOverage: number
+}
+
+function spendClass(amount: number) {
+  return amount > 0 ? 'positive' : amount < 0 ? 'negative' : 'positive'
 }
 
 export function Summary({
@@ -17,19 +22,13 @@ export function Summary({
   sectionOverage,
 }: SummaryProps) {
   const spendStatus = amountStatus(totalBudgeted, totalSpent)
-  const onBudgetClass =
-    canSpendOnBudget > 0
-      ? 'positive'
-      : canSpendOnBudget < 0
-        ? 'negative'
-        : 'positive'
-  const nowClass =
-    canSpendNow > 0 ? 'positive' : canSpendNow < 0 ? 'negative' : 'positive'
+  const plannedAfterBuffer = canSpendOnBudget - MONTHLY_SPEND_BUFFER
+  const nowAfterBuffer = canSpendNow - MONTHLY_SPEND_BUFFER
 
   const nowTitle =
     sectionOverage > 0
-      ? `On-budget free cash (${formatCurrency(canSpendOnBudget)}) minus ${formatCurrency(sectionOverage)} over across sections.`
-      : 'Same as on-budget free cash until a main section goes over its budget.'
+      ? `Planned extras (${formatCurrency(canSpendOnBudget)}) minus ${formatCurrency(sectionOverage)} over across sections.`
+      : 'Same as planned extras until a main section goes over its budget.'
 
   return (
     <section className="summary" aria-label="Budget summary">
@@ -48,26 +47,40 @@ export function Summary({
       </div>
       <div
         className={`summary-item ${canSpendOnBudget >= 0 ? 'tone-done' : 'tone-over'}`}
-        title="Monthly net minus all budgets. What’s left if every section stays on budget."
+        title="Extras left if every section stays on budget (before your $200 buffer)."
       >
-        <span className="summary-label">Can spend (on budget)</span>
-        <span className={`summary-value ${onBudgetClass}`}>
+        <span className="summary-label">Can spend (planned)</span>
+        <span className={`summary-value ${spendClass(canSpendOnBudget)}`}>
           {formatCurrency(canSpendOnBudget)}
+        </span>
+        <span className="summary-buffer">
+          <span className="summary-buffer-label">
+            After ${MONTHLY_SPEND_BUFFER} buffer
+          </span>
+          <span className={`summary-buffer-value ${spendClass(plannedAfterBuffer)}`}>
+            {formatCurrency(plannedAfterBuffer)}
+          </span>
         </span>
       </div>
       <div
         className={`summary-item ${canSpendNow >= 0 ? 'tone-done' : 'tone-over'}`}
         title={nowTitle}
       >
-        <span className="summary-label">Can spend (now)</span>
-        <span className={`summary-value ${nowClass}`}>
+        <span className="summary-label">Can spend (after overruns)</span>
+        <span className={`summary-value ${spendClass(canSpendNow)}`}>
           {formatCurrency(canSpendNow)}
         </span>
-        {sectionOverage > 0 && (
-          <span className="summary-note">
-            −{formatCurrency(sectionOverage)} over
+        <span className="summary-buffer">
+          <span className="summary-buffer-label">
+            After ${MONTHLY_SPEND_BUFFER} buffer
+            {sectionOverage > 0
+              ? ` · −${formatCurrency(sectionOverage)} over`
+              : ''}
           </span>
-        )}
+          <span className={`summary-buffer-value ${spendClass(nowAfterBuffer)}`}>
+            {formatCurrency(nowAfterBuffer)}
+          </span>
+        </span>
       </div>
     </section>
   )
