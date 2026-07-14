@@ -8,6 +8,7 @@ interface SummaryProps {
   unbudgeted: number
   sectionOverage: number
   canSpend: number
+  canSpendNoBuffer: number
 }
 
 function spendClass(amount: number) {
@@ -20,15 +21,21 @@ export function Summary({
   unbudgeted,
   sectionOverage,
   canSpend,
+  canSpendNoBuffer,
 }: SummaryProps) {
   const spendStatus = amountStatus(totalBudgeted, totalSpent)
 
-  const detailParts = [
+  const bufferDetail = [
     `${formatCurrency(unbudgeted)} unbudgeted`,
     `− ${formatCurrency(MONTHLY_SPEND_BUFFER)} buffer`,
   ]
   if (sectionOverage > 0) {
-    detailParts.push(`− ${formatCurrency(sectionOverage)} overspent`)
+    bufferDetail.push(`− ${formatCurrency(sectionOverage)} overspent`)
+  }
+
+  const noBufferDetail = [`${formatCurrency(unbudgeted)} unbudgeted`]
+  if (sectionOverage > 0) {
+    noBufferDetail.push(`− ${formatCurrency(sectionOverage)} overspent`)
   }
 
   return (
@@ -47,8 +54,8 @@ export function Summary({
         )}
       </div>
       <div
-        className={`summary-item summary-item-can-spend ${canSpend >= 0 ? 'tone-done' : 'tone-over'}`}
-        title={`Unbudgeted money you can use for extras, after always keeping $${MONTHLY_SPEND_BUFFER} unspent.`}
+        className={`summary-item ${canSpend >= 0 ? 'tone-done' : 'tone-over'}`}
+        title={`Unbudgeted money for extras, after always keeping $${MONTHLY_SPEND_BUFFER} unspent.`}
       >
         <span className="summary-label">Can spend</span>
         <span className={`summary-value ${spendClass(canSpend)}`}>
@@ -58,7 +65,22 @@ export function Summary({
           <span className="summary-buffer-label">
             Keeps ${MONTHLY_SPEND_BUFFER} unspent
           </span>
-          <span className="summary-buffer-detail">{detailParts.join(' ')}</span>
+          <span className="summary-buffer-detail">{bufferDetail.join(' ')}</span>
+        </span>
+      </div>
+      <div
+        className={`summary-item ${canSpendNoBuffer >= 0 ? 'tone-done' : 'tone-over'}`}
+        title="All unbudgeted money for extras, with no $200 buffer held back."
+      >
+        <span className="summary-label">Can spend (no buffer)</span>
+        <span className={`summary-value ${spendClass(canSpendNoBuffer)}`}>
+          {formatCurrency(canSpendNoBuffer)}
+        </span>
+        <span className="summary-buffer">
+          <span className="summary-buffer-label">Ignores $200 buffer</span>
+          <span className="summary-buffer-detail">
+            {noBufferDetail.join(' ')}
+          </span>
         </span>
       </div>
     </section>

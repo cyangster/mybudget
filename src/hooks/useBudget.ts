@@ -531,7 +531,8 @@ export function useBudget(userId: string) {
     }
 
     // What you can actually spend on extras while always keeping $200 unspent.
-    const canSpend = unbudgeted - sectionOverage - MONTHLY_SPEND_BUFFER
+    const canSpendNoBuffer = unbudgeted - sectionOverage
+    const canSpend = canSpendNoBuffer - MONTHLY_SPEND_BUFFER
     const leftover = netMonthly - totalSpent
 
     return {
@@ -541,8 +542,9 @@ export function useBudget(userId: string) {
       unbudgeted,
       sectionOverage,
       canSpend,
+      canSpendNoBuffer,
       canSpendOnBudget: unbudgeted,
-      canSpendNow: unbudgeted - sectionOverage,
+      canSpendNow: canSpendNoBuffer,
       grossSemi,
       netSemi,
       grossMonthly,

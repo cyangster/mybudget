@@ -99,6 +99,7 @@ function BudgetApp() {
                   unbudgeted={summary.unbudgeted}
                   sectionOverage={summary.sectionOverage}
                   canSpend={summary.canSpend}
+                  canSpendNoBuffer={summary.canSpendNoBuffer}
                 />
               </div>
 
