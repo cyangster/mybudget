@@ -108,7 +108,14 @@ export function IncomeHeader({
           </p>
         </form>
       ) : (
-        <div className="income-header-grid">
+        <div
+          className="income-header-grid"
+          title="Double-click to edit"
+          onDoubleClick={() => {
+            if (busy || (!grossCategoryId && !netCategoryId)) return
+            setEditing(true)
+          }}
+        >
           <div className="income-block">
             <h3>Gross</h3>
             <div className="income-figures">

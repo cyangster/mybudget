@@ -231,7 +231,17 @@ export function CategoryCostsModal({
                     </form>
                   </li>
                 ) : (
-                  <li key={entry.id} className="entry-item">
+                  <li
+                    key={entry.id}
+                    className="entry-item"
+                    title={onUpdateEntry ? 'Double-click to edit' : undefined}
+                    onDoubleClick={(e) => {
+                      if (!onUpdateEntry || busy) return
+                      const target = e.target as HTMLElement
+                      if (target.closest('button')) return
+                      startEditEntry(entry)
+                    }}
+                  >
                     <span className="entry-date">
                       {displayEntryDate(entry.entry_date)}
                     </span>

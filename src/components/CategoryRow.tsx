@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { formatCurrency, parseAmount } from '../lib/format'
 import { amountStatus, statusLabel } from '../lib/status'
 import type { Category, CategoryEntry } from '../types'
@@ -60,6 +60,7 @@ export function CategoryRow({
   const [name, setName] = useState(category.name)
   const [budgeted, setBudgeted] = useState(String(category.budgeted_amount))
   const [actual, setActual] = useState(String(category.actual_amount))
+  const costsClickTimer = useRef<number | null>(null)
 
   const colCount = isIncome ? 3 : 6
   const remaining = category.budgeted_amount - category.actual_amount
@@ -76,10 +77,25 @@ export function CategoryRow({
           : ''
 
   function startEdit() {
+    if (costsClickTimer.current != null) {
+      window.clearTimeout(costsClickTimer.current)
+      costsClickTimer.current = null
+    }
+    setCostsOpen(false)
     setName(category.name)
     setBudgeted(String(category.budgeted_amount))
     setActual(String(category.actual_amount))
     setEditing(true)
+  }
+
+  function openCostsDelayed() {
+    if (costsClickTimer.current != null) {
+      window.clearTimeout(costsClickTimer.current)
+    }
+    costsClickTimer.current = window.setTimeout(() => {
+      costsClickTimer.current = null
+      setCostsOpen(true)
+    }, 250)
   }
 
   function cancel() {
@@ -156,6 +172,12 @@ export function CategoryRow({
     <>
       <tr
         className={`category-row row-${status} ${isDragging ? 'dragging' : ''} ${isDropTarget ? 'drop-target' : ''}`}
+        title="Double-click to edit"
+        onDoubleClick={(e) => {
+          const target = e.target as HTMLElement
+          if (target.closest('button, a, input')) return
+          startEdit()
+        }}
         onDragOver={(e) => {
           if (!onDragOver) return
           e.preventDefault()
@@ -195,7 +217,13 @@ export function CategoryRow({
               aria-haspopup="dialog"
               aria-expanded={costsOpen}
               aria-label={`Open costs for ${category.name}`}
-              onClick={() => setCostsOpen(true)}
+              title="Click for costs · double-click to edit"
+              onClick={openCostsDelayed}
+              onDoubleClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                startEdit()
+              }}
             >
               <span className="chevron">▸</span>
               {category.name}
