@@ -96,6 +96,7 @@ function BudgetApp() {
                 <Summary
                   totalBudgeted={summary.totalBudgeted}
                   totalSpent={summary.totalSpent}
+                  leftover={summary.leftover}
                   unbudgeted={summary.unbudgeted}
                   sectionOverage={summary.sectionOverage}
                   canSpend={summary.canSpend}

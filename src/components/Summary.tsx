@@ -5,6 +5,7 @@ import { MONTHLY_SPEND_BUFFER } from '../lib/buffer'
 interface SummaryProps {
   totalBudgeted: number
   totalSpent: number
+  leftover: number
   unbudgeted: number
   sectionOverage: number
   canSpend: number
@@ -18,6 +19,7 @@ function spendClass(amount: number) {
 export function Summary({
   totalBudgeted,
   totalSpent,
+  leftover,
   unbudgeted,
   sectionOverage,
   canSpend,
@@ -52,6 +54,12 @@ export function Summary({
             {statusLabel(spendStatus)}
           </span>
         )}
+        <span className="summary-buffer">
+          <span className="summary-buffer-label">Leftover</span>
+          <span className={`summary-buffer-value ${spendClass(leftover)}`}>
+            {formatCurrency(leftover)}
+          </span>
+        </span>
       </div>
       <div
         className={`summary-item ${canSpend >= 0 ? 'tone-done' : 'tone-over'}`}
