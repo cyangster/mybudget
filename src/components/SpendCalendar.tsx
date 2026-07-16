@@ -5,6 +5,7 @@ interface SpendCalendarProps {
   monthLabel: string
   dailyTotals: Record<string, number>
   totalBudgeted: number
+  leftover: number
 }
 
 type DayTone = 'none' | 'low' | 'mid' | 'high' | 'spike'
@@ -64,10 +65,15 @@ function toneLabel(tone: DayTone, amount: number, dailyPace: number): string {
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
+function leftoverClass(amount: number) {
+  return amount > 0 ? 'positive' : amount < 0 ? 'negative' : 'positive'
+}
+
 export function SpendCalendar({
   monthLabel,
   dailyTotals,
   totalBudgeted,
+  leftover,
 }: SpendCalendarProps) {
   const { cells, dailyPace } = useMemo(() => {
     const [y, m] = monthLabel.split('-').map(Number)
@@ -172,6 +178,18 @@ export function SpendCalendar({
           ),
         )}
       </div>
+
+      <footer
+        className="spend-calendar-footer"
+        title="Net monthly income minus total spent"
+      >
+        <span className="spend-calendar-footer-label">Leftover</span>
+        <span
+          className={`spend-calendar-footer-value ${leftoverClass(leftover)}`}
+        >
+          {formatCurrency(leftover)}
+        </span>
+      </footer>
     </aside>
   )
 }

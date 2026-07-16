@@ -402,6 +402,38 @@
   align-content: start;
 }
 
+.spend-calendar-footer {
+  margin-top: auto;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.spend-calendar-footer-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.spend-calendar-footer-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.spend-calendar-footer-value.positive {
+  color: var(--positive);
+}
+
+.spend-calendar-footer-value.negative {
+  color: var(--negative);
+}
+
 .spend-day {
   width: 100%;
   min-width: 0;

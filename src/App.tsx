@@ -129,6 +129,7 @@ function BudgetApp() {
                 monthLabel={selectedMonth.label}
                 dailyTotals={dailySpendTotals}
                 totalBudgeted={summary.totalBudgeted}
+                leftover={summary.leftover}
               />
             )}
           </div>
