@@ -898,6 +898,43 @@ tbody tr:last-child td {
   white-space: nowrap;
 }
 
+.include-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-right: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+}
+
+.include-toggle input {
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.display-only-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.category-row.excluded-from-budget td {
+  opacity: 0.72;
+}
+
 .actions-cell .ghost.small {
   margin-right: 0.15rem;
   vertical-align: middle;
