@@ -17,7 +17,12 @@ interface CategoryRowProps {
   onDragEnd?: () => void
   onSave: (
     id: string,
-    patch: Partial<Pick<Category, 'name' | 'budgeted_amount' | 'actual_amount'>>,
+    patch: Partial<
+      Pick<
+        Category,
+        'name' | 'budgeted_amount' | 'actual_amount' | 'excluded_from_budget'
+      >
+    >,
   ) => Promise<void>
   onDelete?: (id: string) => Promise<void>
   onAddEntry?: (
@@ -171,11 +176,11 @@ export function CategoryRow({
   return (
     <>
       <tr
-        className={`category-row row-${status} ${isDragging ? 'dragging' : ''} ${isDropTarget ? 'drop-target' : ''}`}
+        className={`category-row row-${status} ${isDragging ? 'dragging' : ''} ${isDropTarget ? 'drop-target' : ''} ${!isIncome && category.excluded_from_budget ? 'excluded-from-budget' : ''}`}
         title="Double-click to edit"
         onDoubleClick={(e) => {
           const target = e.target as HTMLElement
-          if (target.closest('button, a, input')) return
+          if (target.closest('button, a, input, label')) return
           startEdit()
         }}
         onDragOver={(e) => {
@@ -227,10 +232,15 @@ export function CategoryRow({
             >
               <span className="chevron">▸</span>
               {category.name}
+              {category.excluded_from_budget && (
+                <span className="display-only-pill" title="Shown only — not in budget totals">
+                  Display only
+                </span>
+              )}
               {entries.length > 0 && (
                 <span className="entry-count">{entries.length}</span>
               )}
-              {status !== 'empty' && (
+              {status !== 'empty' && !category.excluded_from_budget && (
                 <span className={`status-pill status-${status}`}>
                   {statusLabel(status)}
                 </span>
@@ -258,6 +268,29 @@ export function CategoryRow({
           </>
         )}
         <td className="actions-cell">
+          {!isIncome && (
+            <label
+              className="include-toggle"
+              title={
+                category.excluded_from_budget
+                  ? 'Off: shown on the card but not counted in totals'
+                  : 'On: included in section and budget totals'
+              }
+            >
+              <input
+                type="checkbox"
+                checked={!category.excluded_from_budget}
+                disabled={busy}
+                onChange={(e) => {
+                  void onSave(category.id, {
+                    excluded_from_budget: !e.target.checked,
+                  })
+                }}
+                aria-label={`Include ${category.name} in budget totals`}
+              />
+              <span>In totals</span>
+            </label>
+          )}
           {!isIncome && (
             <button
               type="button"

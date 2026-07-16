@@ -6,6 +6,7 @@ export interface SeedCategory {
   budgeted_amount: number
   actual_amount: number
   sort_order: number
+  excluded_from_budget?: boolean
 }
 
 /** Default categories when creating the first month (nothing to copy). */

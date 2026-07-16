@@ -20,6 +20,8 @@ export interface Category {
   budgeted_amount: number
   actual_amount: number
   sort_order: number
+  /** When true, show on the section card but skip budget/spend totals. */
+  excluded_from_budget: boolean
 }
 
 export interface CategoryEntry {

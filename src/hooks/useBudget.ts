@@ -19,6 +19,7 @@ function toCategory(row: Category): Category {
     ...row,
     budgeted_amount: Number(row.budgeted_amount),
     actual_amount: Number(row.actual_amount),
+    excluded_from_budget: Boolean(row.excluded_from_budget),
   }
 }
 
@@ -220,6 +221,7 @@ export function useBudget(userId: string) {
               actual_amount:
                 cat.section === 'income' ? cat.actual_amount : 0,
               sort_order: cat.sort_order,
+              excluded_from_budget: cat.excluded_from_budget,
             }
           })
         }
@@ -233,6 +235,7 @@ export function useBudget(userId: string) {
               budgeted_amount: s.budgeted_amount,
               actual_amount: s.actual_amount,
               sort_order: s.sort_order,
+              excluded_from_budget: s.excluded_from_budget ?? false,
             })),
           )
 
@@ -270,6 +273,7 @@ export function useBudget(userId: string) {
         budgeted_amount: 0,
         actual_amount: 0,
         sort_order,
+        excluded_from_budget: false,
       })
 
       setBusy(false)
@@ -285,7 +289,12 @@ export function useBudget(userId: string) {
   const updateCategory = useCallback(
     async (
       id: string,
-      patch: Partial<Pick<Category, 'name' | 'budgeted_amount' | 'actual_amount'>>,
+      patch: Partial<
+        Pick<
+          Category,
+          'name' | 'budgeted_amount' | 'actual_amount' | 'excluded_from_budget'
+        >
+      >,
     ) => {
       if (!selectedMonthId) return
       setBusy(true)
@@ -497,7 +506,9 @@ export function useBudget(userId: string) {
   )
 
   const summary = useMemo(() => {
-    const spend = categories.filter((c) => SPEND_SECTIONS.includes(c.section))
+    const spend = categories.filter(
+      (c) => SPEND_SECTIONS.includes(c.section) && !c.excluded_from_budget,
+    )
     const totalBudgeted = spend.reduce((sum, c) => sum + c.budgeted_amount, 0)
     const totalSpent = spend.reduce((sum, c) => sum + c.actual_amount, 0)
 
@@ -577,7 +588,9 @@ export function useBudget(userId: string) {
   const dailySpendTotals = useMemo(() => {
     const spendIds = new Set(
       categories
-        .filter((c) => SPEND_SECTIONS.includes(c.section))
+        .filter(
+          (c) => SPEND_SECTIONS.includes(c.section) && !c.excluded_from_budget,
+        )
         .map((c) => c.id),
     )
     const totals: Record<string, number> = {}

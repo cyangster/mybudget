@@ -13,7 +13,12 @@ interface BudgetSectionProps {
   onAdd: (section: BudgetSection, name: string) => Promise<void>
   onSave: (
     id: string,
-    patch: Partial<Pick<Category, 'name' | 'budgeted_amount' | 'actual_amount'>>,
+    patch: Partial<
+      Pick<
+        Category,
+        'name' | 'budgeted_amount' | 'actual_amount' | 'excluded_from_budget'
+      >
+    >,
   ) => Promise<void>
   onDelete: (id: string) => Promise<void>
   onAddEntry: (
@@ -56,8 +61,9 @@ export function BudgetSectionView({
   const [dropTargetId, setDropTargetId] = useState<string | null>(null)
 
   const totals = useMemo(() => {
-    const budgeted = categories.reduce((sum, c) => sum + c.budgeted_amount, 0)
-    const spent = categories.reduce((sum, c) => sum + c.actual_amount, 0)
+    const counted = categories.filter((c) => !c.excluded_from_budget)
+    const budgeted = counted.reduce((sum, c) => sum + c.budgeted_amount, 0)
+    const spent = counted.reduce((sum, c) => sum + c.actual_amount, 0)
     return {
       budgeted,
       spent,
