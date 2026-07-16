@@ -303,7 +303,7 @@
   width: 26rem;
   min-height: 0;
   height: 100%;
-  overflow: auto;
+  overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -313,6 +313,15 @@
   flex-direction: column;
   gap: 0.5rem;
   box-sizing: border-box;
+}
+
+.spend-calendar-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .spend-calendar-header {
@@ -403,7 +412,7 @@
 }
 
 .spend-calendar-footer {
-  margin-top: auto;
+  flex: 0 0 auto;
   padding-top: 0.65rem;
   border-top: 1px solid var(--border);
   display: flex;

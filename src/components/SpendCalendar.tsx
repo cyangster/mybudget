@@ -146,37 +146,39 @@ export function SpendCalendar({
         )}
       </header>
 
-      <div className="spend-calendar-legend" aria-label="Spend color legend">
-        <span className="spend-legend-item tone-none">None</span>
-        <span className="spend-legend-item tone-low">Light</span>
-        <span className="spend-legend-item tone-mid">On pace</span>
-        <span className="spend-legend-item tone-high">High</span>
-        <span className="spend-legend-item tone-spike">Spike</span>
-      </div>
+      <div className="spend-calendar-scroll">
+        <div className="spend-calendar-legend" aria-label="Spend color legend">
+          <span className="spend-legend-item tone-none">None</span>
+          <span className="spend-legend-item tone-low">Light</span>
+          <span className="spend-legend-item tone-mid">On pace</span>
+          <span className="spend-legend-item tone-high">High</span>
+          <span className="spend-legend-item tone-spike">Spike</span>
+        </div>
 
-      <div className="spend-calendar-weekdays">
-        {WEEKDAYS.map((d, i) => (
-          <span key={`${d}-${i}`}>{d}</span>
-        ))}
-      </div>
+        <div className="spend-calendar-weekdays">
+          {WEEKDAYS.map((d, i) => (
+            <span key={`${d}-${i}`}>{d}</span>
+          ))}
+        </div>
 
-      <div className="spend-calendar-grid">
-        {cells.map((cell) =>
-          cell.day === null ? (
-            <div key={cell.key} className="spend-day empty" />
-          ) : (
-            <div
-              key={cell.key}
-              className={`spend-day tone-${cell.tone}${cell.isToday ? ' is-today' : ''}`}
-              title={`${formatCurrency(cell.amount)} on day ${cell.day} — ${toneLabel(cell.tone, cell.amount, dailyPace)}`}
-            >
-              <span className="spend-day-num">{cell.day}</span>
-              <span className="spend-day-amt">
-                {formatDaySpend(cell.amount)}
-              </span>
-            </div>
-          ),
-        )}
+        <div className="spend-calendar-grid">
+          {cells.map((cell) =>
+            cell.day === null ? (
+              <div key={cell.key} className="spend-day empty" />
+            ) : (
+              <div
+                key={cell.key}
+                className={`spend-day tone-${cell.tone}${cell.isToday ? ' is-today' : ''}`}
+                title={`${formatCurrency(cell.amount)} on day ${cell.day} — ${toneLabel(cell.tone, cell.amount, dailyPace)}`}
+              >
+                <span className="spend-day-num">{cell.day}</span>
+                <span className="spend-day-amt">
+                  {formatDaySpend(cell.amount)}
+                </span>
+              </div>
+            ),
+          )}
+        </div>
       </div>
 
       <footer
