@@ -128,9 +128,11 @@ export function useBudget(userId: string) {
         return
       }
 
-      const latest = list[list.length - 1]
-      setSelectedMonthId(latest.id)
-      await loadCategories(latest.id)
+      const currentLabel = currentMonthLabel()
+      const current =
+        list.find((m) => m.label === currentLabel) ?? list[list.length - 1]
+      setSelectedMonthId(current.id)
+      await loadCategories(current.id)
       if (!cancelled) setLoading(false)
     }
 
