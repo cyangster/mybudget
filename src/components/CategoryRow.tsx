@@ -216,36 +216,51 @@ export function CategoryRow({
         )}
         <td className="name-cell">
           {!isIncome ? (
-            <button
-              type="button"
-              className="expand-btn"
-              aria-haspopup="dialog"
-              aria-expanded={costsOpen}
-              aria-label={`Open costs for ${category.name}`}
-              title="Click for costs · double-click to edit"
-              onClick={openCostsDelayed}
-              onDoubleClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                startEdit()
-              }}
-            >
-              <span className="chevron">▸</span>
-              {category.name}
-              {category.excluded_from_budget && (
-                <span className="display-only-pill" title="Shown only — not in budget totals">
-                  Display only
-                </span>
-              )}
-              {entries.length > 0 && (
-                <span className="entry-count">{entries.length}</span>
-              )}
-              {status !== 'empty' && !category.excluded_from_budget && (
-                <span className={`status-pill status-${status}`}>
-                  {statusLabel(status)}
-                </span>
-              )}
-            </button>
+            <div className="name-with-toggle">
+              <input
+                type="checkbox"
+                className="include-check"
+                checked={!category.excluded_from_budget}
+                disabled={busy}
+                title={
+                  category.excluded_from_budget
+                    ? 'Off: shown only, not in totals'
+                    : 'On: included in totals'
+                }
+                aria-label={`Include ${category.name} in budget totals`}
+                onChange={(e) => {
+                  void onSave(category.id, {
+                    excluded_from_budget: !e.target.checked,
+                  })
+                }}
+                onClick={(e) => e.stopPropagation()}
+              />
+              <button
+                type="button"
+                className="expand-btn"
+                aria-haspopup="dialog"
+                aria-expanded={costsOpen}
+                aria-label={`Open costs for ${category.name}`}
+                title="Click for costs · double-click to edit"
+                onClick={openCostsDelayed}
+                onDoubleClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  startEdit()
+                }}
+              >
+                <span className="chevron">▸</span>
+                {category.name}
+                {entries.length > 0 && (
+                  <span className="entry-count">{entries.length}</span>
+                )}
+                {status !== 'empty' && !category.excluded_from_budget && (
+                  <span className={`status-pill status-${status}`}>
+                    {statusLabel(status)}
+                  </span>
+                )}
+              </button>
+            </div>
           ) : (
             category.name
           )}
@@ -268,29 +283,6 @@ export function CategoryRow({
           </>
         )}
         <td className="actions-cell">
-          {!isIncome && (
-            <label
-              className="include-toggle"
-              title={
-                category.excluded_from_budget
-                  ? 'Off: shown on the card but not counted in totals'
-                  : 'On: included in section and budget totals'
-              }
-            >
-              <input
-                type="checkbox"
-                checked={!category.excluded_from_budget}
-                disabled={busy}
-                onChange={(e) => {
-                  void onSave(category.id, {
-                    excluded_from_budget: !e.target.checked,
-                  })
-                }}
-                aria-label={`Include ${category.name} in budget totals`}
-              />
-              <span>In totals</span>
-            </label>
-          )}
           {!isIncome && (
             <button
               type="button"
