@@ -16,6 +16,10 @@ interface CategoryCostsModalProps {
   paymentCards: PaymentCard[]
   open: boolean
   onClose: () => void
+  onSaveCategory?: (
+    id: string,
+    patch: Partial<Pick<Category, 'name' | 'budgeted_amount'>>,
+  ) => Promise<void>
   onAddEntry?: (
     categoryId: string,
     amount: number,
@@ -45,6 +49,7 @@ export function CategoryCostsModal({
   paymentCards,
   open,
   onClose,
+  onSaveCategory,
   onAddEntry,
   onUpdateEntry,
   onDeleteEntry,
@@ -52,6 +57,11 @@ export function CategoryCostsModal({
   busy,
 }: CategoryCostsModalProps) {
   const [visible, setVisible] = useState(false)
+  const [editingCategory, setEditingCategory] = useState(false)
+  const [categoryName, setCategoryName] = useState(category.name)
+  const [categoryBudgeted, setCategoryBudgeted] = useState(
+    String(category.budgeted_amount),
+  )
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null)
   const [entryAmount, setEntryAmount] = useState('')
   const [entryLabel, setEntryLabel] = useState('')
@@ -102,11 +112,39 @@ export function CategoryCostsModal({
   }, [open, onClose])
 
   useEffect(() => {
+    if (!open) {
+      setEditingCategory(false)
+      setEditingEntryId(null)
+      return
+    }
+    setCategoryName(category.name)
+    setCategoryBudgeted(String(category.budgeted_amount))
+  }, [open, category.name, category.budgeted_amount])
+
+  useEffect(() => {
     if (!open) return
     if (!entryCardId && defaultCardId) setEntryCardId(defaultCardId)
   }, [open, defaultCardId, entryCardId])
 
   if (!open) return null
+
+  function startEditCategory() {
+    if (!onSaveCategory) return
+    setEditingEntryId(null)
+    setCategoryName(category.name)
+    setCategoryBudgeted(String(category.budgeted_amount))
+    setEditingCategory(true)
+  }
+
+  async function handleSaveCategory(e: FormEvent) {
+    e.preventDefault()
+    if (!onSaveCategory) return
+    await onSaveCategory(category.id, {
+      name: categoryName.trim() || category.name,
+      budgeted_amount: parseAmount(categoryBudgeted),
+    })
+    setEditingCategory(false)
+  }
 
   function startEditEntry(entry: CategoryEntry) {
     setEditingEntryId(entry.id)
@@ -177,19 +215,93 @@ export function CategoryCostsModal({
         <header className="costs-modal-header">
           <div>
             <p className="muted costs-modal-kicker">Category details</p>
-            <h2 id={`costs-modal-title-${category.id}`}>{category.name}</h2>
+            {editingCategory ? (
+              <form
+                className="costs-category-edit"
+                onSubmit={handleSaveCategory}
+              >
+                <label>
+                  Name
+                  <input
+                    value={categoryName}
+                    onChange={(e) => setCategoryName(e.target.value)}
+                    autoFocus
+                    aria-label="Category name"
+                  />
+                </label>
+                <label>
+                  Budgeted
+                  <input
+                    type="number"
+                    step="0.01"
+                    inputMode="decimal"
+                    value={categoryBudgeted}
+                    onChange={(e) => setCategoryBudgeted(e.target.value)}
+                    aria-label="Budgeted amount"
+                  />
+                </label>
+                <div className="inline-actions">
+                  <button type="submit" disabled={busy}>
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    className="ghost"
+                    disabled={busy}
+                    onClick={() => setEditingCategory(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <button
+                type="button"
+                className="costs-category-title-btn"
+                id={`costs-modal-title-${category.id}`}
+                onClick={startEditCategory}
+                disabled={!onSaveCategory || busy}
+                title={
+                  onSaveCategory
+                    ? 'Click to edit category name and budget'
+                    : undefined
+                }
+              >
+                <h2>{category.name}</h2>
+              </button>
+            )}
           </div>
-          <button
-            type="button"
-            className="ghost small"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            Close
-          </button>
+          <div className="costs-modal-header-actions">
+            {!editingCategory && onSaveCategory && (
+              <button
+                type="button"
+                className="ghost small"
+                onClick={startEditCategory}
+                disabled={busy}
+              >
+                Edit
+              </button>
+            )}
+            <button
+              type="button"
+              className="ghost small"
+              onClick={onClose}
+              aria-label="Close"
+            >
+              Close
+            </button>
+          </div>
         </header>
 
-        <div className="costs-modal-stats">
+        <div
+          className="costs-modal-stats"
+          onDoubleClick={startEditCategory}
+          title={
+            onSaveCategory
+              ? 'Double-click to edit category name and budget'
+              : undefined
+          }
+        >
           <div>
             <span className="section-total-label">Budgeted</span>
             <span className="section-total-value amount-budgeted">

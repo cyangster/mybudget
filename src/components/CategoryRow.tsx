@@ -335,6 +335,7 @@ export function CategoryRow({
           paymentCards={paymentCards}
           open={costsOpen}
           onClose={() => setCostsOpen(false)}
+          onSaveCategory={onSave}
           onAddEntry={onAddEntry}
           onUpdateEntry={onUpdateEntry}
           onDeleteEntry={onDeleteEntry}
