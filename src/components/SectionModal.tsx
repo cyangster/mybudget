@@ -2,7 +2,12 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { formatCurrency } from '../lib/format'
 import { amountStatus, statusLabel } from '../lib/status'
-import type { BudgetSection, Category, CategoryEntry } from '../types'
+import type {
+  BudgetSection,
+  Category,
+  CategoryEntry,
+  PaymentCard,
+} from '../types'
 import { SECTION_LABELS } from '../types'
 import { CategoryRow } from './CategoryRow'
 
@@ -10,6 +15,7 @@ interface SectionModalProps {
   section: BudgetSection
   categories: Category[]
   entriesByCategory: Record<string, CategoryEntry[]>
+  paymentCards: PaymentCard[]
   open: boolean
   onClose: () => void
   onAdd: (section: BudgetSection, name: string) => Promise<void>
@@ -29,15 +35,20 @@ interface SectionModalProps {
     label?: string,
     entryDate?: string,
     notes?: string,
+    cardId?: string | null,
   ) => Promise<void>
   onUpdateEntry: (
     entryId: string,
     categoryId: string,
     patch: Partial<
-      Pick<CategoryEntry, 'label' | 'amount' | 'entry_date' | 'notes'>
+      Pick<
+        CategoryEntry,
+        'label' | 'amount' | 'entry_date' | 'notes' | 'card_id'
+      >
     >,
   ) => Promise<void>
   onDeleteEntry: (entryId: string, categoryId: string) => Promise<void>
+  onAddPaymentCard: (name: string) => Promise<PaymentCard | null>
   onReorder: (section: BudgetSection, orderedIds: string[]) => Promise<void>
   busy?: boolean
 }
@@ -46,6 +57,7 @@ export function SectionModal({
   section,
   categories,
   entriesByCategory,
+  paymentCards,
   open,
   onClose,
   onAdd,
@@ -54,6 +66,7 @@ export function SectionModal({
   onAddEntry,
   onUpdateEntry,
   onDeleteEntry,
+  onAddPaymentCard,
   onReorder,
   busy,
 }: SectionModalProps) {
@@ -222,6 +235,7 @@ export function SectionModal({
                   key={cat.id}
                   category={cat}
                   entries={entriesByCategory[cat.id] ?? []}
+                  paymentCards={paymentCards}
                   isDragging={draggingId === cat.id}
                   isDropTarget={dropTargetId === cat.id}
                   onDragStart={handleDragStart}
@@ -233,6 +247,7 @@ export function SectionModal({
                   onAddEntry={onAddEntry}
                   onUpdateEntry={onUpdateEntry}
                   onDeleteEntry={onDeleteEntry}
+                  onAddPaymentCard={onAddPaymentCard}
                   busy={busy}
                 />
               ))}

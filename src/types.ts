@@ -31,8 +31,33 @@ export interface CategoryEntry {
   amount: number
   entry_date: string
   notes: string
+  card_id: string | null
   sort_order: number
   created_at: string
+}
+
+export interface PaymentCard {
+  id: string
+  user_id: string
+  name: string
+  is_default: boolean
+  sort_order: number
+  created_at: string
+}
+
+export interface CardMonthOverride {
+  id: string
+  month_id: string
+  card_id: string
+  display_total: number
+}
+
+export interface CardSpendTotal {
+  cardId: string
+  name: string
+  tracked: number
+  display: number
+  isOverridden: boolean
 }
 
 export const SECTION_ORDER: BudgetSection[] = [

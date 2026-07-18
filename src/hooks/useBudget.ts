@@ -8,11 +8,16 @@ import {
 import { supabase } from '../lib/supabase'
 import type {
   BudgetSection,
+  CardMonthOverride,
+  CardSpendTotal,
   Category,
   CategoryEntry,
   Month,
+  PaymentCard,
 } from '../types'
 import { SPEND_SECTIONS } from '../types'
+
+const DEFAULT_CARD_NAME = 'Freedom'
 
 function toCategory(row: Category): Category {
   return {
@@ -30,6 +35,14 @@ function toEntry(row: CategoryEntry): CategoryEntry {
     label: row.label ?? '',
     entry_date: row.entry_date ?? '',
     notes: row.notes ?? '',
+    card_id: row.card_id ?? null,
+  }
+}
+
+function toCard(row: PaymentCard): PaymentCard {
+  return {
+    ...row,
+    is_default: Boolean(row.is_default),
   }
 }
 
@@ -40,6 +53,8 @@ export function useBudget(userId: string) {
   const [entriesByCategory, setEntriesByCategory] = useState<
     Record<string, CategoryEntry[]>
   >({})
+  const [paymentCards, setPaymentCards] = useState<PaymentCard[]>([])
+  const [cardOverrides, setCardOverrides] = useState<CardMonthOverride[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -112,19 +127,90 @@ export function useBudget(userId: string) {
     setEntriesByCategory(map)
   }, [])
 
+  const loadPaymentCards = useCallback(async () => {
+    const { data, error: err } = await supabase
+      .from('payment_cards')
+      .select('*')
+      .eq('user_id', userId)
+      .order('sort_order', { ascending: true })
+      .order('name', { ascending: true })
+
+    if (err) {
+      setError(err.message)
+      setPaymentCards([])
+      return [] as PaymentCard[]
+    }
+
+    let list = (data ?? []).map((row) => toCard(row as PaymentCard))
+
+    if (list.length === 0) {
+      const { data: created, error: createErr } = await supabase
+        .from('payment_cards')
+        .insert({
+          user_id: userId,
+          name: DEFAULT_CARD_NAME,
+          is_default: true,
+          sort_order: 0,
+        })
+        .select('*')
+        .single()
+
+      if (createErr) {
+        setError(createErr.message)
+        setPaymentCards([])
+        return [] as PaymentCard[]
+      }
+
+      list = [toCard(created as PaymentCard)]
+    } else if (!list.some((c) => c.is_default)) {
+      const first = list[0]
+      await supabase
+        .from('payment_cards')
+        .update({ is_default: true })
+        .eq('id', first.id)
+      list = list.map((c) =>
+        c.id === first.id ? { ...c, is_default: true } : c,
+      )
+    }
+
+    setPaymentCards(list)
+    return list
+  }, [userId])
+
+  const loadCardOverrides = useCallback(async (monthId: string) => {
+    const { data, error: err } = await supabase
+      .from('card_month_overrides')
+      .select('*')
+      .eq('month_id', monthId)
+
+    if (err) {
+      setError(err.message)
+      setCardOverrides([])
+      return
+    }
+
+    setCardOverrides(
+      (data ?? []).map((row) => ({
+        ...(row as CardMonthOverride),
+        display_total: Number((row as CardMonthOverride).display_total),
+      })),
+    )
+  }, [])
+
   useEffect(() => {
     let cancelled = false
 
     async function init() {
       setLoading(true)
       setError(null)
-      const list = await loadMonths()
+      const [, list] = await Promise.all([loadPaymentCards(), loadMonths()])
       if (cancelled) return
 
       if (list.length === 0) {
         setSelectedMonthId(null)
         setCategories([])
         setEntriesByCategory({})
+        setCardOverrides([])
         setLoading(false)
         return
       }
@@ -133,7 +219,10 @@ export function useBudget(userId: string) {
       const current =
         list.find((m) => m.label === currentLabel) ?? list[list.length - 1]
       setSelectedMonthId(current.id)
-      await loadCategories(current.id)
+      await Promise.all([
+        loadCategories(current.id),
+        loadCardOverrides(current.id),
+      ])
       if (!cancelled) setLoading(false)
     }
 
@@ -141,12 +230,13 @@ export function useBudget(userId: string) {
     return () => {
       cancelled = true
     }
-  }, [loadMonths, loadCategories])
+  }, [loadMonths, loadCategories, loadPaymentCards, loadCardOverrides])
 
   useEffect(() => {
     if (!selectedMonthId) return
     void loadCategories(selectedMonthId)
-  }, [selectedMonthId, loadCategories])
+    void loadCardOverrides(selectedMonthId)
+  }, [selectedMonthId, loadCategories, loadCardOverrides])
 
   const syncCategoryActual = useCallback(async (categoryId: string) => {
     const { data, error: err } = await supabase
@@ -404,6 +494,7 @@ export function useBudget(userId: string) {
       label = '',
       entryDate?: string,
       notes = '',
+      cardId?: string | null,
     ) => {
       if (!selectedMonthId) return
       setBusy(true)
@@ -415,12 +506,18 @@ export function useBudget(userId: string) {
           ? Math.max(...existing.map((e) => e.sort_order)) + 1
           : 0
 
+      const defaultCard =
+        paymentCards.find((c) => c.is_default) ?? paymentCards[0] ?? null
+      const resolvedCardId =
+        cardId === undefined ? (defaultCard?.id ?? null) : cardId
+
       const { error: err } = await supabase.from('category_entries').insert({
         category_id: categoryId,
         amount,
         label: label.trim(),
         entry_date: entryDate || new Date().toISOString().slice(0, 10),
         notes: notes.trim(),
+        card_id: resolvedCardId,
         sort_order,
       })
 
@@ -438,7 +535,13 @@ export function useBudget(userId: string) {
       }
       await loadCategories(selectedMonthId)
     },
-    [selectedMonthId, entriesByCategory, syncCategoryActual, loadCategories],
+    [
+      selectedMonthId,
+      entriesByCategory,
+      paymentCards,
+      syncCategoryActual,
+      loadCategories,
+    ],
   )
 
   const deleteEntry = useCallback(
@@ -473,7 +576,12 @@ export function useBudget(userId: string) {
     async (
       entryId: string,
       categoryId: string,
-      patch: Partial<Pick<CategoryEntry, 'label' | 'amount' | 'entry_date' | 'notes'>>,
+      patch: Partial<
+        Pick<
+          CategoryEntry,
+          'label' | 'amount' | 'entry_date' | 'notes' | 'card_id'
+        >
+      >,
     ) => {
       if (!selectedMonthId) return
       setBusy(true)
@@ -605,6 +713,137 @@ export function useBudget(userId: string) {
     return totals
   }, [categories, entriesByCategory])
 
+  const cardSpendTotals = useMemo((): CardSpendTotal[] => {
+    const trackedByCard = new Map<string, number>()
+    for (const entries of Object.values(entriesByCategory)) {
+      for (const entry of entries) {
+        if (!entry.card_id) continue
+        trackedByCard.set(
+          entry.card_id,
+          (trackedByCard.get(entry.card_id) ?? 0) + entry.amount,
+        )
+      }
+    }
+
+    const overrideByCard = new Map(
+      cardOverrides.map((o) => [o.card_id, o.display_total]),
+    )
+
+    return paymentCards.map((card) => {
+      const tracked = trackedByCard.get(card.id) ?? 0
+      const overridden = overrideByCard.has(card.id)
+      const display = overridden ? (overrideByCard.get(card.id) as number) : tracked
+      return {
+        cardId: card.id,
+        name: card.name,
+        tracked,
+        display,
+        isOverridden: overridden,
+      }
+    })
+  }, [paymentCards, entriesByCategory, cardOverrides])
+
+  const addPaymentCard = useCallback(
+    async (name: string) => {
+      const trimmed = name.trim()
+      if (!trimmed) return null
+
+      setBusy(true)
+      setError(null)
+
+      const sort_order =
+        paymentCards.length > 0
+          ? Math.max(...paymentCards.map((c) => c.sort_order)) + 1
+          : 0
+
+      const { data, error: err } = await supabase
+        .from('payment_cards')
+        .insert({
+          user_id: userId,
+          name: trimmed,
+          is_default: paymentCards.length === 0,
+          sort_order,
+        })
+        .select('*')
+        .single()
+
+      setBusy(false)
+      if (err) {
+        setError(err.message)
+        return null
+      }
+
+      const card = toCard(data as PaymentCard)
+      setPaymentCards((prev) => [...prev, card])
+      return card
+    },
+    [userId, paymentCards],
+  )
+
+  const saveCardDisplayTotal = useCallback(
+    async (cardId: string, displayTotal: number | null) => {
+      if (!selectedMonthId) return
+      setBusy(true)
+      setError(null)
+
+      const tracked =
+        cardSpendTotals.find((c) => c.cardId === cardId)?.tracked ?? 0
+
+      // null or matching tracked amount clears the override
+      if (displayTotal === null || Math.abs(displayTotal - tracked) < 0.005) {
+        const { error: err } = await supabase
+          .from('card_month_overrides')
+          .delete()
+          .eq('month_id', selectedMonthId)
+          .eq('card_id', cardId)
+
+        setBusy(false)
+        if (err) {
+          setError(err.message)
+          return
+        }
+        await loadCardOverrides(selectedMonthId)
+        return
+      }
+
+      const existing = cardOverrides.find((o) => o.card_id === cardId)
+      if (existing) {
+        const { error: err } = await supabase
+          .from('card_month_overrides')
+          .update({ display_total: displayTotal })
+          .eq('id', existing.id)
+
+        setBusy(false)
+        if (err) {
+          setError(err.message)
+          return
+        }
+      } else {
+        const { error: err } = await supabase
+          .from('card_month_overrides')
+          .insert({
+            month_id: selectedMonthId,
+            card_id: cardId,
+            display_total: displayTotal,
+          })
+
+        setBusy(false)
+        if (err) {
+          setError(err.message)
+          return
+        }
+      }
+
+      await loadCardOverrides(selectedMonthId)
+    },
+    [
+      selectedMonthId,
+      cardSpendTotals,
+      cardOverrides,
+      loadCardOverrides,
+    ],
+  )
+
   return {
     months,
     selectedMonth,
@@ -613,6 +852,8 @@ export function useBudget(userId: string) {
     categoriesBySection,
     entriesByCategory,
     dailySpendTotals,
+    cardSpendTotals,
+    paymentCards,
     summary,
     loading,
     busy,
@@ -626,5 +867,7 @@ export function useBudget(userId: string) {
     addEntry,
     updateEntry,
     deleteEntry,
+    addPaymentCard,
+    saveCardDisplayTotal,
   }
 }

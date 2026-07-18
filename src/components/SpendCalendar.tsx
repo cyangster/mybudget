@@ -1,11 +1,16 @@
-import { useMemo } from 'react'
-import { displayMonthLabel, formatCurrency } from '../lib/format'
+import { useEffect, useMemo, useState } from 'react'
+import { displayMonthLabel, formatCurrency, parseAmount } from '../lib/format'
+import type { CardSpendTotal } from '../types'
 
 interface SpendCalendarProps {
   monthLabel: string
   dailyTotals: Record<string, number>
   totalBudgeted: number
   leftover: number
+  cardSpendTotals: CardSpendTotal[]
+  onSaveCardDisplay: (cardId: string, displayTotal: number | null) => Promise<void>
+  onAddPaymentCard: (name: string) => Promise<unknown>
+  busy?: boolean
 }
 
 type DayTone = 'none' | 'low' | 'mid' | 'high' | 'spike'
@@ -74,7 +79,21 @@ export function SpendCalendar({
   dailyTotals,
   totalBudgeted,
   leftover,
+  cardSpendTotals,
+  onSaveCardDisplay,
+  onAddPaymentCard,
+  busy,
 }: SpendCalendarProps) {
+  const [drafts, setDrafts] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    const next: Record<string, string> = {}
+    for (const card of cardSpendTotals) {
+      next[card.cardId] = String(card.display)
+    }
+    setDrafts(next)
+  }, [cardSpendTotals])
+
   const { cells, dailyPace } = useMemo(() => {
     const [y, m] = monthLabel.split('-').map(Number)
     if (!y || !m) {
@@ -134,19 +153,37 @@ export function SpendCalendar({
     return { cells: result, dailyPace: pace }
   }, [monthLabel, dailyTotals, totalBudgeted])
 
+  async function commitCardDraft(card: CardSpendTotal) {
+    const raw = drafts[card.cardId]
+    if (raw === undefined) return
+    const value = parseAmount(raw)
+    await onSaveCardDisplay(card.cardId, value)
+  }
+
+  async function resetCard(card: CardSpendTotal) {
+    setDrafts((prev) => ({ ...prev, [card.cardId]: String(card.tracked) }))
+    await onSaveCardDisplay(card.cardId, null)
+  }
+
+  async function handleAddCard() {
+    const name = window.prompt('New card name')
+    if (!name?.trim()) return
+    await onAddPaymentCard(name.trim())
+  }
+
   return (
     <aside className="spend-calendar" aria-label="Daily spending calendar">
-      <header className="spend-calendar-header">
-        <h2>Daily spend</h2>
-        <span className="muted">{displayMonthLabel(monthLabel)}</span>
-        {dailyPace > 0 && (
-          <span className="spend-calendar-pace muted">
-            Daily budget pace {formatCurrency(dailyPace)}
-          </span>
-        )}
-      </header>
-
       <div className="spend-calendar-scroll">
+        <header className="spend-calendar-header">
+          <h2>Daily spend</h2>
+          <span className="muted">{displayMonthLabel(monthLabel)}</span>
+          {dailyPace > 0 && (
+            <span className="spend-calendar-pace muted">
+              Daily budget pace {formatCurrency(dailyPace)}
+            </span>
+          )}
+        </header>
+
         <div className="spend-calendar-legend" aria-label="Spend color legend">
           <span className="spend-legend-item tone-none">None</span>
           <span className="spend-legend-item tone-low">Light</span>
@@ -179,6 +216,71 @@ export function SpendCalendar({
             ),
           )}
         </div>
+      </div>
+
+      <div className="spend-calendar-cards" aria-label="Card totals">
+        <div className="spend-calendar-cards-header">
+          <span className="spend-calendar-footer-label">Cards</span>
+          <button
+            type="button"
+            className="ghost small"
+            onClick={() => void handleAddCard()}
+            disabled={busy}
+            title="Add card"
+          >
+            +
+          </button>
+        </div>
+        {cardSpendTotals.length === 0 ? (
+          <p className="muted spend-calendar-cards-empty">No cards yet.</p>
+        ) : (
+          <ul className="spend-calendar-card-list">
+            {cardSpendTotals.map((card) => (
+              <li key={card.cardId} className="spend-calendar-card-row">
+                <div className="spend-calendar-card-meta">
+                  <span className="spend-calendar-card-name">{card.name}</span>
+                  {card.isOverridden && (
+                    <button
+                      type="button"
+                      className="ghost small"
+                      onClick={() => void resetCard(card)}
+                      disabled={busy}
+                      title={`Reset to tracked ${formatCurrency(card.tracked)}`}
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="number"
+                  step="0.01"
+                  inputMode="decimal"
+                  className="spend-calendar-card-input"
+                  value={drafts[card.cardId] ?? ''}
+                  disabled={busy}
+                  aria-label={`${card.name} total`}
+                  title={
+                    card.isOverridden
+                      ? `Custom total (tracked ${formatCurrency(card.tracked)})`
+                      : 'Tracked from tagged costs — edit if statement differs'
+                  }
+                  onChange={(e) =>
+                    setDrafts((prev) => ({
+                      ...prev,
+                      [card.cardId]: e.target.value,
+                    }))
+                  }
+                  onBlur={() => void commitCardDraft(card)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.currentTarget.blur()
+                    }
+                  }}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <footer

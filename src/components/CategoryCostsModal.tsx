@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { createPortal } from 'react-dom'
 import {
   displayEntryDate,
@@ -7,12 +7,13 @@ import {
   todayDateInput,
 } from '../lib/format'
 import { amountStatus, statusLabel } from '../lib/status'
-import type { Category, CategoryEntry } from '../types'
+import type { Category, CategoryEntry, PaymentCard } from '../types'
 import { IconEdit, IconTrash } from './Icons'
 
 interface CategoryCostsModalProps {
   category: Category
   entries: CategoryEntry[]
+  paymentCards: PaymentCard[]
   open: boolean
   onClose: () => void
   onAddEntry?: (
@@ -21,26 +22,33 @@ interface CategoryCostsModalProps {
     label?: string,
     entryDate?: string,
     notes?: string,
+    cardId?: string | null,
   ) => Promise<void>
   onUpdateEntry?: (
     entryId: string,
     categoryId: string,
     patch: Partial<
-      Pick<CategoryEntry, 'label' | 'amount' | 'entry_date' | 'notes'>
+      Pick<
+        CategoryEntry,
+        'label' | 'amount' | 'entry_date' | 'notes' | 'card_id'
+      >
     >,
   ) => Promise<void>
   onDeleteEntry?: (entryId: string, categoryId: string) => Promise<void>
+  onAddPaymentCard?: (name: string) => Promise<PaymentCard | null>
   busy?: boolean
 }
 
 export function CategoryCostsModal({
   category,
   entries,
+  paymentCards,
   open,
   onClose,
   onAddEntry,
   onUpdateEntry,
   onDeleteEntry,
+  onAddPaymentCard,
   busy,
 }: CategoryCostsModalProps) {
   const [visible, setVisible] = useState(false)
@@ -49,13 +57,27 @@ export function CategoryCostsModal({
   const [entryLabel, setEntryLabel] = useState('')
   const [entryDate, setEntryDate] = useState(todayDateInput())
   const [entryNotes, setEntryNotes] = useState('')
+  const [entryCardId, setEntryCardId] = useState('')
   const [editLabel, setEditLabel] = useState('')
   const [editAmount, setEditAmount] = useState('')
   const [editDate, setEditDate] = useState(todayDateInput())
   const [editNotes, setEditNotes] = useState('')
+  const [editCardId, setEditCardId] = useState('')
 
   const remaining = category.budgeted_amount - category.actual_amount
   const status = amountStatus(category.budgeted_amount, category.actual_amount)
+
+  const defaultCardId = useMemo(
+    () =>
+      paymentCards.find((c) => c.is_default)?.id ?? paymentCards[0]?.id ?? '',
+    [paymentCards],
+  )
+
+  const cardNameById = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const card of paymentCards) map.set(card.id, card.name)
+    return map
+  }, [paymentCards])
 
   useEffect(() => {
     if (open) {
@@ -79,6 +101,11 @@ export function CategoryCostsModal({
     }
   }, [open, onClose])
 
+  useEffect(() => {
+    if (!open) return
+    if (!entryCardId && defaultCardId) setEntryCardId(defaultCardId)
+  }, [open, defaultCardId, entryCardId])
+
   if (!open) return null
 
   function startEditEntry(entry: CategoryEntry) {
@@ -87,6 +114,18 @@ export function CategoryCostsModal({
     setEditAmount(String(entry.amount))
     setEditDate(entry.entry_date || todayDateInput())
     setEditNotes(entry.notes ?? '')
+    setEditCardId(entry.card_id ?? defaultCardId)
+  }
+
+  async function handleAddCard() {
+    if (!onAddPaymentCard) return
+    const name = window.prompt('New card name')
+    if (!name?.trim()) return
+    const card = await onAddPaymentCard(name.trim())
+    if (card) {
+      setEntryCardId(card.id)
+      if (editingEntryId) setEditCardId(card.id)
+    }
   }
 
   async function handleAddEntry(e: FormEvent) {
@@ -94,11 +133,19 @@ export function CategoryCostsModal({
     if (!onAddEntry) return
     const amount = parseAmount(entryAmount)
     if (amount === 0 && entryAmount.trim() === '') return
-    await onAddEntry(category.id, amount, entryLabel, entryDate, entryNotes)
+    await onAddEntry(
+      category.id,
+      amount,
+      entryLabel,
+      entryDate,
+      entryNotes,
+      entryCardId || defaultCardId || null,
+    )
     setEntryAmount('')
     setEntryLabel('')
     setEntryDate(todayDateInput())
     setEntryNotes('')
+    setEntryCardId(defaultCardId)
   }
 
   async function handleUpdateEntry(e: FormEvent) {
@@ -109,6 +156,7 @@ export function CategoryCostsModal({
       amount: parseAmount(editAmount),
       entry_date: editDate,
       notes: editNotes.trim(),
+      card_id: editCardId || null,
     })
     setEditingEntryId(null)
   }
@@ -208,6 +256,30 @@ export function CategoryCostsModal({
                         onChange={(e) => setEditAmount(e.target.value)}
                         required
                       />
+                      <div className="card-tag-row">
+                        <select
+                          value={editCardId}
+                          onChange={(e) => setEditCardId(e.target.value)}
+                          aria-label="Card"
+                        >
+                          {paymentCards.map((card) => (
+                            <option key={card.id} value={card.id}>
+                              {card.name}
+                            </option>
+                          ))}
+                        </select>
+                        {onAddPaymentCard && (
+                          <button
+                            type="button"
+                            className="ghost small"
+                            onClick={() => void handleAddCard()}
+                            disabled={busy}
+                            title="Add card"
+                          >
+                            +
+                          </button>
+                        )}
+                      </div>
                       <textarea
                         className="entry-notes-input"
                         placeholder="Note (optional)"
@@ -249,6 +321,11 @@ export function CategoryCostsModal({
                       <span className="entry-label">
                         {entry.label || `Payment ${i + 1}`}
                       </span>
+                      {entry.card_id && cardNameById.get(entry.card_id) ? (
+                        <span className="entry-card-tag">
+                          {cardNameById.get(entry.card_id)}
+                        </span>
+                      ) : null}
                       {entry.notes ? (
                         <span className="entry-notes">{entry.notes}</span>
                       ) : null}
@@ -312,6 +389,34 @@ export function CategoryCostsModal({
               onChange={(e) => setEntryAmount(e.target.value)}
               required
             />
+            <div className="card-tag-row">
+              <label className="card-tag-label" htmlFor={`card-tag-${category.id}`}>
+                Card
+              </label>
+              <select
+                id={`card-tag-${category.id}`}
+                value={entryCardId || defaultCardId}
+                onChange={(e) => setEntryCardId(e.target.value)}
+                aria-label="Card used"
+              >
+                {paymentCards.map((card) => (
+                  <option key={card.id} value={card.id}>
+                    {card.name}
+                  </option>
+                ))}
+              </select>
+              {onAddPaymentCard && (
+                <button
+                  type="button"
+                  className="ghost small"
+                  onClick={() => void handleAddCard()}
+                  disabled={busy}
+                  title="Add another card"
+                >
+                  +
+                </button>
+              )}
+            </div>
             <textarea
               className="entry-notes-input"
               placeholder="Note (optional)"

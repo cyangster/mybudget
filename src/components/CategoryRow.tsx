@@ -1,13 +1,14 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { formatCurrency, parseAmount } from '../lib/format'
 import { amountStatus, statusLabel } from '../lib/status'
-import type { Category, CategoryEntry } from '../types'
+import type { Category, CategoryEntry, PaymentCard } from '../types'
 import { CategoryCostsModal } from './CategoryCostsModal'
 import { IconEdit, IconTrash } from './Icons'
 
 interface CategoryRowProps {
   category: Category
   entries?: CategoryEntry[]
+  paymentCards?: PaymentCard[]
   isIncome?: boolean
   isDragging?: boolean
   isDropTarget?: boolean
@@ -31,21 +32,27 @@ interface CategoryRowProps {
     label?: string,
     entryDate?: string,
     notes?: string,
+    cardId?: string | null,
   ) => Promise<void>
   onUpdateEntry?: (
     entryId: string,
     categoryId: string,
     patch: Partial<
-      Pick<CategoryEntry, 'label' | 'amount' | 'entry_date' | 'notes'>
+      Pick<
+        CategoryEntry,
+        'label' | 'amount' | 'entry_date' | 'notes' | 'card_id'
+      >
     >,
   ) => Promise<void>
   onDeleteEntry?: (entryId: string, categoryId: string) => Promise<void>
+  onAddPaymentCard?: (name: string) => Promise<PaymentCard | null>
   busy?: boolean
 }
 
 export function CategoryRow({
   category,
   entries = [],
+  paymentCards = [],
   isIncome,
   isDragging,
   isDropTarget,
@@ -58,6 +65,7 @@ export function CategoryRow({
   onAddEntry,
   onUpdateEntry,
   onDeleteEntry,
+  onAddPaymentCard,
   busy,
 }: CategoryRowProps) {
   const [editing, setEditing] = useState(false)
@@ -324,11 +332,13 @@ export function CategoryRow({
         <CategoryCostsModal
           category={category}
           entries={entries}
+          paymentCards={paymentCards}
           open={costsOpen}
           onClose={() => setCostsOpen(false)}
           onAddEntry={onAddEntry}
           onUpdateEntry={onUpdateEntry}
           onDeleteEntry={onDeleteEntry}
+          onAddPaymentCard={onAddPaymentCard}
           busy={busy}
         />
       )}

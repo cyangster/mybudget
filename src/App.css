@@ -443,6 +443,74 @@
   color: var(--negative);
 }
 
+.spend-calendar-cards {
+  flex: 0 0 auto;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.spend-calendar-cards-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+}
+
+.spend-calendar-cards-empty {
+  margin: 0;
+  font-size: 0.75rem;
+}
+
+.spend-calendar-card-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.spend-calendar-card-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 5.5rem;
+  gap: 0.35rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.spend-calendar-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.spend-calendar-card-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spend-calendar-card-input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0.25rem 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
 .spend-day {
   width: 100%;
   min-width: 0;
@@ -1136,6 +1204,21 @@ tbody tr:last-child td {
   font-size: 0.92rem;
 }
 
+.entry-card-tag {
+  display: inline-block;
+  max-width: 100%;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--muted);
+  background: #eef2f7;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.05rem 0.4rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .entry-notes {
   font-size: 0.82rem;
   color: var(--muted);
@@ -1409,6 +1492,39 @@ button.icon-btn.danger:hover:not(:disabled) {
 .costs-modal-add {
   border-top: 1px solid var(--border);
   padding-top: 0.75rem;
+}
+
+.card-tag-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.35rem;
+  align-items: center;
+  min-width: 0;
+  width: 100%;
+}
+
+.card-tag-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.card-tag-row select {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.35rem 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.edit-entry-form .card-tag-row {
+  grid-template-columns: minmax(0, 1fr) auto;
 }
 
 .section-open-btn {

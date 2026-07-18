@@ -20,6 +20,8 @@ function BudgetApp() {
     categoriesBySection,
     entriesByCategory,
     dailySpendTotals,
+    cardSpendTotals,
+    paymentCards,
     summary,
     loading,
     busy,
@@ -33,6 +35,8 @@ function BudgetApp() {
     addEntry,
     updateEntry,
     deleteEntry,
+    addPaymentCard,
+    saveCardDisplayTotal,
   } = useBudget(user!.id)
 
   if (loading) {
@@ -111,12 +115,14 @@ function BudgetApp() {
                     section={section}
                     categories={categoriesBySection[section]}
                     entriesByCategory={entriesByCategory}
+                    paymentCards={paymentCards}
                     onAdd={addCategory}
                     onSave={updateCategory}
                     onDelete={deleteCategory}
                     onAddEntry={addEntry}
                     onUpdateEntry={updateEntry}
                     onDeleteEntry={deleteEntry}
+                    onAddPaymentCard={addPaymentCard}
                     onReorder={reorderCategories}
                     busy={busy}
                   />
@@ -130,6 +136,10 @@ function BudgetApp() {
                 dailyTotals={dailySpendTotals}
                 totalBudgeted={summary.totalBudgeted}
                 leftover={summary.leftover}
+                cardSpendTotals={cardSpendTotals}
+                onSaveCardDisplay={saveCardDisplayTotal}
+                onAddPaymentCard={addPaymentCard}
+                busy={busy}
               />
             )}
           </div>

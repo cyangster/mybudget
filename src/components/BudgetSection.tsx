@@ -1,7 +1,12 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { formatCurrency } from '../lib/format'
 import { amountStatus, statusLabel } from '../lib/status'
-import type { BudgetSection, Category, CategoryEntry } from '../types'
+import type {
+  BudgetSection,
+  Category,
+  CategoryEntry,
+  PaymentCard,
+} from '../types'
 import { SECTION_LABELS } from '../types'
 import { CategoryRow } from './CategoryRow'
 import { SectionModal } from './SectionModal'
@@ -10,6 +15,7 @@ interface BudgetSectionProps {
   section: BudgetSection
   categories: Category[]
   entriesByCategory: Record<string, CategoryEntry[]>
+  paymentCards: PaymentCard[]
   onAdd: (section: BudgetSection, name: string) => Promise<void>
   onSave: (
     id: string,
@@ -27,15 +33,20 @@ interface BudgetSectionProps {
     label?: string,
     entryDate?: string,
     notes?: string,
+    cardId?: string | null,
   ) => Promise<void>
   onUpdateEntry: (
     entryId: string,
     categoryId: string,
     patch: Partial<
-      Pick<CategoryEntry, 'label' | 'amount' | 'entry_date' | 'notes'>
+      Pick<
+        CategoryEntry,
+        'label' | 'amount' | 'entry_date' | 'notes' | 'card_id'
+      >
     >,
   ) => Promise<void>
   onDeleteEntry: (entryId: string, categoryId: string) => Promise<void>
+  onAddPaymentCard: (name: string) => Promise<PaymentCard | null>
   onReorder: (section: BudgetSection, orderedIds: string[]) => Promise<void>
   busy?: boolean
 }
@@ -44,12 +55,14 @@ export function BudgetSectionView({
   section,
   categories,
   entriesByCategory,
+  paymentCards,
   onAdd,
   onSave,
   onDelete,
   onAddEntry,
   onUpdateEntry,
   onDeleteEntry,
+  onAddPaymentCard,
   onReorder,
   busy,
 }: BudgetSectionProps) {
@@ -216,6 +229,7 @@ export function BudgetSectionView({
                   key={cat.id}
                   category={cat}
                   entries={entriesByCategory[cat.id] ?? []}
+                  paymentCards={paymentCards}
                   isIncome={isIncome}
                   isDragging={draggingId === cat.id}
                   isDropTarget={dropTargetId === cat.id}
@@ -228,6 +242,7 @@ export function BudgetSectionView({
                   onAddEntry={isIncome ? undefined : onAddEntry}
                   onUpdateEntry={isIncome ? undefined : onUpdateEntry}
                   onDeleteEntry={isIncome ? undefined : onDeleteEntry}
+                  onAddPaymentCard={isIncome ? undefined : onAddPaymentCard}
                   busy={busy}
                 />
               ))}
@@ -279,6 +294,7 @@ export function BudgetSectionView({
           section={section}
           categories={categories}
           entriesByCategory={entriesByCategory}
+          paymentCards={paymentCards}
           open={sectionOpen}
           onClose={() => setSectionOpen(false)}
           onAdd={onAdd}
@@ -287,6 +303,7 @@ export function BudgetSectionView({
           onAddEntry={onAddEntry}
           onUpdateEntry={onUpdateEntry}
           onDeleteEntry={onDeleteEntry}
+          onAddPaymentCard={onAddPaymentCard}
           onReorder={onReorder}
           busy={busy}
         />
