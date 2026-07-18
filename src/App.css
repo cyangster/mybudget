@@ -640,6 +640,14 @@
   overscroll-behavior: contain;
 }
 
+.sections-grid .table-wrap thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface);
+  box-shadow: 0 1px 0 var(--border);
+}
+
 .sections-grid .section-footer {
   min-height: 0;
   padding: 0.55rem 0.8rem 0.65rem;
@@ -1567,6 +1575,14 @@ button.icon-btn.danger:hover:not(:disabled) {
   flex: 1;
   min-height: 0;
   overflow: auto;
+}
+
+.section-modal-body thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface);
+  box-shadow: 0 1px 0 var(--border);
 }
 
 .section-modal table {
