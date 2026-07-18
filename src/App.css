@@ -1464,66 +1464,54 @@ button.icon-btn.danger:hover:not(:disabled) {
   gap: 0.75rem;
 }
 
-.costs-modal-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  flex-shrink: 0;
+.costs-modal-title-block {
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
-.costs-category-title-btn {
+.costs-category-name-input {
   display: block;
   width: 100%;
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: none;
-  text-align: left;
-  color: inherit;
-  cursor: pointer;
-}
-
-.costs-category-title-btn:disabled {
-  cursor: default;
-}
-
-.costs-category-title-btn:not(:disabled):hover h2 {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.costs-category-edit {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  min-width: 0;
   max-width: 100%;
-}
-
-.costs-category-edit label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--muted);
-}
-
-.costs-category-edit input {
-  width: 100%;
   box-sizing: border-box;
-  min-width: 0;
-  padding: 0.4rem 0.5rem;
+  margin: 0;
+  padding: 0.15rem 0.35rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.costs-category-name-input:hover,
+.costs-category-name-input:focus {
+  border-color: var(--border);
+  background: var(--surface);
+  outline: none;
+}
+
+.costs-stat-input {
+  display: block;
+  width: 100%;
+  max-width: 8.5rem;
+  box-sizing: border-box;
+  margin-top: 0.1rem;
+  padding: 0.2rem 0.35rem;
   border: 1px solid var(--border);
   border-radius: 8px;
+  background: var(--surface);
   font: inherit;
-  font-size: 0.95rem;
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: normal;
-  color: var(--text);
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.costs-stat-input.amount-budgeted {
+  color: var(--open);
 }
 
 .costs-modal-kicker {

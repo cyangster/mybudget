@@ -57,7 +57,6 @@ export function CategoryCostsModal({
   busy,
 }: CategoryCostsModalProps) {
   const [visible, setVisible] = useState(false)
-  const [editingCategory, setEditingCategory] = useState(false)
   const [categoryName, setCategoryName] = useState(category.name)
   const [categoryBudgeted, setCategoryBudgeted] = useState(
     String(category.budgeted_amount),
@@ -113,7 +112,6 @@ export function CategoryCostsModal({
 
   useEffect(() => {
     if (!open) {
-      setEditingCategory(false)
       setEditingEntryId(null)
       return
     }
@@ -128,22 +126,31 @@ export function CategoryCostsModal({
 
   if (!open) return null
 
-  function startEditCategory() {
+  async function saveCategoryPatch(
+    patch: Partial<Pick<Category, 'name' | 'budgeted_amount'>>,
+  ) {
     if (!onSaveCategory) return
-    setEditingEntryId(null)
-    setCategoryName(category.name)
-    setCategoryBudgeted(String(category.budgeted_amount))
-    setEditingCategory(true)
+    await onSaveCategory(category.id, patch)
   }
 
-  async function handleSaveCategory(e: FormEvent) {
-    e.preventDefault()
-    if (!onSaveCategory) return
-    await onSaveCategory(category.id, {
-      name: categoryName.trim() || category.name,
-      budgeted_amount: parseAmount(categoryBudgeted),
-    })
-    setEditingCategory(false)
+  async function commitCategoryName() {
+    const next = categoryName.trim() || category.name
+    if (next === category.name) {
+      setCategoryName(category.name)
+      return
+    }
+    setCategoryName(next)
+    await saveCategoryPatch({ name: next })
+  }
+
+  async function commitCategoryBudgeted() {
+    const next = parseAmount(categoryBudgeted)
+    if (next === category.budgeted_amount) {
+      setCategoryBudgeted(String(category.budgeted_amount))
+      return
+    }
+    setCategoryBudgeted(String(next))
+    await saveCategoryPatch({ budgeted_amount: next })
   }
 
   function startEditEntry(entry: CategoryEntry) {
@@ -213,100 +220,58 @@ export function CategoryCostsModal({
         onClick={(e) => e.stopPropagation()}
       >
         <header className="costs-modal-header">
-          <div>
+          <div className="costs-modal-title-block">
             <p className="muted costs-modal-kicker">Category details</p>
-            {editingCategory ? (
-              <form
-                className="costs-category-edit"
-                onSubmit={handleSaveCategory}
-              >
-                <label>
-                  Name
-                  <input
-                    value={categoryName}
-                    onChange={(e) => setCategoryName(e.target.value)}
-                    autoFocus
-                    aria-label="Category name"
-                  />
-                </label>
-                <label>
-                  Budgeted
-                  <input
-                    type="number"
-                    step="0.01"
-                    inputMode="decimal"
-                    value={categoryBudgeted}
-                    onChange={(e) => setCategoryBudgeted(e.target.value)}
-                    aria-label="Budgeted amount"
-                  />
-                </label>
-                <div className="inline-actions">
-                  <button type="submit" disabled={busy}>
-                    Save
-                  </button>
-                  <button
-                    type="button"
-                    className="ghost"
-                    disabled={busy}
-                    onClick={() => setEditingCategory(false)}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <button
-                type="button"
-                className="costs-category-title-btn"
+            {onSaveCategory ? (
+              <input
                 id={`costs-modal-title-${category.id}`}
-                onClick={startEditCategory}
-                disabled={!onSaveCategory || busy}
-                title={
-                  onSaveCategory
-                    ? 'Click to edit category name and budget'
-                    : undefined
-                }
-              >
-                <h2>{category.name}</h2>
-              </button>
-            )}
-          </div>
-          <div className="costs-modal-header-actions">
-            {!editingCategory && onSaveCategory && (
-              <button
-                type="button"
-                className="ghost small"
-                onClick={startEditCategory}
+                className="costs-category-name-input"
+                value={categoryName}
+                onChange={(e) => setCategoryName(e.target.value)}
+                onBlur={() => void commitCategoryName()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') e.currentTarget.blur()
+                }}
                 disabled={busy}
-              >
-                Edit
-              </button>
+                aria-label="Category name"
+              />
+            ) : (
+              <h2 id={`costs-modal-title-${category.id}`}>{category.name}</h2>
             )}
-            <button
-              type="button"
-              className="ghost small"
-              onClick={onClose}
-              aria-label="Close"
-            >
-              Close
-            </button>
           </div>
+          <button
+            type="button"
+            className="ghost small"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            Close
+          </button>
         </header>
 
-        <div
-          className="costs-modal-stats"
-          onDoubleClick={startEditCategory}
-          title={
-            onSaveCategory
-              ? 'Double-click to edit category name and budget'
-              : undefined
-          }
-        >
+        <div className="costs-modal-stats">
           <div>
             <span className="section-total-label">Budgeted</span>
-            <span className="section-total-value amount-budgeted">
-              {formatCurrency(category.budgeted_amount)}
-            </span>
+            {onSaveCategory ? (
+              <input
+                type="number"
+                step="0.01"
+                inputMode="decimal"
+                className="costs-stat-input amount-budgeted"
+                value={categoryBudgeted}
+                onChange={(e) => setCategoryBudgeted(e.target.value)}
+                onBlur={() => void commitCategoryBudgeted()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') e.currentTarget.blur()
+                }}
+                disabled={busy}
+                aria-label="Budgeted amount"
+              />
+            ) : (
+              <span className="section-total-value amount-budgeted">
+                {formatCurrency(category.budgeted_amount)}
+              </span>
+            )}
           </div>
           <div>
             <span className="section-total-label">Spent</span>
