@@ -1464,6 +1464,68 @@ button.icon-btn.danger:hover:not(:disabled) {
   gap: 0.75rem;
 }
 
+.costs-modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.costs-category-title-btn {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+
+.costs-category-title-btn:disabled {
+  cursor: default;
+}
+
+.costs-category-title-btn:not(:disabled):hover h2 {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.costs-category-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.costs-category-edit label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.costs-category-edit input {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--text);
+}
+
 .costs-modal-kicker {
   margin: 0 0 0.15rem;
   font-size: 0.72rem;
