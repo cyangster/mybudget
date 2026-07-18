@@ -715,12 +715,17 @@ export function useBudget(userId: string) {
 
   const cardSpendTotals = useMemo((): CardSpendTotal[] => {
     const trackedByCard = new Map<string, number>()
+    const countByCard = new Map<string, number>()
     for (const entries of Object.values(entriesByCategory)) {
       for (const entry of entries) {
         if (!entry.card_id) continue
         trackedByCard.set(
           entry.card_id,
           (trackedByCard.get(entry.card_id) ?? 0) + entry.amount,
+        )
+        countByCard.set(
+          entry.card_id,
+          (countByCard.get(entry.card_id) ?? 0) + 1,
         )
       }
     }
@@ -738,6 +743,7 @@ export function useBudget(userId: string) {
         name: card.name,
         tracked,
         display,
+        entryCount: countByCard.get(card.id) ?? 0,
         isOverridden: overridden,
       }
     })

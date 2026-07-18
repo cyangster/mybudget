@@ -89,7 +89,7 @@ export function SpendCalendar({
   useEffect(() => {
     const next: Record<string, string> = {}
     for (const card of cardSpendTotals) {
-      next[card.cardId] = String(card.display)
+      next[card.cardId] = String(Math.round(card.display))
     }
     setDrafts(next)
   }, [cardSpendTotals])
@@ -156,12 +156,16 @@ export function SpendCalendar({
   async function commitCardDraft(card: CardSpendTotal) {
     const raw = drafts[card.cardId]
     if (raw === undefined) return
-    const value = parseAmount(raw)
+    const value = Math.round(parseAmount(raw))
+    setDrafts((prev) => ({ ...prev, [card.cardId]: String(value) }))
     await onSaveCardDisplay(card.cardId, value)
   }
 
   async function resetCard(card: CardSpendTotal) {
-    setDrafts((prev) => ({ ...prev, [card.cardId]: String(card.tracked) }))
+    setDrafts((prev) => ({
+      ...prev,
+      [card.cardId]: String(Math.round(card.tracked)),
+    }))
     await onSaveCardDisplay(card.cardId, null)
   }
 
@@ -239,13 +243,19 @@ export function SpendCalendar({
               <li key={card.cardId} className="spend-calendar-card-row">
                 <div className="spend-calendar-card-meta">
                   <span className="spend-calendar-card-name">{card.name}</span>
+                  <span
+                    className="spend-calendar-card-count"
+                    title={`${card.entryCount} cost${card.entryCount === 1 ? '' : 's'} tagged to ${card.name}`}
+                  >
+                    {card.entryCount}
+                  </span>
                   {card.isOverridden && (
                     <button
                       type="button"
                       className="ghost small"
                       onClick={() => void resetCard(card)}
                       disabled={busy}
-                      title={`Reset to tracked ${formatCurrency(card.tracked)}`}
+                      title={`Reset to tracked $${Math.round(card.tracked)}`}
                     >
                       Reset
                     </button>
@@ -253,15 +263,15 @@ export function SpendCalendar({
                 </div>
                 <input
                   type="number"
-                  step="0.01"
-                  inputMode="decimal"
+                  step="1"
+                  inputMode="numeric"
                   className="spend-calendar-card-input"
                   value={drafts[card.cardId] ?? ''}
                   disabled={busy}
                   aria-label={`${card.name} total`}
                   title={
                     card.isOverridden
-                      ? `Custom total (tracked ${formatCurrency(card.tracked)})`
+                      ? `Custom total (tracked $${Math.round(card.tracked)})`
                       : 'Tracked from tagged costs — edit if statement differs'
                   }
                   onChange={(e) =>

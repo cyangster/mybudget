@@ -498,6 +498,21 @@
   white-space: nowrap;
 }
 
+.spend-calendar-card-count {
+  flex: 0 0 auto;
+  min-width: 1.15rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #eef2f7;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  line-height: 1.2;
+}
+
 .spend-calendar-card-input {
   width: 100%;
   min-width: 0;

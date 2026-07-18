@@ -57,6 +57,7 @@ export interface CardSpendTotal {
   name: string
   tracked: number
   display: number
+  entryCount: number
   isOverridden: boolean
 }
 
