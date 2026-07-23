@@ -30,6 +30,7 @@ interface CreditCardsPageProps {
         | 'name'
         | 'total_balance'
         | 'statement_balance'
+        | 'statement_balance_as_of'
         | 'minimum_payment'
         | 'payment_due_day'
         | 'payment_due_month_offset'
@@ -126,6 +127,7 @@ export function CreditCardsPage({
         name: string
         total_balance: string
         statement_balance: string
+        statement_balance_as_of: string
         minimum_payment: string
         payment_due_day: string
         payment_due_month_offset: string
@@ -148,6 +150,7 @@ export function CreditCardsPage({
         name: card.name,
         total_balance: String(card.total_balance),
         statement_balance: String(card.statement_balance),
+        statement_balance_as_of: card.statement_balance_as_of ?? '',
         minimum_payment: String(card.minimum_payment),
         payment_due_day:
           card.payment_due_day != null ? String(card.payment_due_day) : '',
@@ -301,6 +304,14 @@ export function CreditCardsPage({
     }
     setDraft(card.id, field, String(next))
     await onUpdatePaymentCard(card.id, { [field]: next })
+  }
+
+  async function commitStatementAsOf(card: PaymentCard) {
+    const draft = drafts[card.id]
+    if (!draft) return
+    const next = draft.statement_balance_as_of.trim() || null
+    if (next === card.statement_balance_as_of) return
+    await onUpdatePaymentCard(card.id, { statement_balance_as_of: next })
   }
 
   async function commitCustomAmount(card: PaymentCard, fieldId: string) {
@@ -587,7 +598,7 @@ export function CreditCardsPage({
                     </label>
                   )}
                   {show('statement_balance') && (
-                    <label>
+                    <label className="credit-card-statement-field">
                       {fieldCatalog.find((f) => f.id === 'statement_balance')
                         ?.label ?? 'Statement balance'}
                       <input
@@ -610,6 +621,28 @@ export function CreditCardsPage({
                           if (e.key === 'Enter') e.currentTarget.blur()
                         }}
                       />
+                      <span className="credit-card-as-of-row">
+                        <span className="credit-card-as-of-label">as of</span>
+                        <input
+                          type="date"
+                          value={draft.statement_balance_as_of}
+                          disabled={busy}
+                          aria-label="Statement balance as of date"
+                          onChange={(e) =>
+                            setDraft(
+                              card.id,
+                              'statement_balance_as_of',
+                              e.target.value,
+                            )
+                          }
+                          onBlur={() => void commitStatementAsOf(card)}
+                        />
+                      </span>
+                      {card.statement_balance_as_of ? (
+                        <span className="credit-card-resolved muted">
+                          as of {displayEntryDate(card.statement_balance_as_of)}
+                        </span>
+                      ) : null}
                     </label>
                   )}
                   {show('minimum_payment') && (

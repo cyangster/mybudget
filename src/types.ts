@@ -45,6 +45,7 @@ export interface PaymentCard {
   created_at: string
   total_balance: number
   statement_balance: number
+  statement_balance_as_of: string | null
   minimum_payment: number
   /** @deprecated Prefer payment_due_day + offset */
   payment_due_date: string | null

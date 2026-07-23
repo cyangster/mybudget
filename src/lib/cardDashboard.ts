@@ -26,7 +26,7 @@ export const BUILTIN_CARD_FIELD_CATALOG: CardFieldCatalogItem[] = [
   {
     id: 'statement_balance',
     label: 'Statement balance',
-    description: 'Last statement balance',
+    description: 'Last statement balance, with an as-of date',
     kind: 'builtin',
   },
   {

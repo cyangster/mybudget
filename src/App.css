@@ -1934,6 +1934,26 @@ button.icon-btn.danger:hover:not(:disabled) {
   color: var(--muted);
 }
 
+.credit-card-statement-field {
+  grid-column: 1 / -1;
+}
+
+.credit-card-as-of-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.35rem;
+  align-items: center;
+  margin-top: 0.35rem;
+}
+
+.credit-card-as-of-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
 .credit-card-cycle-field {
   grid-column: 1 / -1;
 }
