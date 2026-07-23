@@ -43,6 +43,11 @@ export interface PaymentCard {
   is_default: boolean
   sort_order: number
   created_at: string
+  total_balance: number
+  statement_balance: number
+  minimum_payment: number
+  payment_due_date: string | null
+  next_closing_date: string | null
 }
 
 export interface CardMonthOverride {

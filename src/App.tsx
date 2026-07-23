@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { Login } from './components/Login'
 import { MonthNav } from './components/MonthNav'
@@ -5,13 +6,17 @@ import { IncomeHeader } from './components/IncomeHeader'
 import { Summary } from './components/Summary'
 import { BudgetSectionView } from './components/BudgetSection'
 import { SpendCalendar } from './components/SpendCalendar'
+import { CreditCardsPage } from './components/CreditCardsPage'
 import { useBudget } from './hooks/useBudget'
 import { supabaseConfigured } from './lib/supabase'
 import { DASHBOARD_SECTIONS } from './types'
 import './App.css'
 
+type AppView = 'budget' | 'cards'
+
 function BudgetApp() {
   const { user, signOut } = useAuth()
+  const [view, setView] = useState<AppView>('budget')
   const {
     months,
     selectedMonth,
@@ -36,6 +41,7 @@ function BudgetApp() {
     updateEntry,
     deleteEntry,
     addPaymentCard,
+    updatePaymentCard,
     saveCardDisplayTotal,
   } = useBudget(user!.id)
 
@@ -52,23 +58,51 @@ function BudgetApp() {
       <header className="app-header">
         <div className="brand">
           <h1>My Budget</h1>
+          <nav className="app-view-tabs" aria-label="App sections">
+            <button
+              type="button"
+              className={`app-view-tab${view === 'budget' ? ' is-active' : ''}`}
+              onClick={() => setView('budget')}
+              aria-pressed={view === 'budget'}
+            >
+              Budget
+            </button>
+            <button
+              type="button"
+              className={`app-view-tab${view === 'cards' ? ' is-active' : ''}`}
+              onClick={() => setView('cards')}
+              aria-pressed={view === 'cards'}
+            >
+              Cards
+            </button>
+          </nav>
           <button type="button" className="ghost small" onClick={() => void signOut()}>
             Sign out
           </button>
         </div>
-        <MonthNav
-          months={months}
-          selectedMonthId={selectedMonthId}
-          onSelect={setSelectedMonthId}
-          onNewMonth={() => void createMonth()}
-          onDeleteMonth={(id) => void deleteMonth(id)}
-          busy={busy}
-        />
+        {view === 'budget' && (
+          <MonthNav
+            months={months}
+            selectedMonthId={selectedMonthId}
+            onSelect={setSelectedMonthId}
+            onNewMonth={() => void createMonth()}
+            onDeleteMonth={(id) => void deleteMonth(id)}
+            busy={busy}
+          />
+        )}
       </header>
 
       {error && <p className="error banner">{error}</p>}
 
-      {months.length === 0 ? (
+      {view === 'cards' ? (
+        <CreditCardsPage
+          paymentCards={paymentCards}
+          cardSpendTotals={cardSpendTotals}
+          onAddPaymentCard={addPaymentCard}
+          onUpdatePaymentCard={updatePaymentCard}
+          busy={busy}
+        />
+      ) : months.length === 0 ? (
         <div className="empty-state">
           <p>No budget months yet.</p>
           <button

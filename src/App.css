@@ -30,6 +30,35 @@
   gap: 0.65rem;
 }
 
+.app-view-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 85%, var(--bg));
+}
+
+.app-view-tab {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.app-view-tab.is-active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
 .brand h1 {
   margin: 0;
   font-size: 1.05rem;
@@ -1775,3 +1804,196 @@ button.icon-btn.danger:hover:not(:disabled) {
     max-height: none;
   }
 }
+
+.credit-cards-page {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding-bottom: 0.5rem;
+}
+
+.credit-cards-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.credit-cards-page-header h2 {
+  margin: 0 0 0.2rem;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+
+.credit-cards-page-header .muted {
+  margin: 0;
+  font-size: 0.85rem;
+  max-width: 36rem;
+}
+
+.credit-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17.5rem, 1fr));
+  gap: 0.75rem;
+  align-content: start;
+}
+
+.credit-card-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 0.75rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.credit-card-panel.tone-due-ok {
+  background: var(--done-bg);
+  border-color: color-mix(in srgb, var(--done) 35%, var(--border));
+}
+
+.credit-card-panel.tone-due-soon {
+  background: var(--open-bg);
+  border-color: color-mix(in srgb, var(--open) 40%, var(--border));
+}
+
+.credit-card-panel.tone-due-urgent {
+  background: var(--over-bg);
+  border-color: color-mix(in srgb, #c2410c 45%, var(--border));
+}
+
+.credit-card-panel.tone-due-overdue {
+  background: #fef2f2;
+  border-color: color-mix(in srgb, var(--negative) 50%, var(--border));
+}
+
+.credit-card-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.credit-card-name-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0.15rem 0.3rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.credit-card-name-input:hover,
+.credit-card-name-input:focus {
+  border-color: var(--border);
+  background: var(--surface);
+  outline: none;
+}
+
+.credit-card-due-pill {
+  flex: 0 0 auto;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #eef2f7;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.credit-card-due-pill.tone-due-ok {
+  background: color-mix(in srgb, var(--done-bg) 80%, white);
+  border-color: color-mix(in srgb, var(--done) 35%, var(--border));
+  color: var(--done);
+}
+
+.credit-card-due-pill.tone-due-soon {
+  background: color-mix(in srgb, var(--open-bg) 80%, white);
+  border-color: color-mix(in srgb, var(--open) 35%, var(--border));
+  color: var(--open);
+}
+
+.credit-card-due-pill.tone-due-urgent {
+  background: color-mix(in srgb, var(--over-bg) 80%, white);
+  border-color: color-mix(in srgb, #c2410c 40%, var(--border));
+  color: #c2410c;
+}
+
+.credit-card-due-pill.tone-due-overdue {
+  background: #fee2e2;
+  border-color: color-mix(in srgb, var(--negative) 40%, var(--border));
+  color: var(--negative);
+}
+
+.credit-card-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem 0.55rem;
+}
+
+.credit-card-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.credit-card-fields input {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 0.35rem 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.credit-card-panel-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+  padding-top: 0.35rem;
+  border-top: 1px dashed var(--border);
+  font-size: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .credit-card-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .brand {
+    flex-wrap: wrap;
+  }
+}
+

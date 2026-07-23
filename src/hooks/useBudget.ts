@@ -43,6 +43,11 @@ function toCard(row: PaymentCard): PaymentCard {
   return {
     ...row,
     is_default: Boolean(row.is_default),
+    total_balance: Number(row.total_balance ?? 0),
+    statement_balance: Number(row.statement_balance ?? 0),
+    minimum_payment: Number(row.minimum_payment ?? 0),
+    payment_due_date: row.payment_due_date ?? null,
+    next_closing_date: row.next_closing_date ?? null,
   }
 }
 
@@ -786,6 +791,50 @@ export function useBudget(userId: string) {
     [userId, paymentCards],
   )
 
+  const updatePaymentCard = useCallback(
+    async (
+      id: string,
+      patch: Partial<
+        Pick<
+          PaymentCard,
+          | 'name'
+          | 'total_balance'
+          | 'statement_balance'
+          | 'minimum_payment'
+          | 'payment_due_date'
+          | 'next_closing_date'
+          | 'is_default'
+        >
+      >,
+    ) => {
+      setBusy(true)
+      setError(null)
+
+      const { error: err } = await supabase
+        .from('payment_cards')
+        .update(patch)
+        .eq('id', id)
+
+      setBusy(false)
+      if (err) {
+        setError(err.message)
+        return
+      }
+
+      setPaymentCards((prev) =>
+        prev.map((card) =>
+          card.id === id
+            ? toCard({
+                ...card,
+                ...patch,
+              } as PaymentCard)
+            : card,
+        ),
+      )
+    },
+    [],
+  )
+
   const saveCardDisplayTotal = useCallback(
     async (cardId: string, displayTotal: number | null) => {
       if (!selectedMonthId) return
@@ -874,6 +923,7 @@ export function useBudget(userId: string) {
     updateEntry,
     deleteEntry,
     addPaymentCard,
+    updatePaymentCard,
     saveCardDisplayTotal,
   }
 }
