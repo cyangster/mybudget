@@ -2138,6 +2138,44 @@ button.icon-btn.danger:hover:not(:disabled) {
   letter-spacing: normal;
 }
 
+.money-input {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 0 0.45rem 0 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.money-input-prefix {
+  flex: 0 0 auto;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--muted);
+  line-height: 1;
+}
+
+.money-input input {
+  border: none;
+  background: transparent;
+  border-radius: 0;
+  padding-left: 0.15rem;
+  padding-right: 0;
+}
+
+.money-input input:focus {
+  outline: none;
+}
+
+.money-input:focus-within {
+  outline: 2px solid color-mix(in srgb, var(--accent, #2563eb) 55%, transparent);
+  outline-offset: 1px;
+}
+
 .credit-card-carryover {
   grid-column: 1 / -1;
   margin: 0;

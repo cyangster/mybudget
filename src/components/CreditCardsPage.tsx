@@ -574,46 +574,56 @@ export function CreditCardsPage({
                     <label>
                       {fieldCatalog.find((f) => f.id === 'total_balance')
                         ?.label ?? 'Total balance'}
-                      <input
-                        type="number"
-                        step="0.01"
-                        inputMode="decimal"
-                        value={draft.total_balance}
-                        disabled={busy}
-                        onChange={(e) =>
-                          setDraft(card.id, 'total_balance', e.target.value)
-                        }
-                        onBlur={() => void commitAmount(card, 'total_balance')}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') e.currentTarget.blur()
-                        }}
-                      />
+                      <span className="money-input">
+                        <span className="money-input-prefix" aria-hidden="true">
+                          $
+                        </span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          inputMode="decimal"
+                          value={draft.total_balance}
+                          disabled={busy}
+                          onChange={(e) =>
+                            setDraft(card.id, 'total_balance', e.target.value)
+                          }
+                          onBlur={() => void commitAmount(card, 'total_balance')}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') e.currentTarget.blur()
+                          }}
+                        />
+                      </span>
                     </label>
                   )}
                   {show('statement_balance') && (
                     <label className="credit-card-statement-field">
                       {fieldCatalog.find((f) => f.id === 'statement_balance')
                         ?.label ?? 'Statement balance'}
-                      <input
-                        type="number"
-                        step="0.01"
-                        inputMode="decimal"
-                        value={draft.statement_balance}
-                        disabled={busy}
-                        onChange={(e) =>
-                          setDraft(
-                            card.id,
-                            'statement_balance',
-                            e.target.value,
-                          )
-                        }
-                        onBlur={() =>
-                          void commitAmount(card, 'statement_balance')
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') e.currentTarget.blur()
-                        }}
-                      />
+                      <span className="money-input">
+                        <span className="money-input-prefix" aria-hidden="true">
+                          $
+                        </span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          inputMode="decimal"
+                          value={draft.statement_balance}
+                          disabled={busy}
+                          onChange={(e) =>
+                            setDraft(
+                              card.id,
+                              'statement_balance',
+                              e.target.value,
+                            )
+                          }
+                          onBlur={() =>
+                            void commitAmount(card, 'statement_balance')
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') e.currentTarget.blur()
+                          }}
+                        />
+                      </span>
                       <span className="credit-card-as-of-row">
                         <span className="credit-card-as-of-label">as of</span>
                         <input
@@ -649,22 +659,27 @@ export function CreditCardsPage({
                     <label>
                       {fieldCatalog.find((f) => f.id === 'minimum_payment')
                         ?.label ?? 'Minimum'}
-                      <input
-                        type="number"
-                        step="0.01"
-                        inputMode="decimal"
-                        value={draft.minimum_payment}
-                        disabled={busy}
-                        onChange={(e) =>
-                          setDraft(card.id, 'minimum_payment', e.target.value)
-                        }
-                        onBlur={() =>
-                          void commitAmount(card, 'minimum_payment')
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') e.currentTarget.blur()
-                        }}
-                      />
+                      <span className="money-input">
+                        <span className="money-input-prefix" aria-hidden="true">
+                          $
+                        </span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          inputMode="decimal"
+                          value={draft.minimum_payment}
+                          disabled={busy}
+                          onChange={(e) =>
+                            setDraft(card.id, 'minimum_payment', e.target.value)
+                          }
+                          onBlur={() =>
+                            void commitAmount(card, 'minimum_payment')
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') e.currentTarget.blur()
+                          }}
+                        />
+                      </span>
                     </label>
                   )}
                   {show('payment_due') && (
@@ -687,22 +702,20 @@ export function CreditCardsPage({
                       />
                     </label>
                   )}
-                  {show('payment_paid') && (
-                    <div className="credit-card-paid-field">
-                      <span className="credit-card-paid-label">
-                        {fieldCatalog.find((f) => f.id === 'payment_paid')
-                          ?.label ?? 'Paid status'}
-                      </span>
-                      <button
-                        type="button"
-                        className={`credit-card-paid-toggle${card.payment_paid ? ' is-paid' : ''}`}
-                        disabled={busy}
-                        onClick={() => void togglePaid(card)}
-                      >
-                        {card.payment_paid ? 'Paid' : 'Not paid'}
-                      </button>
-                    </div>
-                  )}
+                  <div className="credit-card-paid-field">
+                    <span className="credit-card-paid-label">
+                      {fieldCatalog.find((f) => f.id === 'payment_paid')
+                        ?.label ?? 'Paid status'}
+                    </span>
+                    <button
+                      type="button"
+                      className={`credit-card-paid-toggle${card.payment_paid ? ' is-paid' : ''}`}
+                      disabled={busy}
+                      onClick={() => void togglePaid(card)}
+                    >
+                      {card.payment_paid ? 'Paid' : 'Not paid'}
+                    </button>
+                  </div>
                   {show('next_closing') && (
                     <label className="credit-card-cycle-field">
                       {fieldCatalog.find((f) => f.id === 'next_closing')
@@ -752,22 +765,27 @@ export function CreditCardsPage({
                     .map((field) => (
                       <label key={field.id}>
                         {field.label}
-                        <input
-                          type="number"
-                          step="0.01"
-                          inputMode="decimal"
-                          value={draft.custom[field.id] ?? '0'}
-                          disabled={busy}
-                          onChange={(e) =>
-                            setCustomDraft(card.id, field.id, e.target.value)
-                          }
-                          onBlur={() =>
-                            void commitCustomAmount(card, field.id)
-                          }
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') e.currentTarget.blur()
-                          }}
-                        />
+                        <span className="money-input">
+                          <span className="money-input-prefix" aria-hidden="true">
+                            $
+                          </span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            inputMode="decimal"
+                            value={draft.custom[field.id] ?? '0'}
+                            disabled={busy}
+                            onChange={(e) =>
+                              setCustomDraft(card.id, field.id, e.target.value)
+                            }
+                            onBlur={() =>
+                              void commitCustomAmount(card, field.id)
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') e.currentTarget.blur()
+                            }}
+                          />
+                        </span>
                       </label>
                     ))}
                 </div>

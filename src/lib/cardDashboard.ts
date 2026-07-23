@@ -138,6 +138,44 @@ export function saveCardFieldCatalog(items: CardFieldCatalogItem[]) {
   )
 }
 
+const AUTO_ENABLED_FIELDS_KEY = 'mybudget.cardDashboardAutoEnabled.v1'
+
+/** One-time: turn on newly shipped fields for people who already use the dashboard. */
+function ensureAutoEnabledFields(
+  fields: CardDashboardField[],
+  catalog: CardFieldCatalogItem[],
+): CardDashboardField[] {
+  if (fields.length === 0) return fields
+  try {
+    const raw = localStorage.getItem(AUTO_ENABLED_FIELDS_KEY)
+    const already = new Set(
+      raw ? (JSON.parse(raw) as unknown[]).filter((x) => typeof x === 'string') : [],
+    )
+    const allowed = new Set(catalog.map((f) => f.id))
+    let next = fields
+    const newly: string[] = []
+    for (const id of ['payment_paid'] as BuiltInCardField[]) {
+      if (already.has(id) || !allowed.has(id)) continue
+      newly.push(id)
+      if (next.includes(id)) continue
+      const dueIdx = next.indexOf('payment_due')
+      next =
+        dueIdx >= 0
+          ? [...next.slice(0, dueIdx + 1), id, ...next.slice(dueIdx + 1)]
+          : [...next, id]
+    }
+    if (newly.length === 0) return fields
+    localStorage.setItem(
+      AUTO_ENABLED_FIELDS_KEY,
+      JSON.stringify([...already, ...newly]),
+    )
+    if (next !== fields) saveCardDashboardFields(next)
+    return next
+  } catch {
+    return fields
+  }
+}
+
 export function loadCardDashboardFields(
   catalog: CardFieldCatalogItem[],
 ): CardDashboardField[] {
@@ -147,10 +185,11 @@ export function loadCardDashboardFields(
     const parsed = JSON.parse(raw) as unknown
     if (!Array.isArray(parsed)) return [...DEFAULT_CARD_DASHBOARD_FIELDS]
     const allowed = new Set(catalog.map((f) => f.id))
-    return parsed.filter(
+    const loaded = parsed.filter(
       (id): id is CardDashboardField =>
         typeof id === 'string' && allowed.has(id),
     )
+    return ensureAutoEnabledFields(loaded, catalog)
   } catch {
     return [...DEFAULT_CARD_DASHBOARD_FIELDS]
   }
