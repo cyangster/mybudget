@@ -46,14 +46,7 @@ export const CARD_FIELD_CATALOG: CardFieldCatalogItem[] = [
   },
 ]
 
-export const DEFAULT_CARD_DASHBOARD_FIELDS: CardDashboardField[] = [
-  'total_balance',
-  'statement_balance',
-  'minimum_payment',
-  'payment_due',
-  'next_closing',
-  'month_spend',
-]
+export const DEFAULT_CARD_DASHBOARD_FIELDS: CardDashboardField[] = []
 
 const STORAGE_KEY = 'mybudget.cardDashboardFields'
 
@@ -68,7 +61,7 @@ export function loadCardDashboardFields(): CardDashboardField[] {
       (id): id is CardDashboardField =>
         typeof id === 'string' && allowed.has(id as CardDashboardField),
     )
-    return filtered.length > 0 ? filtered : [...DEFAULT_CARD_DASHBOARD_FIELDS]
+    return filtered
   } catch {
     return [...DEFAULT_CARD_DASHBOARD_FIELDS]
   }

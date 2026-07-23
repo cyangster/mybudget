@@ -234,8 +234,9 @@ export function CreditCardsPage({
         <div>
           <h2>Credit cards</h2>
           <p className="muted">
-            Pick which fields to show. Due and closing dates follow the selected
-            budget month (closing is usually next month).
+            Nothing is shown until you pick fields in Field catalog. Due and
+            closing dates follow the selected budget month (closing is usually
+            next month).
           </p>
         </div>
         <div className="credit-cards-page-actions">
