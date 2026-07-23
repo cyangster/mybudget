@@ -461,7 +461,6 @@ export function CategoryCostsModal({
               type="number"
               step="0.01"
               inputMode="decimal"
-              placeholder="Amount"
               value={entryAmount}
               onChange={(e) => setEntryAmount(e.target.value)}
               required

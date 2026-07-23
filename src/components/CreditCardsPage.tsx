@@ -678,7 +678,6 @@ export function CreditCardsPage({
                           min={1}
                           max={31}
                           inputMode="numeric"
-                          placeholder="Day"
                           value={draft.payment_due_day}
                           disabled={busy}
                           onChange={(e) =>
@@ -707,7 +706,7 @@ export function CreditCardsPage({
                       </div>
                       {dueDate && (
                         <span className="credit-card-resolved muted">
-                          → {displayEntryDate(dueDate)}
+                          {displayEntryDate(dueDate)}
                         </span>
                       )}
                     </label>
@@ -723,7 +722,6 @@ export function CreditCardsPage({
                           min={1}
                           max={31}
                           inputMode="numeric"
-                          placeholder="Day"
                           value={draft.next_closing_day}
                           disabled={busy}
                           onChange={(e) =>
@@ -752,7 +750,7 @@ export function CreditCardsPage({
                       </div>
                       {closingDate && (
                         <span className="credit-card-resolved muted">
-                          → {displayEntryDate(closingDate)}
+                          {displayEntryDate(closingDate)}
                         </span>
                       )}
                     </label>

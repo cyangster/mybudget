@@ -1361,6 +1361,18 @@ input[type='number'],
   color: var(--text);
 }
 
+/* Hide spinner arrows on number fields everywhere */
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 .inline-actions {
   display: flex;
   gap: 0.4rem;
