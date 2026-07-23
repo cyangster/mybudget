@@ -71,6 +71,30 @@ export function saveCardDashboardFields(fields: CardDashboardField[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(fields))
 }
 
+const CARD_VISIBILITY_KEY = 'mybudget.cardDashboardVisibleCards.v1'
+
+/** Empty by default — nothing appears until you pick cards from the catalog. */
+export function loadVisibleDashboardCardIds(
+  knownIds: string[],
+): string[] {
+  try {
+    const raw = localStorage.getItem(CARD_VISIBILITY_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as unknown
+    if (!Array.isArray(parsed)) return []
+    const known = new Set(knownIds)
+    return parsed.filter(
+      (id): id is string => typeof id === 'string' && known.has(id),
+    )
+  } catch {
+    return []
+  }
+}
+
+export function saveVisibleDashboardCardIds(ids: string[]) {
+  localStorage.setItem(CARD_VISIBILITY_KEY, JSON.stringify(ids))
+}
+
 /** Build YYYY-MM-DD from budget month label + day + month offset. */
 export function resolveCycleDate(
   monthLabel: string,

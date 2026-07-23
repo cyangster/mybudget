@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   CARD_FIELD_CATALOG,
   loadCardDashboardFields,
+  loadVisibleDashboardCardIds,
   resolveCycleDate,
   saveCardDashboardFields,
+  saveVisibleDashboardCardIds,
   type CardDashboardField,
 } from '../lib/cardDashboard'
 import { displayEntryDate, formatCurrency, parseAmount } from '../lib/format'
@@ -88,7 +90,19 @@ export function CreditCardsPage({
   const [visibleFields, setVisibleFields] = useState<CardDashboardField[]>(() =>
     loadCardDashboardFields(),
   )
+  const [visibleCardIds, setVisibleCardIds] = useState<string[]>([])
   const [catalogOpen, setCatalogOpen] = useState(false)
+
+  useEffect(() => {
+    setVisibleCardIds(
+      loadVisibleDashboardCardIds(paymentCards.map((c) => c.id)),
+    )
+  }, [paymentCards])
+
+  const dashboardCards = useMemo(
+    () => paymentCards.filter((c) => visibleCardIds.includes(c.id)),
+    [paymentCards, visibleCardIds],
+  )
 
   const [drafts, setDrafts] = useState<
     Record<
@@ -150,6 +164,20 @@ export function CreditCardsPage({
         next.includes(f),
       )
       saveCardDashboardFields(ordered)
+      return ordered
+    })
+  }
+
+  function toggleCard(id: string) {
+    setVisibleCardIds((prev) => {
+      const next = prev.includes(id)
+        ? prev.filter((c) => c !== id)
+        : [...prev, id]
+      // Keep order aligned with paymentCards list
+      const ordered = paymentCards
+        .map((c) => c.id)
+        .filter((cardId) => next.includes(cardId))
+      saveVisibleDashboardCardIds(ordered)
       return ordered
     })
   }
@@ -234,7 +262,7 @@ export function CreditCardsPage({
         <div>
           <h2>Credit cards</h2>
           <p className="muted">
-            Nothing is shown until you pick fields in Field catalog. Due and
+            Nothing is shown until you pick cards and fields in Catalog. Due and
             closing dates follow the selected budget month (closing is usually
             next month).
           </p>
@@ -245,7 +273,7 @@ export function CreditCardsPage({
             className="ghost small"
             onClick={() => setCatalogOpen((v) => !v)}
           >
-            {catalogOpen ? 'Hide catalog' : 'Field catalog'}
+            {catalogOpen ? 'Hide catalog' : 'Catalog'}
           </button>
           <button
             type="button"
@@ -259,8 +287,32 @@ export function CreditCardsPage({
       </header>
 
       {catalogOpen && (
-        <div className="card-field-catalog" aria-label="Field catalog">
-          <p className="card-field-catalog-title">Show on dashboard</p>
+        <div className="card-field-catalog" aria-label="Dashboard catalog">
+          <p className="card-field-catalog-title">Cards to show</p>
+          {paymentCards.length === 0 ? (
+            <p className="muted">No cards yet. Add one first.</p>
+          ) : (
+            <div className="card-field-catalog-list">
+              {paymentCards.map((card) => {
+                const checked = visibleCardIds.includes(card.id)
+                return (
+                  <label key={card.id} className="card-field-catalog-item">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleCard(card.id)}
+                    />
+                    <span>
+                      <strong>{card.name}</strong>
+                      <em>Show this card on the dashboard</em>
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+          )}
+
+          <p className="card-field-catalog-title">Fields to show</p>
           <div className="card-field-catalog-list">
             {CARD_FIELD_CATALOG.map((item) => {
               const checked = visibleFields.includes(item.id)
@@ -284,13 +336,18 @@ export function CreditCardsPage({
 
       {paymentCards.length === 0 ? (
         <p className="muted center">No cards yet. Add Freedom or another card.</p>
+      ) : dashboardCards.length === 0 ? (
+        <p className="muted center">
+          No cards selected. Open Catalog and check the cards you want (e.g.
+          Freedom, not Venmo).
+        </p>
       ) : visibleFields.length === 0 ? (
         <p className="muted center">
-          No fields selected. Open Field catalog and check what you want to show.
+          No fields selected. Open Catalog and check what you want to show.
         </p>
       ) : (
         <div className="credit-cards-grid">
-          {paymentCards.map((card) => {
+          {dashboardCards.map((card) => {
             const draft = drafts[card.id]
             if (!draft) return null
 
