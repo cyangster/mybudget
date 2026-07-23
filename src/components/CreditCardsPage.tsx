@@ -32,8 +32,8 @@ interface CreditCardsPageProps {
         | 'statement_balance'
         | 'statement_balance_as_of'
         | 'minimum_payment'
-        | 'payment_due_day'
-        | 'payment_due_month_offset'
+        | 'payment_due_date'
+        | 'payment_paid'
         | 'next_closing_day'
         | 'next_closing_month_offset'
         | 'custom_fields'
@@ -129,8 +129,7 @@ export function CreditCardsPage({
         statement_balance: string
         statement_balance_as_of: string
         minimum_payment: string
-        payment_due_day: string
-        payment_due_month_offset: string
+        payment_due_date: string
         next_closing_day: string
         next_closing_month_offset: string
         custom: Record<string, string>
@@ -152,9 +151,7 @@ export function CreditCardsPage({
         statement_balance: String(card.statement_balance),
         statement_balance_as_of: card.statement_balance_as_of ?? '',
         minimum_payment: String(card.minimum_payment),
-        payment_due_day:
-          card.payment_due_day != null ? String(card.payment_due_day) : '',
-        payment_due_month_offset: String(card.payment_due_month_offset ?? 0),
+        payment_due_date: card.payment_due_date ?? '',
         next_closing_day:
           card.next_closing_day != null ? String(card.next_closing_day) : '',
         next_closing_month_offset: String(card.next_closing_month_offset ?? 1),
@@ -332,13 +329,16 @@ export function CreditCardsPage({
     })
   }
 
-  async function commitDueDay(card: PaymentCard) {
+  async function commitDueDate(card: PaymentCard) {
     const draft = drafts[card.id]
     if (!draft) return
-    const next = clampDay(draft.payment_due_day)
-    setDraft(card.id, 'payment_due_day', next != null ? String(next) : '')
-    if (next === card.payment_due_day) return
-    await onUpdatePaymentCard(card.id, { payment_due_day: next })
+    const next = draft.payment_due_date.trim() || null
+    if (next === card.payment_due_date) return
+    await onUpdatePaymentCard(card.id, { payment_due_date: next })
+  }
+
+  async function togglePaid(card: PaymentCard) {
+    await onUpdatePaymentCard(card.id, { payment_paid: !card.payment_paid })
   }
 
   async function commitClosingDay(card: PaymentCard) {
@@ -348,13 +348,6 @@ export function CreditCardsPage({
     setDraft(card.id, 'next_closing_day', next != null ? String(next) : '')
     if (next === card.next_closing_day) return
     await onUpdatePaymentCard(card.id, { next_closing_day: next })
-  }
-
-  async function commitDueOffset(card: PaymentCard, value: string) {
-    const next = Number(value)
-    setDraft(card.id, 'payment_due_month_offset', String(next))
-    if (next === card.payment_due_month_offset) return
-    await onUpdatePaymentCard(card.id, { payment_due_month_offset: next })
   }
 
   async function commitClosingOffset(card: PaymentCard, value: string) {
@@ -535,13 +528,7 @@ export function CreditCardsPage({
             const draft = drafts[card.id]
             if (!draft) return null
 
-            const dueDate = monthLabel
-              ? resolveCycleDate(
-                  monthLabel,
-                  card.payment_due_day,
-                  card.payment_due_month_offset,
-                )
-              : null
+            const dueDate = card.payment_due_date
             const closingDate = monthLabel
               ? resolveCycleDate(
                   monthLabel,
@@ -549,13 +536,19 @@ export function CreditCardsPage({
                   card.next_closing_month_offset,
                 )
               : null
-            const tone = dueTone(dueDate)
+            const tone = card.payment_paid ? 'ok' : dueTone(dueDate)
             const spend = spendByCard.get(card.id)
+            const carryOver = Math.max(
+              0,
+              Math.round(
+                (card.total_balance - card.statement_balance) * 100,
+              ) / 100,
+            )
 
             return (
               <article
                 key={card.id}
-                className={`credit-card-panel tone-due-${tone}`}
+                className={`credit-card-panel tone-due-${tone}${card.payment_paid ? ' is-paid' : ''}`}
               >
                 <header className="credit-card-panel-header">
                   <input
@@ -571,7 +564,7 @@ export function CreditCardsPage({
                   />
                   {show('payment_due') && (
                     <span className={`credit-card-due-pill tone-due-${tone}`}>
-                      {dueLabel(dueDate)}
+                      {card.payment_paid ? 'Paid' : dueLabel(dueDate)}
                     </span>
                   )}
                 </header>
@@ -645,6 +638,13 @@ export function CreditCardsPage({
                       ) : null}
                     </label>
                   )}
+                  {(show('total_balance') || show('statement_balance')) && (
+                    <p className="credit-card-carryover muted">
+                      {carryOver > 0
+                        ? `If you pay only the statement, ${formatCurrency(carryOver)} carries to next month.`
+                        : 'Paying the statement covers the full balance.'}
+                    </p>
+                  )}
                   {show('minimum_payment') && (
                     <label>
                       {fieldCatalog.find((f) => f.id === 'minimum_payment')
@@ -668,48 +668,40 @@ export function CreditCardsPage({
                     </label>
                   )}
                   {show('payment_due') && (
-                    <label className="credit-card-cycle-field">
+                    <label>
                       {fieldCatalog.find((f) => f.id === 'payment_due')
-                        ?.label ?? 'Payment due'}{' '}
-                      day
-                      <div className="credit-card-cycle-row">
-                        <input
-                          type="number"
-                          min={1}
-                          max={31}
-                          inputMode="numeric"
-                          value={draft.payment_due_day}
-                          disabled={busy}
-                          onChange={(e) =>
-                            setDraft(
-                              card.id,
-                              'payment_due_day',
-                              e.target.value,
-                            )
-                          }
-                          onBlur={() => void commitDueDay(card)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') e.currentTarget.blur()
-                          }}
-                        />
-                        <select
-                          value={draft.payment_due_month_offset}
-                          disabled={busy}
-                          aria-label="Payment due month"
-                          onChange={(e) =>
-                            void commitDueOffset(card, e.target.value)
-                          }
-                        >
-                          <option value="0">This month</option>
-                          <option value="1">Next month</option>
-                        </select>
-                      </div>
-                      {dueDate && (
-                        <span className="credit-card-resolved muted">
-                          {displayEntryDate(dueDate)}
-                        </span>
-                      )}
+                        ?.label ?? 'Payment due'}
+                      <input
+                        type="date"
+                        value={draft.payment_due_date}
+                        disabled={busy}
+                        aria-label="Payment due date"
+                        onChange={(e) =>
+                          setDraft(
+                            card.id,
+                            'payment_due_date',
+                            e.target.value,
+                          )
+                        }
+                        onBlur={() => void commitDueDate(card)}
+                      />
                     </label>
+                  )}
+                  {show('payment_paid') && (
+                    <div className="credit-card-paid-field">
+                      <span className="credit-card-paid-label">
+                        {fieldCatalog.find((f) => f.id === 'payment_paid')
+                          ?.label ?? 'Paid status'}
+                      </span>
+                      <button
+                        type="button"
+                        className={`credit-card-paid-toggle${card.payment_paid ? ' is-paid' : ''}`}
+                        disabled={busy}
+                        onClick={() => void togglePaid(card)}
+                      >
+                        {card.payment_paid ? 'Paid' : 'Not paid'}
+                      </button>
+                    </div>
                   )}
                   {show('next_closing') && (
                     <label className="credit-card-cycle-field">

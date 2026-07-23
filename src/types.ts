@@ -47,11 +47,13 @@ export interface PaymentCard {
   statement_balance: number
   statement_balance_as_of: string | null
   minimum_payment: number
-  /** @deprecated Prefer payment_due_day + offset */
   payment_due_date: string | null
+  payment_paid: boolean
   /** @deprecated Prefer next_closing_day + offset */
   next_closing_date: string | null
+  /** @deprecated Prefer payment_due_date */
   payment_due_day: number | null
+  /** @deprecated Prefer payment_due_date */
   payment_due_month_offset: number
   next_closing_day: number | null
   next_closing_month_offset: number

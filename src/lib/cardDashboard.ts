@@ -4,6 +4,7 @@ export type BuiltInCardField =
   | 'statement_balance'
   | 'minimum_payment'
   | 'payment_due'
+  | 'payment_paid'
   | 'next_closing'
   | 'month_spend'
 
@@ -38,7 +39,13 @@ export const BUILTIN_CARD_FIELD_CATALOG: CardFieldCatalogItem[] = [
   {
     id: 'payment_due',
     label: 'Payment due',
-    description: 'Due day relative to the selected budget month',
+    description: 'Due date (mm/dd/yyyy)',
+    kind: 'builtin',
+  },
+  {
+    id: 'payment_paid',
+    label: 'Paid status',
+    description: 'Mark the payment as paid or not paid',
     kind: 'builtin',
   },
   {
@@ -92,10 +99,30 @@ export function loadCardFieldCatalog(): CardFieldCatalogItem[] {
         })
       }
     }
-    return items.length > 0 ? items : [...BUILTIN_CARD_FIELD_CATALOG]
+    return ensureNewBuiltIns(
+      items.length > 0 ? items : [...BUILTIN_CARD_FIELD_CATALOG],
+    )
   } catch {
     return [...BUILTIN_CARD_FIELD_CATALOG]
   }
+}
+
+/** Append newly introduced built-ins so existing catalogs pick them up. */
+function ensureNewBuiltIns(
+  items: CardFieldCatalogItem[],
+): CardFieldCatalogItem[] {
+  let next = items
+  for (const id of ['payment_paid'] as BuiltInCardField[]) {
+    if (next.some((f) => f.id === id)) continue
+    const item = BUILTIN_CARD_FIELD_CATALOG.find((f) => f.id === id)
+    if (!item) continue
+    const dueIdx = next.findIndex((f) => f.id === 'payment_due')
+    next =
+      id === 'payment_paid' && dueIdx >= 0
+        ? [...next.slice(0, dueIdx + 1), item, ...next.slice(dueIdx + 1)]
+        : [...next, item]
+  }
+  return next
 }
 
 export function saveCardFieldCatalog(items: CardFieldCatalogItem[]) {

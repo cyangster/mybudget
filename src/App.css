@@ -2138,6 +2138,55 @@ button.icon-btn.danger:hover:not(:disabled) {
   letter-spacing: normal;
 }
 
+.credit-card-carryover {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 600;
+}
+
+.credit-card-paid-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.credit-card-paid-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.credit-card-paid-toggle {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--negative) 35%, var(--border));
+  border-radius: 8px;
+  background: #fef2f2;
+  color: var(--negative);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.credit-card-paid-toggle.is-paid {
+  border-color: color-mix(in srgb, var(--positive, #15803d) 40%, var(--border));
+  background: #ecfdf5;
+  color: var(--positive, #15803d);
+}
+
+.credit-card-panel.is-paid {
+  border-color: color-mix(in srgb, var(--positive, #15803d) 28%, var(--border));
+}
+
 .credit-card-panel-footer {
   display: flex;
   flex-wrap: wrap;

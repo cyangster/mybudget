@@ -70,6 +70,7 @@ function toCard(row: PaymentCard): PaymentCard {
     statement_balance_as_of: row.statement_balance_as_of ?? null,
     minimum_payment: Number(row.minimum_payment ?? 0),
     payment_due_date: row.payment_due_date ?? null,
+    payment_paid: Boolean(row.payment_paid),
     next_closing_date: row.next_closing_date ?? null,
     payment_due_day: Number.isFinite(paymentDueDay) ? paymentDueDay : null,
     payment_due_month_offset: Number(row.payment_due_month_offset ?? 0),
@@ -831,6 +832,7 @@ export function useBudget(userId: string) {
           | 'statement_balance_as_of'
           | 'minimum_payment'
           | 'payment_due_date'
+          | 'payment_paid'
           | 'next_closing_date'
           | 'payment_due_day'
           | 'payment_due_month_offset'
