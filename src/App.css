@@ -1850,6 +1850,51 @@ button.icon-btn.danger:hover:not(:disabled) {
   color: var(--muted);
 }
 
+.card-field-catalog-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.card-field-catalog-item.is-manage {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.card-catalog-rename {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.danger-text {
+  color: var(--negative) !important;
+}
+
+.card-field-restore {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px dashed var(--border);
+}
+
+.card-field-restore-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
 .card-field-catalog-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));

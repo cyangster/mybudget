@@ -54,6 +54,7 @@ export interface PaymentCard {
   payment_due_month_offset: number
   next_closing_day: number | null
   next_closing_month_offset: number
+  custom_fields: Record<string, number>
 }
 
 export interface CardMonthOverride {

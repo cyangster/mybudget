@@ -42,6 +42,7 @@ function BudgetApp() {
     deleteEntry,
     addPaymentCard,
     updatePaymentCard,
+    deletePaymentCard,
     saveCardDisplayTotal,
   } = useBudget(user!.id)
 
@@ -99,6 +100,7 @@ function BudgetApp() {
           cardSpendTotals={cardSpendTotals}
           onAddPaymentCard={addPaymentCard}
           onUpdatePaymentCard={updatePaymentCard}
+          onDeletePaymentCard={deletePaymentCard}
           busy={busy}
         />
       ) : months.length === 0 ? (

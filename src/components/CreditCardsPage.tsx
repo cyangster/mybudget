@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  CARD_FIELD_CATALOG,
+  BUILTIN_CARD_FIELD_CATALOG,
   loadCardDashboardFields,
+  loadCardFieldCatalog,
   loadVisibleDashboardCardIds,
+  newCustomFieldId,
   resolveCycleDate,
   saveCardDashboardFields,
+  saveCardFieldCatalog,
   saveVisibleDashboardCardIds,
   type CardDashboardField,
+  type CardFieldCatalogItem,
 } from '../lib/cardDashboard'
 import { displayEntryDate, formatCurrency, parseAmount } from '../lib/format'
 import type { CardSpendTotal, PaymentCard } from '../types'
@@ -31,9 +35,11 @@ interface CreditCardsPageProps {
         | 'payment_due_month_offset'
         | 'next_closing_day'
         | 'next_closing_month_offset'
+        | 'custom_fields'
       >
     >,
   ) => Promise<void>
+  onDeletePaymentCard: (id: string) => Promise<void>
   busy?: boolean
 }
 
@@ -79,6 +85,7 @@ export function CreditCardsPage({
   cardSpendTotals,
   onAddPaymentCard,
   onUpdatePaymentCard,
+  onDeletePaymentCard,
   busy,
 }: CreditCardsPageProps) {
   const spendByCard = useMemo(() => {
@@ -87,8 +94,11 @@ export function CreditCardsPage({
     return map
   }, [cardSpendTotals])
 
+  const [fieldCatalog, setFieldCatalog] = useState<CardFieldCatalogItem[]>(() =>
+    loadCardFieldCatalog(),
+  )
   const [visibleFields, setVisibleFields] = useState<CardDashboardField[]>(() =>
-    loadCardDashboardFields(),
+    loadCardDashboardFields(loadCardFieldCatalog()),
   )
   const [visibleCardIds, setVisibleCardIds] = useState<string[]>([])
   const [catalogOpen, setCatalogOpen] = useState(false)
@@ -104,6 +114,11 @@ export function CreditCardsPage({
     [paymentCards, visibleCardIds],
   )
 
+  const removedBuiltIns = useMemo(() => {
+    const present = new Set(fieldCatalog.map((f) => f.id))
+    return BUILTIN_CARD_FIELD_CATALOG.filter((f) => !present.has(f.id))
+  }, [fieldCatalog])
+
   const [drafts, setDrafts] = useState<
     Record<
       string,
@@ -116,6 +131,7 @@ export function CreditCardsPage({
         payment_due_month_offset: string
         next_closing_day: string
         next_closing_month_offset: string
+        custom: Record<string, string>
       }
     >
   >({})
@@ -123,6 +139,11 @@ export function CreditCardsPage({
   useEffect(() => {
     const next: typeof drafts = {}
     for (const card of paymentCards) {
+      const custom: Record<string, string> = {}
+      for (const field of fieldCatalog) {
+        if (field.kind !== 'custom') continue
+        custom[field.id] = String(card.custom_fields[field.id] ?? 0)
+      }
       next[card.id] = {
         name: card.name,
         total_balance: String(card.total_balance),
@@ -133,17 +154,16 @@ export function CreditCardsPage({
         payment_due_month_offset: String(card.payment_due_month_offset ?? 0),
         next_closing_day:
           card.next_closing_day != null ? String(card.next_closing_day) : '',
-        next_closing_month_offset: String(
-          card.next_closing_month_offset ?? 1,
-        ),
+        next_closing_month_offset: String(card.next_closing_month_offset ?? 1),
+        custom,
       }
     }
     setDrafts(next)
-  }, [paymentCards])
+  }, [paymentCards, fieldCatalog])
 
   function setDraft(
     cardId: string,
-    field: keyof (typeof drafts)[string],
+    field: Exclude<keyof (typeof drafts)[string], 'custom'>,
     value: string,
   ) {
     setDrafts((prev) => ({
@@ -155,14 +175,38 @@ export function CreditCardsPage({
     }))
   }
 
+  function setCustomDraft(cardId: string, fieldId: string, value: string) {
+    setDrafts((prev) => ({
+      ...prev,
+      [cardId]: {
+        ...prev[cardId],
+        custom: {
+          ...prev[cardId].custom,
+          [fieldId]: value,
+        },
+      },
+    }))
+  }
+
+  function persistFieldCatalog(next: CardFieldCatalogItem[]) {
+    saveCardFieldCatalog(next)
+    setFieldCatalog(next)
+    setVisibleFields((prev) => {
+      const allowed = new Set(next.map((f) => f.id))
+      const filtered = prev.filter((id) => allowed.has(id))
+      saveCardDashboardFields(filtered)
+      return filtered
+    })
+  }
+
   function toggleField(id: CardDashboardField) {
     setVisibleFields((prev) => {
       const next = prev.includes(id)
         ? prev.filter((f) => f !== id)
         : [...prev, id]
-      const ordered = CARD_FIELD_CATALOG.map((f) => f.id).filter((f) =>
-        next.includes(f),
-      )
+      const ordered = fieldCatalog
+        .map((f) => f.id)
+        .filter((f) => next.includes(f))
       saveCardDashboardFields(ordered)
       return ordered
     })
@@ -173,12 +217,63 @@ export function CreditCardsPage({
       const next = prev.includes(id)
         ? prev.filter((c) => c !== id)
         : [...prev, id]
-      // Keep order aligned with paymentCards list
       const ordered = paymentCards
         .map((c) => c.id)
         .filter((cardId) => next.includes(cardId))
       saveVisibleDashboardCardIds(ordered)
       return ordered
+    })
+  }
+
+  function renameCatalogField(id: CardDashboardField, label: string) {
+    persistFieldCatalog(
+      fieldCatalog.map((f) =>
+        f.id === id ? { ...f, label: label.trim() || f.label } : f,
+      ),
+    )
+  }
+
+  function deleteCatalogField(id: CardDashboardField) {
+    const item = fieldCatalog.find((f) => f.id === id)
+    if (!item) return
+    const ok = window.confirm(
+      item.kind === 'custom'
+        ? `Remove custom field “${item.label}” from the catalog?`
+        : `Remove “${item.label}” from the catalog? You can add it back later.`,
+    )
+    if (!ok) return
+    persistFieldCatalog(fieldCatalog.filter((f) => f.id !== id))
+  }
+
+  function restoreBuiltInField(id: string) {
+    const item = BUILTIN_CARD_FIELD_CATALOG.find((f) => f.id === id)
+    if (!item) return
+    if (fieldCatalog.some((f) => f.id === id)) return
+    persistFieldCatalog([...fieldCatalog, item])
+  }
+
+  function addCustomField() {
+    const label = window.prompt('Custom field name (amount)')
+    if (!label?.trim()) return
+    const item: CardFieldCatalogItem = {
+      id: newCustomFieldId(),
+      label: label.trim(),
+      description: 'Custom amount',
+      kind: 'custom',
+    }
+    persistFieldCatalog([...fieldCatalog, item])
+  }
+
+  async function handleDeleteCard(card: PaymentCard) {
+    const ok = window.confirm(
+      `Delete “${card.name}” permanently? Costs tagged to it will keep their amounts but lose the card tag.`,
+    )
+    if (!ok) return
+    await onDeletePaymentCard(card.id)
+    setVisibleCardIds((prev) => {
+      const next = prev.filter((id) => id !== card.id)
+      saveVisibleDashboardCardIds(next)
+      return next
     })
   }
 
@@ -208,15 +303,29 @@ export function CreditCardsPage({
     await onUpdatePaymentCard(card.id, { [field]: next })
   }
 
+  async function commitCustomAmount(card: PaymentCard, fieldId: string) {
+    const draft = drafts[card.id]
+    if (!draft) return
+    const next = parseAmount(draft.custom[fieldId] ?? '0')
+    const current = card.custom_fields[fieldId] ?? 0
+    if (next === current) {
+      setCustomDraft(card.id, fieldId, String(current))
+      return
+    }
+    setCustomDraft(card.id, fieldId, String(next))
+    await onUpdatePaymentCard(card.id, {
+      custom_fields: {
+        ...card.custom_fields,
+        [fieldId]: next,
+      },
+    })
+  }
+
   async function commitDueDay(card: PaymentCard) {
     const draft = drafts[card.id]
     if (!draft) return
     const next = clampDay(draft.payment_due_day)
-    setDraft(
-      card.id,
-      'payment_due_day',
-      next != null ? String(next) : '',
-    )
+    setDraft(card.id, 'payment_due_day', next != null ? String(next) : '')
     if (next === card.payment_due_day) return
     await onUpdatePaymentCard(card.id, { payment_due_day: next })
   }
@@ -225,11 +334,7 @@ export function CreditCardsPage({
     const draft = drafts[card.id]
     if (!draft) return
     const next = clampDay(draft.next_closing_day)
-    setDraft(
-      card.id,
-      'next_closing_day',
-      next != null ? String(next) : '',
-    )
+    setDraft(card.id, 'next_closing_day', next != null ? String(next) : '')
     if (next === card.next_closing_day) return
     await onUpdatePaymentCard(card.id, { next_closing_day: next })
   }
@@ -262,9 +367,8 @@ export function CreditCardsPage({
         <div>
           <h2>Credit cards</h2>
           <p className="muted">
-            Nothing is shown until you pick cards and fields in Catalog. Due and
-            closing dates follow the selected budget month (closing is usually
-            next month).
+            Use Catalog to add, rename, show, or delete cards and fields.
+            Nothing appears until you choose what to show.
           </p>
         </div>
         <div className="credit-cards-page-actions">
@@ -288,49 +392,119 @@ export function CreditCardsPage({
 
       {catalogOpen && (
         <div className="card-field-catalog" aria-label="Dashboard catalog">
-          <p className="card-field-catalog-title">Cards to show</p>
+          <div className="card-field-catalog-section-head">
+            <p className="card-field-catalog-title">Cards</p>
+            <button
+              type="button"
+              className="ghost small"
+              onClick={() => void handleAddCard()}
+              disabled={busy}
+            >
+              + Add
+            </button>
+          </div>
           {paymentCards.length === 0 ? (
             <p className="muted">No cards yet. Add one first.</p>
           ) : (
             <div className="card-field-catalog-list">
               {paymentCards.map((card) => {
                 const checked = visibleCardIds.includes(card.id)
+                const draftName = drafts[card.id]?.name ?? card.name
                 return (
-                  <label key={card.id} className="card-field-catalog-item">
+                  <div key={card.id} className="card-field-catalog-item is-manage">
                     <input
                       type="checkbox"
                       checked={checked}
                       onChange={() => toggleCard(card.id)}
+                      aria-label={`Show ${card.name} on dashboard`}
+                      title="Show on dashboard"
                     />
-                    <span>
-                      <strong>{card.name}</strong>
-                      <em>Show this card on the dashboard</em>
-                    </span>
-                  </label>
+                    <input
+                      className="card-catalog-rename"
+                      value={draftName}
+                      disabled={busy}
+                      aria-label={`Rename ${card.name}`}
+                      onChange={(e) =>
+                        setDraft(card.id, 'name', e.target.value)
+                      }
+                      onBlur={() => void commitName(card)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') e.currentTarget.blur()
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="ghost small danger-text"
+                      disabled={busy}
+                      onClick={() => void handleDeleteCard(card)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 )
               })}
             </div>
           )}
 
-          <p className="card-field-catalog-title">Fields to show</p>
+          <div className="card-field-catalog-section-head">
+            <p className="card-field-catalog-title">Fields</p>
+            <button
+              type="button"
+              className="ghost small"
+              onClick={addCustomField}
+            >
+              + Custom field
+            </button>
+          </div>
           <div className="card-field-catalog-list">
-            {CARD_FIELD_CATALOG.map((item) => {
+            {fieldCatalog.map((item) => {
               const checked = visibleFields.includes(item.id)
               return (
-                <label key={item.id} className="card-field-catalog-item">
+                <div key={item.id} className="card-field-catalog-item is-manage">
                   <input
                     type="checkbox"
                     checked={checked}
                     onChange={() => toggleField(item.id)}
+                    aria-label={`Show ${item.label}`}
+                    title="Show on dashboard"
                   />
-                  <span>
-                    <strong>{item.label}</strong>
-                    <em>{item.description}</em>
-                  </span>
-                </label>
+                  <input
+                    className="card-catalog-rename"
+                    value={item.label}
+                    aria-label={`Rename field ${item.label}`}
+                    onChange={(e) =>
+                      renameCatalogField(item.id, e.target.value)
+                    }
+                  />
+                  <button
+                    type="button"
+                    className="ghost small danger-text"
+                    onClick={() => deleteCatalogField(item.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
               )
             })}
           </div>
+
+          {removedBuiltIns.length > 0 && (
+            <div className="card-field-restore">
+              <p className="card-field-catalog-title">Add back</p>
+              <div className="card-field-restore-list">
+                {removedBuiltIns.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="ghost small"
+                    onClick={() => restoreBuiltInField(item.id)}
+                  >
+                    + {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -338,8 +512,7 @@ export function CreditCardsPage({
         <p className="muted center">No cards yet. Add Freedom or another card.</p>
       ) : dashboardCards.length === 0 ? (
         <p className="muted center">
-          No cards selected. Open Catalog and check the cards you want (e.g.
-          Freedom, not Venmo).
+          No cards selected. Open Catalog and check the cards you want.
         </p>
       ) : visibleFields.length === 0 ? (
         <p className="muted center">
@@ -395,7 +568,8 @@ export function CreditCardsPage({
                 <div className="credit-card-fields">
                   {show('total_balance') && (
                     <label>
-                      Total balance
+                      {fieldCatalog.find((f) => f.id === 'total_balance')
+                        ?.label ?? 'Total balance'}
                       <input
                         type="number"
                         step="0.01"
@@ -414,7 +588,8 @@ export function CreditCardsPage({
                   )}
                   {show('statement_balance') && (
                     <label>
-                      Statement balance
+                      {fieldCatalog.find((f) => f.id === 'statement_balance')
+                        ?.label ?? 'Statement balance'}
                       <input
                         type="number"
                         step="0.01"
@@ -439,7 +614,8 @@ export function CreditCardsPage({
                   )}
                   {show('minimum_payment') && (
                     <label>
-                      Minimum
+                      {fieldCatalog.find((f) => f.id === 'minimum_payment')
+                        ?.label ?? 'Minimum'}
                       <input
                         type="number"
                         step="0.01"
@@ -460,7 +636,9 @@ export function CreditCardsPage({
                   )}
                   {show('payment_due') && (
                     <label className="credit-card-cycle-field">
-                      Payment due day
+                      {fieldCatalog.find((f) => f.id === 'payment_due')
+                        ?.label ?? 'Payment due'}{' '}
+                      day
                       <div className="credit-card-cycle-row">
                         <input
                           type="number"
@@ -503,7 +681,9 @@ export function CreditCardsPage({
                   )}
                   {show('next_closing') && (
                     <label className="credit-card-cycle-field">
-                      Next closing day
+                      {fieldCatalog.find((f) => f.id === 'next_closing')
+                        ?.label ?? 'Next closing'}{' '}
+                      day
                       <div className="credit-card-cycle-row">
                         <input
                           type="number"
@@ -544,6 +724,29 @@ export function CreditCardsPage({
                       )}
                     </label>
                   )}
+                  {fieldCatalog
+                    .filter((f) => f.kind === 'custom' && show(f.id))
+                    .map((field) => (
+                      <label key={field.id}>
+                        {field.label}
+                        <input
+                          type="number"
+                          step="0.01"
+                          inputMode="decimal"
+                          value={draft.custom[field.id] ?? '0'}
+                          disabled={busy}
+                          onChange={(e) =>
+                            setCustomDraft(card.id, field.id, e.target.value)
+                          }
+                          onBlur={() =>
+                            void commitCustomAmount(card, field.id)
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') e.currentTarget.blur()
+                          }}
+                        />
+                      </label>
+                    ))}
                 </div>
 
                 {show('month_spend') && (

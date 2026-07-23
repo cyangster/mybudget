@@ -53,6 +53,15 @@ function toCard(row: PaymentCard): PaymentCard {
         ? Number(row.next_closing_date.slice(8, 10))
         : null
 
+  const rawCustom = row.custom_fields
+  const custom_fields: Record<string, number> = {}
+  if (rawCustom && typeof rawCustom === 'object' && !Array.isArray(rawCustom)) {
+    for (const [key, value] of Object.entries(rawCustom)) {
+      const n = Number(value)
+      if (Number.isFinite(n)) custom_fields[key] = n
+    }
+  }
+
   return {
     ...row,
     is_default: Boolean(row.is_default),
@@ -65,6 +74,7 @@ function toCard(row: PaymentCard): PaymentCard {
     payment_due_month_offset: Number(row.payment_due_month_offset ?? 0),
     next_closing_day: Number.isFinite(nextClosingDay) ? nextClosingDay : null,
     next_closing_month_offset: Number(row.next_closing_month_offset ?? 1),
+    custom_fields,
   }
 }
 
@@ -824,6 +834,7 @@ export function useBudget(userId: string) {
           | 'payment_due_month_offset'
           | 'next_closing_day'
           | 'next_closing_month_offset'
+          | 'custom_fields'
           | 'is_default'
         >
       >,
@@ -855,6 +866,24 @@ export function useBudget(userId: string) {
     },
     [],
   )
+
+  const deletePaymentCard = useCallback(async (id: string) => {
+    setBusy(true)
+    setError(null)
+
+    const { error: err } = await supabase
+      .from('payment_cards')
+      .delete()
+      .eq('id', id)
+
+    setBusy(false)
+    if (err) {
+      setError(err.message)
+      return
+    }
+
+    setPaymentCards((prev) => prev.filter((card) => card.id !== id))
+  }, [])
 
   const saveCardDisplayTotal = useCallback(
     async (cardId: string, displayTotal: number | null) => {
@@ -945,6 +974,7 @@ export function useBudget(userId: string) {
     deleteEntry,
     addPaymentCard,
     updatePaymentCard,
+    deletePaymentCard,
     saveCardDisplayTotal,
   }
 }
