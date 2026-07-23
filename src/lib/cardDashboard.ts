@@ -48,7 +48,7 @@ export const CARD_FIELD_CATALOG: CardFieldCatalogItem[] = [
 
 export const DEFAULT_CARD_DASHBOARD_FIELDS: CardDashboardField[] = []
 
-const STORAGE_KEY = 'mybudget.cardDashboardFields'
+const STORAGE_KEY = 'mybudget.cardDashboardFields.v2'
 
 export function loadCardDashboardFields(): CardDashboardField[] {
   try {
