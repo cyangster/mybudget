@@ -46,8 +46,14 @@ export interface PaymentCard {
   total_balance: number
   statement_balance: number
   minimum_payment: number
+  /** @deprecated Prefer payment_due_day + offset */
   payment_due_date: string | null
+  /** @deprecated Prefer next_closing_day + offset */
   next_closing_date: string | null
+  payment_due_day: number | null
+  payment_due_month_offset: number
+  next_closing_day: number | null
+  next_closing_month_offset: number
 }
 
 export interface CardMonthOverride {

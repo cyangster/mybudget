@@ -40,6 +40,19 @@ function toEntry(row: CategoryEntry): CategoryEntry {
 }
 
 function toCard(row: PaymentCard): PaymentCard {
+  const paymentDueDay =
+    row.payment_due_day != null
+      ? Number(row.payment_due_day)
+      : row.payment_due_date
+        ? Number(row.payment_due_date.slice(8, 10))
+        : null
+  const nextClosingDay =
+    row.next_closing_day != null
+      ? Number(row.next_closing_day)
+      : row.next_closing_date
+        ? Number(row.next_closing_date.slice(8, 10))
+        : null
+
   return {
     ...row,
     is_default: Boolean(row.is_default),
@@ -48,6 +61,10 @@ function toCard(row: PaymentCard): PaymentCard {
     minimum_payment: Number(row.minimum_payment ?? 0),
     payment_due_date: row.payment_due_date ?? null,
     next_closing_date: row.next_closing_date ?? null,
+    payment_due_day: Number.isFinite(paymentDueDay) ? paymentDueDay : null,
+    payment_due_month_offset: Number(row.payment_due_month_offset ?? 0),
+    next_closing_day: Number.isFinite(nextClosingDay) ? nextClosingDay : null,
+    next_closing_month_offset: Number(row.next_closing_month_offset ?? 1),
   }
 }
 
@@ -803,6 +820,10 @@ export function useBudget(userId: string) {
           | 'minimum_payment'
           | 'payment_due_date'
           | 'next_closing_date'
+          | 'payment_due_day'
+          | 'payment_due_month_offset'
+          | 'next_closing_day'
+          | 'next_closing_month_offset'
           | 'is_default'
         >
       >,

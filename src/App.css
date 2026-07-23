@@ -1823,6 +1823,90 @@ button.icon-btn.danger:hover:not(:disabled) {
   flex-shrink: 0;
 }
 
+.credit-cards-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.card-field-catalog {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 0.75rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.card-field-catalog-title {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.card-field-catalog-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.45rem;
+}
+
+.card-field-catalog-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg) 55%, var(--surface));
+  cursor: pointer;
+}
+
+.card-field-catalog-item input {
+  margin-top: 0.15rem;
+  accent-color: var(--accent);
+}
+
+.card-field-catalog-item span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.card-field-catalog-item strong {
+  font-size: 0.85rem;
+}
+
+.card-field-catalog-item em {
+  font-style: normal;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.credit-card-cycle-field {
+  grid-column: 1 / -1;
+}
+
+.credit-card-cycle-row {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: 0.35rem;
+}
+
+.credit-card-resolved {
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 .credit-cards-page-header h2 {
   margin: 0 0 0.2rem;
   font-size: 1.15rem;

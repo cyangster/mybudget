@@ -80,22 +80,21 @@ function BudgetApp() {
             Sign out
           </button>
         </div>
-        {view === 'budget' && (
-          <MonthNav
-            months={months}
-            selectedMonthId={selectedMonthId}
-            onSelect={setSelectedMonthId}
-            onNewMonth={() => void createMonth()}
-            onDeleteMonth={(id) => void deleteMonth(id)}
-            busy={busy}
-          />
-        )}
+        <MonthNav
+          months={months}
+          selectedMonthId={selectedMonthId}
+          onSelect={setSelectedMonthId}
+          onNewMonth={() => void createMonth()}
+          onDeleteMonth={(id) => void deleteMonth(id)}
+          busy={busy}
+        />
       </header>
 
       {error && <p className="error banner">{error}</p>}
 
       {view === 'cards' ? (
         <CreditCardsPage
+          monthLabel={selectedMonth?.label ?? null}
           paymentCards={paymentCards}
           cardSpendTotals={cardSpendTotals}
           onAddPaymentCard={addPaymentCard}
