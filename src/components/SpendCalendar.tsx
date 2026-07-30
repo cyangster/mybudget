@@ -1,15 +1,23 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import {
+  loadCalendarVisibleCardIds,
+  saveCalendarVisibleCardIds,
+} from '../lib/calendarPrefs'
 import { displayMonthLabel, formatCurrency, parseAmount } from '../lib/format'
 import type { CardSpendTotal } from '../types'
 
 interface SpendCalendarProps {
+  monthId: string
   monthLabel: string
+  monthNotes: string
   dailyTotals: Record<string, number>
   totalBudgeted: number
   leftover: number
   cardSpendTotals: CardSpendTotal[]
   onSaveCardDisplay: (cardId: string, displayTotal: number | null) => Promise<void>
   onAddPaymentCard: (name: string) => Promise<unknown>
+  onSaveMonthNotes: (notes: string) => Promise<void>
   busy?: boolean
 }
 
@@ -74,17 +82,72 @@ function leftoverClass(amount: number) {
   return amount > 0 ? 'positive' : amount < 0 ? 'negative' : 'positive'
 }
 
+function useModalOpen(open: boolean, onClose: () => void) {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    if (!open) {
+      setVisible(false)
+      return
+    }
+    const raf = requestAnimationFrame(() => setVisible(true))
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prev
+    }
+  }, [open, onClose])
+
+  return visible
+}
+
 export function SpendCalendar({
+  monthId,
   monthLabel,
+  monthNotes,
   dailyTotals,
   totalBudgeted,
   leftover,
   cardSpendTotals,
   onSaveCardDisplay,
   onAddPaymentCard,
+  onSaveMonthNotes,
   busy,
 }: SpendCalendarProps) {
   const [drafts, setDrafts] = useState<Record<string, string>>({})
+  const [cardsOpen, setCardsOpen] = useState(false)
+  const [notesOpen, setNotesOpen] = useState(false)
+  const [visibleCardIds, setVisibleCardIds] = useState<string[]>([])
+  const [notesDraft, setNotesDraft] = useState(monthNotes)
+  const notesDraftRef = useRef(notesDraft)
+  notesDraftRef.current = notesDraft
+
+  const knownIdsKey = cardSpendTotals.map((c) => c.cardId).join('\0')
+  const knownIds = useMemo(
+    () => (knownIdsKey ? knownIdsKey.split('\0') : []),
+    [knownIdsKey],
+  )
+
+  const closeCards = useCallback(() => setCardsOpen(false), [])
+  const closeNotes = useCallback(() => {
+    setNotesOpen(false)
+    const draft = notesDraftRef.current
+    if (draft !== monthNotes) void onSaveMonthNotes(draft)
+  }, [monthNotes, onSaveMonthNotes])
+
+  useEffect(() => {
+    setVisibleCardIds(loadCalendarVisibleCardIds(monthId, knownIds))
+  }, [monthId, knownIds])
+
+  useEffect(() => {
+    setNotesDraft(monthNotes)
+  }, [monthNotes, monthId])
 
   useEffect(() => {
     const next: Record<string, string> = {}
@@ -93,6 +156,11 @@ export function SpendCalendar({
     }
     setDrafts(next)
   }, [cardSpendTotals])
+
+  const visibleCards = useMemo(
+    () => cardSpendTotals.filter((c) => visibleCardIds.includes(c.cardId)),
+    [cardSpendTotals, visibleCardIds],
+  )
 
   const { cells, dailyPace } = useMemo(() => {
     const [y, m] = monthLabel.split('-').map(Number)
@@ -153,6 +221,19 @@ export function SpendCalendar({
     return { cells: result, dailyPace: pace }
   }, [monthLabel, dailyTotals, totalBudgeted])
 
+  function persistVisible(next: string[]) {
+    setVisibleCardIds(next)
+    saveCalendarVisibleCardIds(monthId, knownIds, next)
+  }
+
+  function toggleCardVisible(cardId: string) {
+    persistVisible(
+      visibleCardIds.includes(cardId)
+        ? visibleCardIds.filter((id) => id !== cardId)
+        : [...visibleCardIds, cardId],
+    )
+  }
+
   async function commitCardDraft(card: CardSpendTotal) {
     const raw = drafts[card.cardId]
     if (raw === undefined) return
@@ -174,6 +255,14 @@ export function SpendCalendar({
     if (!name?.trim()) return
     await onAddPaymentCard(name.trim())
   }
+
+  async function commitNotes() {
+    if (notesDraft === monthNotes) return
+    await onSaveMonthNotes(notesDraft)
+  }
+
+  const cardsModalVisible = useModalOpen(cardsOpen, closeCards)
+  const notesModalVisible = useModalOpen(notesOpen, closeNotes)
 
   return (
     <aside className="spend-calendar" aria-label="Daily spending calendar">
@@ -222,24 +311,38 @@ export function SpendCalendar({
         </div>
       </div>
 
+      <div className="spend-calendar-actions">
+        <button
+          type="button"
+          className="spend-calendar-action-btn"
+          onClick={() => setCardsOpen(true)}
+        >
+          Cards
+          {visibleCards.length > 0 ? (
+            <span className="spend-calendar-action-count">
+              {visibleCards.length}
+            </span>
+          ) : null}
+        </button>
+        <button
+          type="button"
+          className={`spend-calendar-action-btn${monthNotes.trim() ? ' has-content' : ''}`}
+          onClick={() => setNotesOpen(true)}
+        >
+          Note
+        </button>
+      </div>
+
       <div className="spend-calendar-cards" aria-label="Card totals">
-        <div className="spend-calendar-cards-header">
-          <span className="spend-calendar-footer-label">Cards</span>
-          <button
-            type="button"
-            className="ghost small"
-            onClick={() => void handleAddCard()}
-            disabled={busy}
-            title="Add card"
-          >
-            +
-          </button>
-        </div>
         {cardSpendTotals.length === 0 ? (
           <p className="muted spend-calendar-cards-empty">No cards yet.</p>
+        ) : visibleCards.length === 0 ? (
+          <p className="muted spend-calendar-cards-empty">
+            No cards selected. Tap Cards to choose.
+          </p>
         ) : (
           <ul className="spend-calendar-card-list">
-            {cardSpendTotals.map((card) => (
+            {visibleCards.map((card) => (
               <li key={card.cardId} className="spend-calendar-card-row">
                 <div className="spend-calendar-card-meta">
                   <span className="spend-calendar-card-name">{card.name}</span>
@@ -261,32 +364,37 @@ export function SpendCalendar({
                     </button>
                   )}
                 </div>
-                <input
-                  type="number"
-                  step="1"
-                  inputMode="numeric"
-                  className="spend-calendar-card-input"
-                  value={drafts[card.cardId] ?? ''}
-                  disabled={busy}
-                  aria-label={`${card.name} total`}
-                  title={
-                    card.isOverridden
-                      ? `Custom total (tracked $${Math.round(card.tracked)})`
-                      : 'Tracked from tagged costs — edit if statement differs'
-                  }
-                  onChange={(e) =>
-                    setDrafts((prev) => ({
-                      ...prev,
-                      [card.cardId]: e.target.value,
-                    }))
-                  }
-                  onBlur={() => void commitCardDraft(card)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.currentTarget.blur()
+                <span className="money-input spend-calendar-money">
+                  <span className="money-input-prefix" aria-hidden="true">
+                    $
+                  </span>
+                  <input
+                    type="number"
+                    step="1"
+                    inputMode="numeric"
+                    className="spend-calendar-card-input"
+                    value={drafts[card.cardId] ?? ''}
+                    disabled={busy}
+                    aria-label={`${card.name} total`}
+                    title={
+                      card.isOverridden
+                        ? `Custom total (tracked $${Math.round(card.tracked)})`
+                        : 'Tracked from tagged costs — edit if statement differs'
                     }
-                  }}
-                />
+                    onChange={(e) =>
+                      setDrafts((prev) => ({
+                        ...prev,
+                        [card.cardId]: e.target.value,
+                      }))
+                    }
+                    onBlur={() => void commitCardDraft(card)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.currentTarget.blur()
+                      }
+                    }}
+                  />
+                </span>
               </li>
             ))}
           </ul>
@@ -304,6 +412,118 @@ export function SpendCalendar({
           {formatCurrency(leftover)}
         </span>
       </footer>
+
+      {cardsOpen &&
+        createPortal(
+          <div
+            className={`costs-modal-root ${cardsModalVisible ? 'is-open' : ''}`}
+            onClick={() => setCardsOpen(false)}
+          >
+            <div
+              className="costs-modal spend-calendar-picker-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Choose cards"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <header className="costs-modal-header">
+                <div className="costs-modal-title-block">
+                  <p className="costs-modal-kicker">
+                    {displayMonthLabel(monthLabel)}
+                  </p>
+                  <h2>Cards</h2>
+                </div>
+                <button
+                  type="button"
+                  className="ghost small"
+                  onClick={closeCards}
+                >
+                  Close
+                </button>
+              </header>
+              <div className="costs-modal-body">
+                <p className="muted spend-calendar-picker-hint">
+                  Choose which cards show under the calendar this month.
+                </p>
+                {cardSpendTotals.length === 0 ? (
+                  <p className="muted">No cards yet. Add one below.</p>
+                ) : (
+                  <ul className="spend-calendar-picker-list">
+                    {cardSpendTotals.map((card) => {
+                      const checked = visibleCardIds.includes(card.cardId)
+                      return (
+                        <li key={card.cardId}>
+                          <label className="spend-calendar-picker-item">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => toggleCardVisible(card.cardId)}
+                            />
+                            <span>{card.name}</span>
+                            <span className="muted">
+                              {formatCurrency(Math.round(card.display))}
+                            </span>
+                          </label>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
+                <button
+                  type="button"
+                  className="ghost small"
+                  onClick={() => void handleAddCard()}
+                  disabled={busy}
+                >
+                  + Add card
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {notesOpen &&
+        createPortal(
+          <div
+            className={`costs-modal-root ${notesModalVisible ? 'is-open' : ''}`}
+            onClick={closeNotes}
+          >
+            <div
+              className="costs-modal notebook-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Month notes"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <header className="costs-modal-header">
+                <div className="costs-modal-title-block">
+                  <p className="costs-modal-kicker">Notebook</p>
+                  <h2>{displayMonthLabel(monthLabel)}</h2>
+                </div>
+                <button
+                  type="button"
+                  className="ghost small"
+                  onClick={closeNotes}
+                >
+                  Close
+                </button>
+              </header>
+              <div className="notebook-page">
+                <textarea
+                  className="notebook-textarea"
+                  value={notesDraft}
+                  disabled={busy}
+                  placeholder="Jot down plans, reminders, or anything for this month…"
+                  aria-label={`Notes for ${displayMonthLabel(monthLabel)}`}
+                  onChange={(e) => setNotesDraft(e.target.value)}
+                  onBlur={() => void commitNotes()}
+                />
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </aside>
   )
 }

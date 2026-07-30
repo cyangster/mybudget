@@ -110,7 +110,10 @@ export function useBudget(userId: string) {
       return [] as Month[]
     }
 
-    const list = (data ?? []) as Month[]
+    const list = (data ?? []).map((row) => {
+      const m = row as Month
+      return { ...m, notes: typeof m.notes === 'string' ? m.notes : '' }
+    })
     setMonths(list)
     return list
   }, [userId])
@@ -485,6 +488,29 @@ export function useBudget(userId: string) {
       await loadCategories(selectedMonthId)
     },
     [selectedMonthId, loadCategories],
+  )
+
+  const updateMonthNotes = useCallback(
+    async (monthId: string, notes: string) => {
+      setBusy(true)
+      setError(null)
+
+      const { error: err } = await supabase
+        .from('months')
+        .update({ notes })
+        .eq('id', monthId)
+
+      setBusy(false)
+      if (err) {
+        setError(err.message)
+        return
+      }
+
+      setMonths((prev) =>
+        prev.map((m) => (m.id === monthId ? { ...m, notes } : m)),
+      )
+    },
+    [],
   )
 
   const deleteMonth = useCallback(
@@ -968,6 +994,7 @@ export function useBudget(userId: string) {
     busy,
     error,
     createMonth,
+    updateMonthNotes,
     addCategory,
     updateCategory,
     deleteCategory,

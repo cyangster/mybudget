@@ -44,6 +44,7 @@ function BudgetApp() {
     updatePaymentCard,
     deletePaymentCard,
     saveCardDisplayTotal,
+    updateMonthNotes,
   } = useBudget(user!.id)
 
   if (loading) {
@@ -167,13 +168,18 @@ function BudgetApp() {
 
             {selectedMonth && (
               <SpendCalendar
+                monthId={selectedMonth.id}
                 monthLabel={selectedMonth.label}
+                monthNotes={selectedMonth.notes}
                 dailyTotals={dailySpendTotals}
                 totalBudgeted={summary.totalBudgeted}
                 leftover={summary.leftover}
                 cardSpendTotals={cardSpendTotals}
                 onSaveCardDisplay={saveCardDisplayTotal}
                 onAddPaymentCard={addPaymentCard}
+                onSaveMonthNotes={(notes) =>
+                  updateMonthNotes(selectedMonth.id, notes)
+                }
                 busy={busy}
               />
             )}

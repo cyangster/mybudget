@@ -9,6 +9,7 @@ export interface Month {
   id: string
   user_id: string
   label: string
+  notes: string
   created_at: string
 }
 
