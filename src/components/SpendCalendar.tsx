@@ -158,7 +158,11 @@ export function SpendCalendar({
   }, [cardSpendTotals])
 
   const visibleCards = useMemo(
-    () => cardSpendTotals.filter((c) => visibleCardIds.includes(c.cardId)),
+    () =>
+      cardSpendTotals.filter(
+        (c) =>
+          visibleCardIds.includes(c.cardId) && Math.round(c.display) !== 0,
+      ),
     [cardSpendTotals, visibleCardIds],
   )
 
@@ -338,7 +342,7 @@ export function SpendCalendar({
           <p className="muted spend-calendar-cards-empty">No cards yet.</p>
         ) : visibleCards.length === 0 ? (
           <p className="muted spend-calendar-cards-empty">
-            No cards selected. Tap Cards to choose.
+            No card totals this month.
           </p>
         ) : (
           <ul className="spend-calendar-card-list">
