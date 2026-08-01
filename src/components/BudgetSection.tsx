@@ -10,6 +10,7 @@ import type {
 import { SECTION_LABELS } from '../types'
 import { CategoryRow } from './CategoryRow'
 import { SectionModal } from './SectionModal'
+import { SectionSpendModal } from './SectionSpendModal'
 
 interface BudgetSectionProps {
   section: BudgetSection
@@ -70,6 +71,7 @@ export function BudgetSectionView({
   const [adding, setAdding] = useState(false)
   const [newName, setNewName] = useState('')
   const [sectionOpen, setSectionOpen] = useState(false)
+  const [spendOpen, setSpendOpen] = useState(false)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dropTargetId, setDropTargetId] = useState<string | null>(null)
 
@@ -156,6 +158,17 @@ export function BudgetSectionView({
             >
               <h2>{SECTION_LABELS[section]}</h2>
             </button>
+            {!isIncome && (
+              <button
+                type="button"
+                className="section-spent-chip"
+                onClick={() => setSpendOpen(true)}
+                aria-haspopup="dialog"
+                title={`View ${SECTION_LABELS[section]} costs`}
+              >
+                {formatCurrency(totals.spent)}
+              </button>
+            )}
             {!isIncome && sectionStatus !== 'empty' && (
               <span className={`status-pill status-${sectionStatus}`}>
                 {statusLabel(sectionStatus)}
@@ -290,23 +303,33 @@ export function BudgetSectionView({
       </section>
 
       {!isIncome && (
-        <SectionModal
-          section={section}
-          categories={categories}
-          entriesByCategory={entriesByCategory}
-          paymentCards={paymentCards}
-          open={sectionOpen}
-          onClose={() => setSectionOpen(false)}
-          onAdd={onAdd}
-          onSave={onSave}
-          onDelete={onDelete}
-          onAddEntry={onAddEntry}
-          onUpdateEntry={onUpdateEntry}
-          onDeleteEntry={onDeleteEntry}
-          onAddPaymentCard={onAddPaymentCard}
-          onReorder={onReorder}
-          busy={busy}
-        />
+        <>
+          <SectionModal
+            section={section}
+            categories={categories}
+            entriesByCategory={entriesByCategory}
+            paymentCards={paymentCards}
+            open={sectionOpen}
+            onClose={() => setSectionOpen(false)}
+            onAdd={onAdd}
+            onSave={onSave}
+            onDelete={onDelete}
+            onAddEntry={onAddEntry}
+            onUpdateEntry={onUpdateEntry}
+            onDeleteEntry={onDeleteEntry}
+            onAddPaymentCard={onAddPaymentCard}
+            onReorder={onReorder}
+            busy={busy}
+          />
+          <SectionSpendModal
+            section={section}
+            categories={categories}
+            entriesByCategory={entriesByCategory}
+            totalSpent={totals.spent}
+            open={spendOpen}
+            onClose={() => setSpendOpen(false)}
+          />
+        </>
       )}
     </>
   )
