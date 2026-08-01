@@ -568,21 +568,38 @@
   font-weight: 700;
 }
 
-.spend-calendar-money {
-  padding: 0 0.3rem 0 0.4rem;
-  border-radius: 6px;
+.spend-calendar-card-total {
+  justify-self: end;
+  min-width: 4.5rem;
+  text-align: center;
 }
 
-.spend-calendar-money .spend-calendar-card-input {
-  border: none;
-  background: transparent;
-  padding-left: 0.1rem;
-  padding-right: 0;
+.card-spend-adjust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem 0.75rem;
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border);
 }
 
-.spend-calendar-money:focus-within {
-  outline: 2px solid color-mix(in srgb, var(--accent, #2563eb) 55%, transparent);
-  outline-offset: 1px;
+.card-spend-adjust-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 8rem;
+  flex: 1 1 auto;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.card-spend-adjust-label .money-input {
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .notebook-modal {

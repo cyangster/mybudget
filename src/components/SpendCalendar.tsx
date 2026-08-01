@@ -4,8 +4,9 @@ import {
   loadCalendarVisibleCardIds,
   saveCalendarVisibleCardIds,
 } from '../lib/calendarPrefs'
-import { displayMonthLabel, formatCurrency, parseAmount } from '../lib/format'
-import type { CardSpendTotal } from '../types'
+import { displayMonthLabel, formatCurrency } from '../lib/format'
+import type { CardSpendTotal, Category, CategoryEntry } from '../types'
+import { CardSpendModal } from './CardSpendModal'
 
 interface SpendCalendarProps {
   monthId: string
@@ -15,6 +16,8 @@ interface SpendCalendarProps {
   totalBudgeted: number
   leftover: number
   cardSpendTotals: CardSpendTotal[]
+  categories: Category[]
+  entriesByCategory: Record<string, CategoryEntry[]>
   onSaveCardDisplay: (cardId: string, displayTotal: number | null) => Promise<void>
   onAddPaymentCard: (name: string) => Promise<unknown>
   onSaveMonthNotes: (notes: string) => Promise<void>
@@ -115,14 +118,16 @@ export function SpendCalendar({
   totalBudgeted,
   leftover,
   cardSpendTotals,
+  categories,
+  entriesByCategory,
   onSaveCardDisplay,
   onAddPaymentCard,
   onSaveMonthNotes,
   busy,
 }: SpendCalendarProps) {
-  const [drafts, setDrafts] = useState<Record<string, string>>({})
   const [cardsOpen, setCardsOpen] = useState(false)
   const [notesOpen, setNotesOpen] = useState(false)
+  const [spendCardId, setSpendCardId] = useState<string | null>(null)
   const [visibleCardIds, setVisibleCardIds] = useState<string[]>([])
   const [notesDraft, setNotesDraft] = useState(monthNotes)
   const notesDraftRef = useRef(notesDraft)
@@ -140,6 +145,7 @@ export function SpendCalendar({
     const draft = notesDraftRef.current
     if (draft !== monthNotes) void onSaveMonthNotes(draft)
   }, [monthNotes, onSaveMonthNotes])
+  const closeSpend = useCallback(() => setSpendCardId(null), [])
 
   useEffect(() => {
     setVisibleCardIds(loadCalendarVisibleCardIds(monthId, knownIds))
@@ -149,14 +155,6 @@ export function SpendCalendar({
     setNotesDraft(monthNotes)
   }, [monthNotes, monthId])
 
-  useEffect(() => {
-    const next: Record<string, string> = {}
-    for (const card of cardSpendTotals) {
-      next[card.cardId] = String(Math.round(card.display))
-    }
-    setDrafts(next)
-  }, [cardSpendTotals])
-
   const visibleCards = useMemo(
     () =>
       cardSpendTotals.filter(
@@ -164,6 +162,11 @@ export function SpendCalendar({
           visibleCardIds.includes(c.cardId) && Math.round(c.display) !== 0,
       ),
     [cardSpendTotals, visibleCardIds],
+  )
+
+  const spendCard = useMemo(
+    () => cardSpendTotals.find((c) => c.cardId === spendCardId) ?? null,
+    [cardSpendTotals, spendCardId],
   )
 
   const { cells, dailyPace } = useMemo(() => {
@@ -236,22 +239,6 @@ export function SpendCalendar({
         ? visibleCardIds.filter((id) => id !== cardId)
         : [...visibleCardIds, cardId],
     )
-  }
-
-  async function commitCardDraft(card: CardSpendTotal) {
-    const raw = drafts[card.cardId]
-    if (raw === undefined) return
-    const value = Math.round(parseAmount(raw))
-    setDrafts((prev) => ({ ...prev, [card.cardId]: String(value) }))
-    await onSaveCardDisplay(card.cardId, value)
-  }
-
-  async function resetCard(card: CardSpendTotal) {
-    setDrafts((prev) => ({
-      ...prev,
-      [card.cardId]: String(Math.round(card.tracked)),
-    }))
-    await onSaveCardDisplay(card.cardId, null)
   }
 
   async function handleAddCard() {
@@ -356,49 +343,16 @@ export function SpendCalendar({
                   >
                     {card.entryCount}
                   </span>
-                  {card.isOverridden && (
-                    <button
-                      type="button"
-                      className="ghost small"
-                      onClick={() => void resetCard(card)}
-                      disabled={busy}
-                      title={`Reset to tracked $${Math.round(card.tracked)}`}
-                    >
-                      Reset
-                    </button>
-                  )}
                 </div>
-                <span className="money-input spend-calendar-money">
-                  <span className="money-input-prefix" aria-hidden="true">
-                    $
-                  </span>
-                  <input
-                    type="number"
-                    step="1"
-                    inputMode="numeric"
-                    className="spend-calendar-card-input"
-                    value={drafts[card.cardId] ?? ''}
-                    disabled={busy}
-                    aria-label={`${card.name} total`}
-                    title={
-                      card.isOverridden
-                        ? `Custom total (tracked $${Math.round(card.tracked)})`
-                        : 'Tracked from tagged costs — edit if statement differs'
-                    }
-                    onChange={(e) =>
-                      setDrafts((prev) => ({
-                        ...prev,
-                        [card.cardId]: e.target.value,
-                      }))
-                    }
-                    onBlur={() => void commitCardDraft(card)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.currentTarget.blur()
-                      }
-                    }}
-                  />
-                </span>
+                <button
+                  type="button"
+                  className="section-spent-chip spend-calendar-card-total"
+                  onClick={() => setSpendCardId(card.cardId)}
+                  aria-haspopup="dialog"
+                  title={`View ${card.name} costs`}
+                >
+                  {formatCurrency(Math.round(card.display))}
+                </button>
               </li>
             ))}
           </ul>
@@ -528,6 +482,20 @@ export function SpendCalendar({
           </div>,
           document.body,
         )}
+
+      {spendCard && (
+        <CardSpendModal
+          card={spendCard}
+          categories={categories}
+          entriesByCategory={entriesByCategory}
+          open={spendCardId != null}
+          onClose={closeSpend}
+          onSaveDisplay={(displayTotal) =>
+            onSaveCardDisplay(spendCard.cardId, displayTotal)
+          }
+          busy={busy}
+        />
+      )}
     </aside>
   )
 }

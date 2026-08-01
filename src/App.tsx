@@ -175,6 +175,8 @@ function BudgetApp() {
                 totalBudgeted={summary.totalBudgeted}
                 leftover={summary.leftover}
                 cardSpendTotals={cardSpendTotals}
+                categories={Object.values(categoriesBySection).flat()}
+                entriesByCategory={entriesByCategory}
                 onSaveCardDisplay={saveCardDisplayTotal}
                 onAddPaymentCard={addPaymentCard}
                 onSaveMonthNotes={(notes) =>
