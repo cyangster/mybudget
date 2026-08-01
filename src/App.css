@@ -2459,6 +2459,88 @@ button.icon-btn.danger:hover:not(:disabled) {
   font-weight: 600;
 }
 
+.credit-card-pay-choice {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+  background: color-mix(in srgb, var(--surface) 88%, var(--border));
+}
+
+.credit-card-pay-choice legend {
+  padding: 0 0.2rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.credit-card-pay-option {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.35rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0.35rem 0.4rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: inherit;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.credit-card-pay-option.is-selected {
+  border-color: color-mix(in srgb, var(--accent, #2563eb) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent, #2563eb) 8%, var(--surface));
+}
+
+.credit-card-pay-option input {
+  width: auto;
+  margin-top: 0.15rem;
+  flex: 0 0 auto;
+  accent-color: var(--accent, #2563eb);
+}
+
+.credit-card-pay-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  min-width: 0;
+}
+
+.credit-card-pay-option-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.credit-card-pay-option-amount {
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.credit-card-pay-summary {
+  grid-column: 1 / -1;
+  margin: 0.1rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 600;
+}
+
 .credit-card-paid-field {
   display: flex;
   flex-direction: column;
@@ -2510,6 +2592,10 @@ button.icon-btn.danger:hover:not(:disabled) {
 
 @media (max-width: 640px) {
   .credit-card-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .credit-card-pay-choice {
     grid-template-columns: 1fr;
   }
 

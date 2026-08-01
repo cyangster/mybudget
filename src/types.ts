@@ -37,6 +37,8 @@ export interface CategoryEntry {
   created_at: string
 }
 
+export type PaymentChoice = 'total' | 'statement' | 'minimum'
+
 export interface PaymentCard {
   id: string
   user_id: string
@@ -49,6 +51,8 @@ export interface PaymentCard {
   statement_balance_as_of: string | null
   minimum_payment: number
   payment_due_date: string | null
+  /** Which amount you plan to pay this cycle. */
+  payment_choice: PaymentChoice | null
   payment_paid: boolean
   /** @deprecated Prefer next_closing_day + offset */
   next_closing_date: string | null

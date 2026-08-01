@@ -14,6 +14,7 @@ import type {
   CategoryEntry,
   Month,
   PaymentCard,
+  PaymentChoice,
 } from '../types'
 import { SPEND_SECTIONS } from '../types'
 
@@ -37,6 +38,13 @@ function toEntry(row: CategoryEntry): CategoryEntry {
     notes: row.notes ?? '',
     card_id: row.card_id ?? null,
   }
+}
+
+function parsePaymentChoice(value: unknown): PaymentChoice | null {
+  if (value === 'total' || value === 'statement' || value === 'minimum') {
+    return value
+  }
+  return null
 }
 
 function toCard(row: PaymentCard): PaymentCard {
@@ -70,6 +78,7 @@ function toCard(row: PaymentCard): PaymentCard {
     statement_balance_as_of: row.statement_balance_as_of ?? null,
     minimum_payment: Number(row.minimum_payment ?? 0),
     payment_due_date: row.payment_due_date ?? null,
+    payment_choice: parsePaymentChoice(row.payment_choice),
     payment_paid: Boolean(row.payment_paid),
     next_closing_date: row.next_closing_date ?? null,
     payment_due_day: Number.isFinite(paymentDueDay) ? paymentDueDay : null,
@@ -858,6 +867,7 @@ export function useBudget(userId: string) {
           | 'statement_balance_as_of'
           | 'minimum_payment'
           | 'payment_due_date'
+          | 'payment_choice'
           | 'payment_paid'
           | 'next_closing_date'
           | 'payment_due_day'

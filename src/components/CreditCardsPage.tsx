@@ -13,7 +13,7 @@ import {
   type CardFieldCatalogItem,
 } from '../lib/cardDashboard'
 import { displayEntryDate, formatCurrency, parseAmount } from '../lib/format'
-import type { CardSpendTotal, PaymentCard } from '../types'
+import type { CardSpendTotal, PaymentCard, PaymentChoice } from '../types'
 
 type DueTone = 'ok' | 'soon' | 'urgent' | 'overdue' | 'none'
 
@@ -33,6 +33,7 @@ interface CreditCardsPageProps {
         | 'statement_balance_as_of'
         | 'minimum_payment'
         | 'payment_due_date'
+        | 'payment_choice'
         | 'payment_paid'
         | 'next_closing_day'
         | 'next_closing_month_offset'
@@ -339,6 +340,23 @@ export function CreditCardsPage({
 
   async function togglePaid(card: PaymentCard) {
     await onUpdatePaymentCard(card.id, { payment_paid: !card.payment_paid })
+  }
+
+  async function setPaymentChoice(
+    card: PaymentCard,
+    choice: PaymentChoice,
+  ) {
+    const next = card.payment_choice === choice ? null : choice
+    await onUpdatePaymentCard(card.id, { payment_choice: next })
+  }
+
+  function paymentChoiceAmount(
+    card: PaymentCard,
+    choice: PaymentChoice,
+  ): number {
+    if (choice === 'total') return card.total_balance
+    if (choice === 'statement') return card.statement_balance
+    return card.minimum_payment
   }
 
   async function commitClosingDay(card: PaymentCard) {
@@ -682,6 +700,72 @@ export function CreditCardsPage({
                       </span>
                     </label>
                   )}
+                  <fieldset className="credit-card-pay-choice">
+                    <legend>Paying</legend>
+                    {(
+                      [
+                        {
+                          id: 'total' as const,
+                          label: 'Total',
+                          amount: card.total_balance,
+                        },
+                        {
+                          id: 'statement' as const,
+                          label: 'Statement',
+                          amount: card.statement_balance,
+                        },
+                        {
+                          id: 'minimum' as const,
+                          label: 'Minimum',
+                          amount: card.minimum_payment,
+                        },
+                      ] as const
+                    ).map((option) => {
+                      const checked = card.payment_choice === option.id
+                      return (
+                        <label
+                          key={option.id}
+                          className={`credit-card-pay-option${checked ? ' is-selected' : ''}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            disabled={busy}
+                            onChange={() =>
+                              void setPaymentChoice(card, option.id)
+                            }
+                          />
+                          <span className="credit-card-pay-option-text">
+                            <span className="credit-card-pay-option-label">
+                              {option.label}
+                            </span>
+                            <span className="credit-card-pay-option-amount">
+                              {formatCurrency(option.amount)}
+                            </span>
+                          </span>
+                        </label>
+                      )
+                    })}
+                    {card.payment_choice ? (
+                      <p className="credit-card-pay-summary muted">
+                        Paying{' '}
+                        {formatCurrency(
+                          paymentChoiceAmount(card, card.payment_choice),
+                        )}{' '}
+                        (
+                        {card.payment_choice === 'total'
+                          ? 'total'
+                          : card.payment_choice === 'statement'
+                            ? 'statement'
+                            : 'minimum'}
+                        )
+                      </p>
+                    ) : (
+                      <p className="credit-card-pay-summary muted">
+                        Choose total, statement, or minimum.
+                      </p>
+                    )}
+                  </fieldset>
                   {show('payment_due') && (
                     <label>
                       {fieldCatalog.find((f) => f.id === 'payment_due')
