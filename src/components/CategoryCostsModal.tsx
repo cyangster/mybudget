@@ -319,19 +319,21 @@ export function CategoryCostsModal({
                         aria-label="Date"
                       />
                       <input
+                        type="number"
+                        step="0.01"
+                        inputMode="decimal"
+                        placeholder="Amount"
+                        value={editAmount}
+                        onChange={(e) => setEditAmount(e.target.value)}
+                        required
+                        autoFocus
+                        aria-label="Amount"
+                      />
+                      <input
                         type="text"
                         placeholder="Label"
                         value={editLabel}
                         onChange={(e) => setEditLabel(e.target.value)}
-                        autoFocus
-                      />
-                      <input
-                        type="number"
-                        step="0.01"
-                        inputMode="decimal"
-                        value={editAmount}
-                        onChange={(e) => setEditAmount(e.target.value)}
-                        required
                       />
                       <div className="card-tag-row">
                         <select
@@ -452,18 +454,20 @@ export function CategoryCostsModal({
               aria-label="Date"
             />
             <input
+              type="number"
+              step="0.01"
+              inputMode="decimal"
+              placeholder="Amount"
+              value={entryAmount}
+              onChange={(e) => setEntryAmount(e.target.value)}
+              required
+              aria-label="Amount"
+            />
+            <input
               type="text"
               placeholder="Label (optional)"
               value={entryLabel}
               onChange={(e) => setEntryLabel(e.target.value)}
-            />
-            <input
-              type="number"
-              step="0.01"
-              inputMode="decimal"
-              value={entryAmount}
-              onChange={(e) => setEntryAmount(e.target.value)}
-              required
             />
             <div className="card-tag-row">
               <label className="card-tag-label" htmlFor={`card-tag-${category.id}`}>
