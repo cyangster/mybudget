@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { FIRST_MONTH_SEED, GROSS_INCOME_NAME, NET_INCOME_NAME } from '../lib/defaults'
-import { MONTHLY_SPEND_BUFFER } from '../lib/buffer'
+import { DEFAULT_MONTHLY_SPEND_BUFFER } from '../lib/buffer'
 import {
   currentMonthLabel,
   nextMonthLabel,
 } from '../lib/format'
+import {
+  DEFAULT_PAY_CYCLE,
+  isPayCycle,
+  toMonthly,
+} from '../lib/payCycle'
 import { supabase } from '../lib/supabase'
 import type {
   BudgetSection,
@@ -13,12 +18,28 @@ import type {
   Category,
   CategoryEntry,
   Month,
+  PayCycle,
   PaymentCard,
   PaymentChoice,
+  UserSettings,
 } from '../types'
 import { SPEND_SECTIONS } from '../types'
 
 const DEFAULT_CARD_NAME = 'Freedom'
+
+function toUserSettings(row: Partial<UserSettings> | null | undefined): {
+  payCycle: PayCycle
+  monthlySpendBuffer: number
+} {
+  const cycle = isPayCycle(row?.pay_cycle) ? row.pay_cycle : DEFAULT_PAY_CYCLE
+  const buffer = Number(row?.monthly_spend_buffer)
+  return {
+    payCycle: cycle,
+    monthlySpendBuffer: Number.isFinite(buffer)
+      ? Math.max(0, buffer)
+      : DEFAULT_MONTHLY_SPEND_BUFFER,
+  }
+}
 
 function toCategory(row: Category): Category {
   return {
@@ -98,6 +119,10 @@ export function useBudget(userId: string) {
   >({})
   const [paymentCards, setPaymentCards] = useState<PaymentCard[]>([])
   const [cardOverrides, setCardOverrides] = useState<CardMonthOverride[]>([])
+  const [payCycle, setPayCycleState] = useState<PayCycle>(DEFAULT_PAY_CYCLE)
+  const [monthlySpendBuffer, setMonthlySpendBufferState] = useState(
+    DEFAULT_MONTHLY_SPEND_BUFFER,
+  )
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -243,13 +268,110 @@ export function useBudget(userId: string) {
     )
   }, [])
 
+  const loadUserSettings = useCallback(async () => {
+    const { data, error: err } = await supabase
+      .from('user_settings')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (err) {
+      setError(err.message)
+      return
+    }
+
+    if (!data) {
+      const { data: created, error: createErr } = await supabase
+        .from('user_settings')
+        .insert({
+          user_id: userId,
+          pay_cycle: DEFAULT_PAY_CYCLE,
+          monthly_spend_buffer: DEFAULT_MONTHLY_SPEND_BUFFER,
+        })
+        .select('*')
+        .single()
+
+      if (createErr) {
+        // Table may not exist yet; keep defaults so the app still works.
+        if (!createErr.message.toLowerCase().includes('does not exist')) {
+          setError(createErr.message)
+        }
+        return
+      }
+
+      const parsed = toUserSettings(created as UserSettings)
+      setPayCycleState(parsed.payCycle)
+      setMonthlySpendBufferState(parsed.monthlySpendBuffer)
+      return
+    }
+
+    const parsed = toUserSettings(data as UserSettings)
+    setPayCycleState(parsed.payCycle)
+    setMonthlySpendBufferState(parsed.monthlySpendBuffer)
+  }, [userId])
+
+  const upsertUserSettings = useCallback(
+    async (patch: { pay_cycle?: PayCycle; monthly_spend_buffer?: number }) => {
+      setBusy(true)
+      setError(null)
+
+      const nextCycle = patch.pay_cycle ?? payCycle
+      const nextBuffer =
+        patch.monthly_spend_buffer != null
+          ? Math.max(0, patch.monthly_spend_buffer)
+          : monthlySpendBuffer
+
+      const { error: err } = await supabase.from('user_settings').upsert(
+        {
+          user_id: userId,
+          pay_cycle: nextCycle,
+          monthly_spend_buffer: nextBuffer,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id' },
+      )
+
+      setBusy(false)
+      if (err) {
+        setError(err.message)
+        return false
+      }
+
+      setPayCycleState(nextCycle)
+      setMonthlySpendBufferState(nextBuffer)
+      return true
+    },
+    [userId, payCycle, monthlySpendBuffer],
+  )
+
+  const updatePayCycle = useCallback(
+    async (cycle: PayCycle) => {
+      if (cycle === payCycle) return
+      await upsertUserSettings({ pay_cycle: cycle })
+    },
+    [payCycle, upsertUserSettings],
+  )
+
+  const updateMonthlySpendBuffer = useCallback(
+    async (amount: number) => {
+      const next = Math.max(0, Math.round(amount * 100) / 100)
+      if (next === monthlySpendBuffer) return
+      await upsertUserSettings({ monthly_spend_buffer: next })
+    },
+    [monthlySpendBuffer, upsertUserSettings],
+  )
+
   useEffect(() => {
     let cancelled = false
 
     async function init() {
       setLoading(true)
       setError(null)
-      const [, list] = await Promise.all([loadPaymentCards(), loadMonths()])
+      const [, list] = await Promise.all([
+        loadPaymentCards(),
+        loadMonths(),
+        loadUserSettings(),
+      ])
       if (cancelled) return
 
       if (list.length === 0) {
@@ -276,7 +398,13 @@ export function useBudget(userId: string) {
     return () => {
       cancelled = true
     }
-  }, [loadMonths, loadCategories, loadPaymentCards, loadCardOverrides])
+  }, [
+    loadMonths,
+    loadCategories,
+    loadPaymentCards,
+    loadCardOverrides,
+    loadUserSettings,
+  ])
 
   useEffect(() => {
     if (!selectedMonthId) return
@@ -705,8 +833,8 @@ export function useBudget(userId: string) {
 
     const grossSemi = gross?.actual_amount ?? 0
     const netSemi = net?.actual_amount ?? 0
-    const grossMonthly = grossSemi * 2
-    const netMonthly = netSemi * 2
+    const grossMonthly = toMonthly(grossSemi, payCycle)
+    const netMonthly = toMonthly(netSemi, payCycle)
 
     // Unbudgeted = monthly net left after all budgeted sections.
     const unbudgeted = netMonthly - totalBudgeted
@@ -720,9 +848,9 @@ export function useBudget(userId: string) {
       sectionOverage += Math.max(0, spent - budgeted)
     }
 
-    // What you can actually spend on extras while always keeping $200 unspent.
+    // What you can actually spend on extras after keeping your buffer unspent.
     const canSpendNoBuffer = unbudgeted - sectionOverage
-    const canSpend = canSpendNoBuffer - MONTHLY_SPEND_BUFFER
+    const canSpend = canSpendNoBuffer - monthlySpendBuffer
     const leftover = netMonthly - totalSpent
 
     return {
@@ -735,6 +863,8 @@ export function useBudget(userId: string) {
       canSpendNoBuffer,
       canSpendOnBudget: unbudgeted,
       canSpendNow: canSpendNoBuffer,
+      monthlySpendBuffer,
+      payCycle,
       grossSemi,
       netSemi,
       grossMonthly,
@@ -743,7 +873,7 @@ export function useBudget(userId: string) {
       grossCategoryId: gross?.id ?? null,
       netCategoryId: net?.id ?? null,
     }
-  }, [categories])
+  }, [categories, payCycle, monthlySpendBuffer])
 
   const categoriesBySection = useMemo(() => {
     const map: Record<BudgetSection, Category[]> = {
@@ -1000,6 +1130,10 @@ export function useBudget(userId: string) {
     cardSpendTotals,
     paymentCards,
     summary,
+    payCycle,
+    monthlySpendBuffer,
+    updatePayCycle,
+    updateMonthlySpendBuffer,
     loading,
     busy,
     error,

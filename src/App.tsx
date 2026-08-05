@@ -45,6 +45,8 @@ function BudgetApp() {
     deletePaymentCard,
     saveCardDisplayTotal,
     updateMonthNotes,
+    updatePayCycle,
+    updateMonthlySpendBuffer,
   } = useBudget(user!.id)
 
   if (loading) {
@@ -128,6 +130,8 @@ function BudgetApp() {
                   netMonthly={summary.netMonthly}
                   grossCategoryId={summary.grossCategoryId}
                   netCategoryId={summary.netCategoryId}
+                  payCycle={summary.payCycle}
+                  onPayCycleChange={updatePayCycle}
                   onSaveIncome={(id, amount) =>
                     updateCategory(id, { actual_amount: amount })
                   }
@@ -141,6 +145,9 @@ function BudgetApp() {
                   sectionOverage={summary.sectionOverage}
                   canSpend={summary.canSpend}
                   canSpendNoBuffer={summary.canSpendNoBuffer}
+                  monthlySpendBuffer={summary.monthlySpendBuffer}
+                  onUpdateBuffer={updateMonthlySpendBuffer}
+                  busy={busy}
                 />
               </div>
 

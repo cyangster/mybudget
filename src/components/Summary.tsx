@@ -1,6 +1,6 @@
-import { formatCurrency } from '../lib/format'
+import { useEffect, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { formatCurrency, parseAmount } from '../lib/format'
 import { amountStatus, statusLabel } from '../lib/status'
-import { MONTHLY_SPEND_BUFFER } from '../lib/buffer'
 
 interface SummaryProps {
   totalBudgeted: number
@@ -10,6 +10,9 @@ interface SummaryProps {
   sectionOverage: number
   canSpend: number
   canSpendNoBuffer: number
+  monthlySpendBuffer: number
+  onUpdateBuffer: (amount: number) => Promise<void>
+  busy?: boolean
 }
 
 function spendClass(amount: number) {
@@ -24,12 +27,21 @@ export function Summary({
   sectionOverage,
   canSpend,
   canSpendNoBuffer,
+  monthlySpendBuffer,
+  onUpdateBuffer,
+  busy,
 }: SummaryProps) {
   const spendStatus = amountStatus(totalBudgeted, totalSpent)
+  const [editingBuffer, setEditingBuffer] = useState(false)
+  const [bufferInput, setBufferInput] = useState(String(monthlySpendBuffer))
+
+  useEffect(() => {
+    if (!editingBuffer) setBufferInput(String(monthlySpendBuffer))
+  }, [monthlySpendBuffer, editingBuffer])
 
   const bufferDetail = [
     `${formatCurrency(unbudgeted)} unbudgeted`,
-    `− ${formatCurrency(MONTHLY_SPEND_BUFFER)} buffer`,
+    `− ${formatCurrency(monthlySpendBuffer)} buffer`,
   ]
   if (sectionOverage > 0) {
     bufferDetail.push(`− ${formatCurrency(sectionOverage)} overspent`)
@@ -38,6 +50,25 @@ export function Summary({
   const noBufferDetail = [`${formatCurrency(unbudgeted)} unbudgeted`]
   if (sectionOverage > 0) {
     noBufferDetail.push(`− ${formatCurrency(sectionOverage)} overspent`)
+  }
+
+  async function commitBuffer(e?: FormEvent) {
+    e?.preventDefault()
+    const next = parseAmount(bufferInput)
+    setBufferInput(String(next))
+    await onUpdateBuffer(next)
+    setEditingBuffer(false)
+  }
+
+  function onBufferKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      void commitBuffer()
+    }
+    if (e.key === 'Escape') {
+      setBufferInput(String(monthlySpendBuffer))
+      setEditingBuffer(false)
+    }
   }
 
   return (
@@ -63,29 +94,68 @@ export function Summary({
       </div>
       <div
         className={`summary-item ${canSpend >= 0 ? 'tone-done' : 'tone-over'}`}
-        title={`Unbudgeted money for extras, after always keeping $${MONTHLY_SPEND_BUFFER} unspent.`}
+        title={`Unbudgeted money for extras, after always keeping ${formatCurrency(monthlySpendBuffer)} unspent.`}
       >
         <span className="summary-label">Can spend</span>
         <span className={`summary-value ${spendClass(canSpend)}`}>
           {formatCurrency(canSpend)}
         </span>
         <span className="summary-buffer">
-          <span className="summary-buffer-label">
-            Keeps ${MONTHLY_SPEND_BUFFER} unspent
-          </span>
-          <span className="summary-buffer-detail">{bufferDetail.join(' ')}</span>
+          {editingBuffer ? (
+            <form
+              className="summary-buffer-edit"
+              onSubmit={(e) => void commitBuffer(e)}
+            >
+              <span className="summary-buffer-label">Buffer kept unspent</span>
+              <span className="money-input summary-buffer-money">
+                <span className="money-input-prefix" aria-hidden="true">
+                  $
+                </span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  inputMode="decimal"
+                  value={bufferInput}
+                  disabled={busy}
+                  autoFocus
+                  aria-label="Monthly spend buffer"
+                  onChange={(e) => setBufferInput(e.target.value)}
+                  onBlur={() => void commitBuffer()}
+                  onKeyDown={onBufferKeyDown}
+                />
+              </span>
+            </form>
+          ) : (
+            <button
+              type="button"
+              className="summary-buffer-edit-btn"
+              disabled={busy}
+              title="Click to edit buffer"
+              onClick={() => setEditingBuffer(true)}
+            >
+              <span className="summary-buffer-label">
+                Keeps {formatCurrency(monthlySpendBuffer)} unspent · edit
+              </span>
+              <span className="summary-buffer-detail">
+                {bufferDetail.join(' ')}
+              </span>
+            </button>
+          )}
         </span>
       </div>
       <div
         className={`summary-item ${canSpendNoBuffer >= 0 ? 'tone-done' : 'tone-over'}`}
-        title="All unbudgeted money for extras, with no $200 buffer held back."
+        title="All unbudgeted money for extras, with no buffer held back."
       >
         <span className="summary-label">Can spend (no buffer)</span>
         <span className={`summary-value ${spendClass(canSpendNoBuffer)}`}>
           {formatCurrency(canSpendNoBuffer)}
         </span>
         <span className="summary-buffer">
-          <span className="summary-buffer-label">Ignores $200 buffer</span>
+          <span className="summary-buffer-label">
+            Ignores {formatCurrency(monthlySpendBuffer)} buffer
+          </span>
           <span className="summary-buffer-detail">
             {noBufferDetail.join(' ')}
           </span>

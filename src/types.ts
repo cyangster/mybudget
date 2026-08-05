@@ -5,6 +5,15 @@ export type BudgetSection =
   | 'investments'
   | 'savings'
 
+export type PayCycle = 'weekly' | 'biweekly' | 'semimonthly' | 'monthly'
+
+export interface UserSettings {
+  user_id: string
+  pay_cycle: PayCycle
+  monthly_spend_buffer: number
+  updated_at: string
+}
+
 export interface Month {
   id: string
   user_id: string
