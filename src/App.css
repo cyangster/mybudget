@@ -103,6 +103,7 @@
 .income-header {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.65rem;
   background: linear-gradient(135deg, #f0fdfa 0%, var(--surface) 55%);
@@ -111,6 +112,7 @@
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 0.35rem 0.55rem;
+  min-width: 0;
 }
 
 .income-header-top {
@@ -126,7 +128,9 @@
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
-  min-width: 9.5rem;
+  min-width: 0;
+  width: 100%;
+  max-width: 11rem;
 }
 
 .income-cycle-label {
@@ -163,7 +167,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.35rem;
-  flex: 1;
+  flex: 1 1 14rem;
   min-width: 0;
 }
 
@@ -208,7 +212,8 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: flex-end;
-  flex: 1;
+  flex: 1 1 14rem;
+  min-width: 0;
 }
 
 .income-edit-form label {
@@ -377,7 +382,7 @@
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 26rem;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 26rem);
   gap: 0.85rem;
   overflow: hidden;
 }
@@ -392,8 +397,9 @@
 }
 
 .spend-calendar {
-  min-width: 26rem;
-  width: 26rem;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
   min-height: 0;
   height: 100%;
   overflow: hidden;
@@ -2083,9 +2089,14 @@ button.icon-btn.danger:hover:not(:disabled) {
     overflow: auto;
   }
 
+  .dashboard-main {
+    overflow: visible;
+  }
+
   .spend-calendar {
     height: auto;
-    max-height: 22rem;
+    max-height: none;
+    width: 100%;
   }
 }
 
@@ -2094,10 +2105,15 @@ button.icon-btn.danger:hover:not(:disabled) {
     height: auto;
     max-height: none;
     overflow: visible;
+    padding: 0.55rem 0.85rem 1rem;
   }
 
   .sticky-top {
     grid-template-columns: 1fr;
+  }
+
+  .summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .dashboard-body {
@@ -2123,15 +2139,89 @@ button.icon-btn.danger:hover:not(:disabled) {
   .sections-grid .table-wrap {
     flex: 1;
   }
+
+  .credit-cards-page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .credit-cards-page-actions {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 640px) {
+  .app-shell {
+    padding: 0.45rem 0.55rem 1.25rem;
+    gap: 0.4rem;
+  }
+
+  .app-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.45rem;
+  }
+
+  .brand {
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 0.4rem;
+  }
+
+  .brand h1 {
+    font-size: 0.98rem;
+  }
+
+  .app-view-tabs {
+    order: 2;
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .app-view-tab {
+    flex: 1;
+    text-align: center;
+  }
+
   .sticky-top {
     position: static;
   }
 
+  .income-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.5rem 0.55rem;
+  }
+
+  .income-header-top {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 0.35rem 0.55rem;
+  }
+
+  .income-cycle-field {
+    max-width: none;
+    flex: 1 1 8rem;
+  }
+
   .income-header-grid,
   .income-figures,
+  .income-edit-form {
+    width: 100%;
+  }
+
+  .income-edit-form {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .income-edit-form label {
+    min-width: 0;
+  }
+
   .summary {
     grid-template-columns: 1fr;
   }
@@ -2139,18 +2229,156 @@ button.icon-btn.danger:hover:not(:disabled) {
   .month-nav {
     flex-direction: column;
     align-items: stretch;
+    width: 100%;
   }
 
   .month-nav-controls {
     justify-content: space-between;
+    width: 100%;
   }
 
   .month-nav select {
     flex: 1;
+    min-width: 0;
   }
 
   .sections-grid > .budget-section {
     max-height: none;
+  }
+
+  .sections-grid table,
+  .section-modal-body table {
+    min-width: 28rem;
+  }
+
+  .section-header {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .section-totals {
+    width: 100%;
+  }
+
+  .costs-modal-root {
+    padding: 0.35rem;
+    align-items: stretch;
+    place-items: stretch;
+  }
+
+  .costs-modal,
+  .section-modal {
+    width: 100%;
+    max-width: none;
+    max-height: calc(100dvh - 0.7rem);
+    border-radius: 14px;
+    padding: 0.85rem 0.8rem 1rem;
+  }
+
+  .costs-modal-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .costs-modal-stats .status-pill {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .entry-list li.entry-item {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 0.35rem 0.45rem;
+  }
+
+  .entry-list li.entry-item .entry-date {
+    grid-column: 1 / -1;
+  }
+
+  .entry-list li.entry-item .entry-main {
+    grid-column: 1;
+  }
+
+  .add-entry-form,
+  .edit-entry-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .add-entry-form input[type='date'],
+  .edit-entry-form input[type='date'],
+  .add-entry-form input[type='text'],
+  .edit-entry-form input[type='text'],
+  .add-entry-form input[type='number'],
+  .edit-entry-form input[type='number'],
+  .add-entry-form .card-tag-row,
+  .edit-entry-form .card-tag-row,
+  .add-entry-form button[type='submit'],
+  .edit-entry-form .inline-actions {
+    width: 100%;
+  }
+
+  .add-entry-form input[type='number'],
+  .edit-entry-form input[type='number'] {
+    max-width: none;
+  }
+
+  .card-tag-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .login-card {
+    width: min(100%, 24rem);
+    margin: 1rem auto;
+    padding: 1.1rem;
+  }
+
+  .credit-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .credit-card-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .credit-card-pay-choice {
+    grid-template-columns: 1fr;
+  }
+
+  .credit-cards-page-header h2 {
+    font-size: 1.15rem;
+  }
+
+  .spend-calendar-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .spend-calendar-footer {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 400px) {
+  .summary-item {
+    padding: 0.4rem 0.55rem;
+  }
+
+  .income-amount {
+    font-size: 1.05rem;
+  }
+
+  .app-view-tab {
+    padding: 0.3rem 0.45rem;
+    font-size: 0.72rem;
+  }
+
+  .sections-grid table,
+  .section-modal-body table {
+    min-width: 24rem;
+    font-size: 0.85rem;
+  }
+
+  .sections-grid th,
+  .sections-grid td {
+    padding: 0.4rem 0.35rem;
   }
 }
 
@@ -2652,19 +2880,5 @@ button.icon-btn.danger:hover:not(:disabled) {
   padding-top: 0.35rem;
   border-top: 1px dashed var(--border);
   font-size: 0.75rem;
-}
-
-@media (max-width: 640px) {
-  .credit-card-fields {
-    grid-template-columns: 1fr;
-  }
-
-  .credit-card-pay-choice {
-    grid-template-columns: 1fr;
-  }
-
-  .brand {
-    flex-wrap: wrap;
-  }
 }
 

@@ -19,13 +19,13 @@ export const PAY_CYCLE_OPTIONS: PayCycleOption[] = [
   },
   {
     id: 'biweekly',
-    label: 'Biweekly (every 2 weeks)',
+    label: 'Biweekly',
     shortLabel: 'Biweekly',
     perYear: 26,
   },
   {
     id: 'semimonthly',
-    label: 'Semi-monthly (twice a month)',
+    label: 'Semi-monthly',
     shortLabel: 'Semi-monthly',
     perYear: 24,
   },
