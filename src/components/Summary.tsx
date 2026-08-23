@@ -39,19 +39,6 @@ export function Summary({
     if (!editingBuffer) setBufferInput(String(monthlySpendBuffer))
   }, [monthlySpendBuffer, editingBuffer])
 
-  const bufferDetail = [
-    `${formatCurrency(unbudgeted)} unbudgeted`,
-    `− ${formatCurrency(monthlySpendBuffer)} buffer`,
-  ]
-  if (sectionOverage > 0) {
-    bufferDetail.push(`− ${formatCurrency(sectionOverage)} overspent`)
-  }
-
-  const noBufferDetail = [`${formatCurrency(unbudgeted)} unbudgeted`]
-  if (sectionOverage > 0) {
-    noBufferDetail.push(`− ${formatCurrency(sectionOverage)} overspent`)
-  }
-
   async function commitBuffer(e?: FormEvent) {
     e?.preventDefault()
     const next = parseAmount(bufferInput)
@@ -71,42 +58,52 @@ export function Summary({
     }
   }
 
+  const canSpendHint =
+    sectionOverage > 0
+      ? `${formatCurrency(unbudgeted)} − ${formatCurrency(sectionOverage)} over`
+      : `${formatCurrency(unbudgeted)} left to budget`
+
   return (
     <section className="summary" aria-label="Budget summary">
       <div className="summary-item">
-        <span className="summary-label">Total Budgeted</span>
+        <span className="summary-label">Total budgeted</span>
         <span className="summary-value">{formatCurrency(totalBudgeted)}</span>
+        <span className="summary-meta">
+          <span className="summary-meta-line">All cost sections</span>
+        </span>
       </div>
+
       <div className={`summary-item tone-${spendStatus}`}>
-        <span className="summary-label">Total Spent</span>
+        <span className="summary-label">Total spent</span>
         <span className="summary-value">{formatCurrency(totalSpent)}</span>
         {spendStatus !== 'empty' && (
           <span className={`status-pill status-${spendStatus}`}>
             {statusLabel(spendStatus)}
           </span>
         )}
-        <span className="summary-buffer">
-          <span className="summary-buffer-label">Leftover</span>
-          <span className={`summary-buffer-value ${spendClass(leftover)}`}>
+        <span className="summary-meta">
+          <span className="summary-meta-line">Leftover</span>
+          <span className={`summary-meta-value ${spendClass(leftover)}`}>
             {formatCurrency(leftover)}
           </span>
         </span>
       </div>
+
       <div
         className={`summary-item ${canSpend >= 0 ? 'tone-done' : 'tone-over'}`}
-        title={`Unbudgeted money for extras, after always keeping ${formatCurrency(monthlySpendBuffer)} unspent.`}
+        title={`Unbudgeted money for extras, after keeping ${formatCurrency(monthlySpendBuffer)} unspent.`}
       >
         <span className="summary-label">Can spend</span>
         <span className={`summary-value ${spendClass(canSpend)}`}>
           {formatCurrency(canSpend)}
         </span>
-        <span className="summary-buffer">
+        <span className="summary-meta">
           {editingBuffer ? (
             <form
               className="summary-buffer-edit"
               onSubmit={(e) => void commitBuffer(e)}
             >
-              <span className="summary-buffer-label">Buffer kept unspent</span>
+              <span className="summary-meta-line">Buffer</span>
               <span className="money-input summary-buffer-money">
                 <span className="money-input-prefix" aria-hidden="true">
                   $
@@ -134,31 +131,26 @@ export function Summary({
               title="Click to edit buffer"
               onClick={() => setEditingBuffer(true)}
             >
-              <span className="summary-buffer-label">
-                Keeps {formatCurrency(monthlySpendBuffer)} unspent · edit
+              <span className="summary-meta-line">
+                Buffer {formatCurrency(monthlySpendBuffer)}
               </span>
-              <span className="summary-buffer-detail">
-                {bufferDetail.join(' ')}
-              </span>
+              <span className="summary-meta-hint">{canSpendHint}</span>
             </button>
           )}
         </span>
       </div>
+
       <div
         className={`summary-item ${canSpendNoBuffer >= 0 ? 'tone-done' : 'tone-over'}`}
         title="All unbudgeted money for extras, with no buffer held back."
       >
-        <span className="summary-label">Can spend (no buffer)</span>
+        <span className="summary-label">Can spend</span>
         <span className={`summary-value ${spendClass(canSpendNoBuffer)}`}>
           {formatCurrency(canSpendNoBuffer)}
         </span>
-        <span className="summary-buffer">
-          <span className="summary-buffer-label">
-            Ignores {formatCurrency(monthlySpendBuffer)} buffer
-          </span>
-          <span className="summary-buffer-detail">
-            {noBufferDetail.join(' ')}
-          </span>
+        <span className="summary-meta">
+          <span className="summary-meta-line">No buffer</span>
+          <span className="summary-meta-hint">{canSpendHint}</span>
         </span>
       </div>
     </section>
