@@ -2903,7 +2903,7 @@ button.icon-btn.danger:hover:not(:disabled) {
 
 .credit-card-statement-date {
   width: auto;
-  min-width: 9.5rem;
+  min-width: 12.5rem;
 }
 
 .credit-card-cycle-field {
@@ -3224,16 +3224,18 @@ button.icon-btn.danger:hover:not(:disabled) {
 }
 
 .credit-card-paid-toggle {
-  width: 100%;
+  width: auto;
+  min-width: 5.5rem;
   box-sizing: border-box;
-  padding: 0.4rem 0.55rem;
+  padding: 0.22rem 0.45rem;
   border: 1px solid color-mix(in srgb, var(--negative) 35%, var(--border));
-  border-radius: 8px;
+  border-radius: 6px;
   background: #fef2f2;
   color: var(--negative);
   font: inherit;
-  font-size: 0.85rem;
+  font-size: 0.72rem;
   font-weight: 700;
+  line-height: 1.2;
   cursor: pointer;
 }
 
