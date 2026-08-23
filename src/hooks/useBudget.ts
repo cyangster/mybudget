@@ -28,6 +28,15 @@ import { SPEND_SECTIONS } from '../types'
 
 const DEFAULT_CARD_NAME = 'Freedom'
 
+function isMissingRelationError(message: string): boolean {
+  const lower = message.toLowerCase()
+  return (
+    lower.includes('does not exist') ||
+    lower.includes('schema cache') ||
+    lower.includes('could not find the table')
+  )
+}
+
 function toUserSettings(row: Partial<UserSettings> | null | undefined): {
   payCycle: PayCycle
   monthlySpendBuffer: number
@@ -278,7 +287,7 @@ export function useBudget(userId: string) {
 
     if (err) {
       // Table may not exist yet before migration is applied.
-      if (!err.message.toLowerCase().includes('does not exist')) {
+      if (!isMissingRelationError(err.message)) {
         setError(err.message)
       }
       setCardMonthStatus([])
@@ -1097,7 +1106,11 @@ export function useBudget(userId: string) {
 
         if (statusErr) {
           setBusy(false)
-          setError(statusErr.message)
+          setError(
+            isMissingRelationError(statusErr.message)
+              ? 'Missing database table card_month_status. Run supabase/migrations/015_card_month_status.sql in the Supabase SQL editor, then refresh.'
+              : statusErr.message,
+          )
           return
         }
 
