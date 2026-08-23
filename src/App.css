@@ -2896,14 +2896,14 @@ button.icon-btn.danger:hover:not(:disabled) {
 
 .credit-card-statement-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(14rem, 1.25fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.4rem;
   align-items: center;
 }
 
 .credit-card-statement-date {
-  width: 100%;
-  min-width: 0;
+  width: auto;
+  min-width: 9.5rem;
 }
 
 .credit-card-cycle-field {
@@ -3224,8 +3224,7 @@ button.icon-btn.danger:hover:not(:disabled) {
 }
 
 .credit-card-paid-toggle {
-  width: fit-content;
-  max-width: 100%;
+  width: 100%;
   box-sizing: border-box;
   padding: 0.4rem 0.55rem;
   border: 1px solid color-mix(in srgb, var(--negative) 35%, var(--border));
