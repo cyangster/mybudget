@@ -2894,20 +2894,16 @@ button.icon-btn.danger:hover:not(:disabled) {
   grid-column: 1 / -1;
 }
 
-.credit-card-as-of-row {
+.credit-card-statement-row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 0.35rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.4rem;
   align-items: center;
-  margin-top: 0.35rem;
 }
 
-.credit-card-as-of-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--muted);
+.credit-card-statement-date {
+  width: auto;
+  min-width: 9.5rem;
 }
 
 .credit-card-cycle-field {

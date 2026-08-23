@@ -617,38 +617,38 @@ export function CreditCardsPage({
                     <label className="credit-card-statement-field">
                       {fieldCatalog.find((f) => f.id === 'statement_balance')
                         ?.label ?? 'Statement balance'}
-                      <span className="money-input">
-                        <span className="money-input-prefix" aria-hidden="true">
-                          $
+                      <span className="credit-card-statement-row">
+                        <span className="money-input">
+                          <span className="money-input-prefix" aria-hidden="true">
+                            $
+                          </span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            inputMode="decimal"
+                            value={draft.statement_balance}
+                            disabled={busy}
+                            onChange={(e) =>
+                              setDraft(
+                                card.id,
+                                'statement_balance',
+                                e.target.value,
+                              )
+                            }
+                            onBlur={() =>
+                              void commitAmount(card, 'statement_balance')
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') e.currentTarget.blur()
+                            }}
+                          />
                         </span>
                         <input
-                          type="number"
-                          step="0.01"
-                          inputMode="decimal"
-                          value={draft.statement_balance}
-                          disabled={busy}
-                          onChange={(e) =>
-                            setDraft(
-                              card.id,
-                              'statement_balance',
-                              e.target.value,
-                            )
-                          }
-                          onBlur={() =>
-                            void commitAmount(card, 'statement_balance')
-                          }
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') e.currentTarget.blur()
-                          }}
-                        />
-                      </span>
-                      <span className="credit-card-as-of-row">
-                        <span className="credit-card-as-of-label">as of</span>
-                        <input
                           type="date"
+                          className="credit-card-statement-date"
                           value={draft.statement_balance_as_of}
                           disabled={busy}
-                          aria-label="Statement balance as of date"
+                          aria-label="Statement balance date"
                           onChange={(e) =>
                             setDraft(
                               card.id,
@@ -659,11 +659,6 @@ export function CreditCardsPage({
                           onBlur={() => void commitStatementAsOf(card)}
                         />
                       </span>
-                      {card.statement_balance_as_of ? (
-                        <span className="credit-card-resolved muted">
-                          as of {displayEntryDate(card.statement_balance_as_of)}
-                        </span>
-                      ) : null}
                     </label>
                   )}
                   {(show('total_balance') || show('statement_balance')) && (
