@@ -109,9 +109,34 @@ export function BudgetSectionView({
               )}
             </div>
             {!isIncome && (
-              <span className="section-summary-spent">
-                {formatCurrency(totals.spent)}
-              </span>
+              <div className="section-summary-totals">
+                <span>
+                  <span className="section-summary-total-label">Budgeted</span>
+                  <span className="section-summary-total-value amount-budgeted">
+                    {formatCurrency(totals.budgeted)}
+                  </span>
+                </span>
+                <span>
+                  <span className="section-summary-total-label">Spent</span>
+                  <span className="section-summary-total-value amount-spent">
+                    {formatCurrency(totals.spent)}
+                  </span>
+                </span>
+                <span>
+                  <span className="section-summary-total-label">Left</span>
+                  <span
+                    className={`section-summary-total-value ${
+                      totals.remaining > 0
+                        ? 'positive'
+                        : totals.remaining < 0
+                          ? 'negative'
+                          : ''
+                    }`}
+                  >
+                    {formatCurrency(totals.remaining)}
+                  </span>
+                </span>
+              </div>
             )}
           </header>
 
@@ -119,23 +144,44 @@ export function BudgetSectionView({
             {categories.length === 0 ? (
               <p className="section-summary-empty muted">No categories yet</p>
             ) : (
-              <ul>
-                {categories.map((cat) => (
-                  <li
-                    key={cat.id}
-                    className={
-                      cat.excluded_from_budget
-                        ? 'section-summary-row is-excluded'
-                        : 'section-summary-row'
-                    }
-                  >
-                    <span className="section-summary-name">{cat.name}</span>
-                    <span className="section-summary-amount amount-spent">
-                      {formatCurrency(cat.actual_amount)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <>
+                <div className="section-summary-cols" aria-hidden="true">
+                  <span>Category</span>
+                  <span>Budgeted</span>
+                  <span>Spent</span>
+                  <span>Left</span>
+                </div>
+                <ul>
+                  {categories.map((cat) => {
+                    const left = cat.budgeted_amount - cat.actual_amount
+                    const leftClass =
+                      left > 0 ? 'positive' : left < 0 ? 'negative' : ''
+                    return (
+                      <li
+                        key={cat.id}
+                        className={
+                          cat.excluded_from_budget
+                            ? 'section-summary-row is-excluded'
+                            : 'section-summary-row'
+                        }
+                      >
+                        <span className="section-summary-name">{cat.name}</span>
+                        <span className="section-summary-amount amount-budgeted">
+                          {formatCurrency(cat.budgeted_amount)}
+                        </span>
+                        <span className="section-summary-amount amount-spent">
+                          {formatCurrency(cat.actual_amount)}
+                        </span>
+                        <span
+                          className={`section-summary-amount ${leftClass}`}
+                        >
+                          {formatCurrency(left)}
+                        </span>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </>
             )}
           </div>
 
