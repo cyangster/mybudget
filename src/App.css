@@ -95,7 +95,7 @@
   margin-bottom: 0;
   background: none;
   display: grid;
-  grid-template-columns: minmax(14rem, 19rem) minmax(0, 1fr);
+  grid-template-columns: minmax(16.5rem, 22rem) minmax(0, 1fr);
   gap: 0.45rem;
   flex-shrink: 0;
   align-items: stretch;
@@ -106,14 +106,16 @@
   flex-direction: column;
   align-items: stretch;
   justify-content: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
   background: linear-gradient(135deg, #f0fdfa 0%, var(--surface) 55%);
   border: 1px solid #99f6e4;
   border-left: 4px solid var(--income);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 0.45rem 0.55rem;
+  padding: 0.55rem 0.65rem;
   min-width: 0;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .income-header-top {
@@ -256,12 +258,14 @@
 .summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   gap: 0.45rem;
   margin-bottom: 0;
   position: static;
   padding: 0;
   background: none;
   min-width: 0;
+  align-self: stretch;
 }
 
 .summary-item {
@@ -269,14 +273,17 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 0.4rem 0.65rem;
+  padding: 0.45rem 0.55rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0;
+  gap: 0.1rem;
   position: relative;
   justify-content: center;
   min-width: 0;
+  min-height: 100%;
+  height: 100%;
+  box-sizing: border-box;
   text-align: center;
 }
 
@@ -335,11 +342,21 @@
   flex-direction: column;
   align-items: center;
   gap: 0.05rem;
-  margin-top: 0.25rem;
+  margin-top: auto;
   padding-top: 0.25rem;
   border-top: 1px dashed var(--border);
   width: 100%;
   text-align: center;
+}
+
+.summary-buffer-detail {
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: var(--muted);
+  line-height: 1.25;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .summary-buffer-edit-btn {
@@ -386,13 +403,6 @@
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--muted);
-}
-
-.summary-buffer-detail {
-  font-size: 0.68rem;
-  font-weight: 500;
-  color: var(--muted);
-  line-height: 1.25;
 }
 
 .summary-buffer-value {
