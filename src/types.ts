@@ -81,6 +81,15 @@ export interface CardMonthOverride {
   display_total: number
 }
 
+/** Per-month paid / paying choice for a credit card. */
+export interface CardMonthStatus {
+  id: string
+  month_id: string
+  card_id: string
+  payment_paid: boolean
+  payment_choice: PaymentChoice | null
+}
+
 export interface CardSpendTotal {
   cardId: string
   name: string

@@ -14,6 +14,7 @@ import { supabase } from '../lib/supabase'
 import type {
   BudgetSection,
   CardMonthOverride,
+  CardMonthStatus,
   CardSpendTotal,
   Category,
   CategoryEntry,
@@ -119,6 +120,7 @@ export function useBudget(userId: string) {
   >({})
   const [paymentCards, setPaymentCards] = useState<PaymentCard[]>([])
   const [cardOverrides, setCardOverrides] = useState<CardMonthOverride[]>([])
+  const [cardMonthStatus, setCardMonthStatus] = useState<CardMonthStatus[]>([])
   const [payCycle, setPayCycleState] = useState<PayCycle>(DEFAULT_PAY_CYCLE)
   const [monthlySpendBuffer, setMonthlySpendBufferState] = useState(
     DEFAULT_MONTHLY_SPEND_BUFFER,
@@ -268,6 +270,33 @@ export function useBudget(userId: string) {
     )
   }, [])
 
+  const loadCardMonthStatus = useCallback(async (monthId: string) => {
+    const { data, error: err } = await supabase
+      .from('card_month_status')
+      .select('*')
+      .eq('month_id', monthId)
+
+    if (err) {
+      // Table may not exist yet before migration is applied.
+      if (!err.message.toLowerCase().includes('does not exist')) {
+        setError(err.message)
+      }
+      setCardMonthStatus([])
+      return
+    }
+
+    setCardMonthStatus(
+      (data ?? []).map((row) => {
+        const r = row as CardMonthStatus
+        return {
+          ...r,
+          payment_paid: Boolean(r.payment_paid),
+          payment_choice: parsePaymentChoice(r.payment_choice),
+        }
+      }),
+    )
+  }, [])
+
   const loadUserSettings = useCallback(async () => {
     const { data, error: err } = await supabase
       .from('user_settings')
@@ -379,6 +408,7 @@ export function useBudget(userId: string) {
         setCategories([])
         setEntriesByCategory({})
         setCardOverrides([])
+        setCardMonthStatus([])
         setLoading(false)
         return
       }
@@ -390,6 +420,7 @@ export function useBudget(userId: string) {
       await Promise.all([
         loadCategories(current.id),
         loadCardOverrides(current.id),
+        loadCardMonthStatus(current.id),
       ])
       if (!cancelled) setLoading(false)
     }
@@ -403,6 +434,7 @@ export function useBudget(userId: string) {
     loadCategories,
     loadPaymentCards,
     loadCardOverrides,
+    loadCardMonthStatus,
     loadUserSettings,
   ])
 
@@ -410,7 +442,13 @@ export function useBudget(userId: string) {
     if (!selectedMonthId) return
     void loadCategories(selectedMonthId)
     void loadCardOverrides(selectedMonthId)
-  }, [selectedMonthId, loadCategories, loadCardOverrides])
+    void loadCardMonthStatus(selectedMonthId)
+  }, [
+    selectedMonthId,
+    loadCategories,
+    loadCardOverrides,
+    loadCardMonthStatus,
+  ])
 
   const syncCategoryActual = useCallback(async (categoryId: string) => {
     const { data, error: err } = await supabase
@@ -1012,29 +1050,100 @@ export function useBudget(userId: string) {
       setBusy(true)
       setError(null)
 
-      const { error: err } = await supabase
-        .from('payment_cards')
-        .update(patch)
-        .eq('id', id)
-
-      setBusy(false)
-      if (err) {
-        setError(err.message)
-        return
+      const monthStatusPatch: Partial<
+        Pick<CardMonthStatus, 'payment_paid' | 'payment_choice'>
+      > = {}
+      if ('payment_paid' in patch) {
+        monthStatusPatch.payment_paid = Boolean(patch.payment_paid)
+      }
+      if ('payment_choice' in patch) {
+        monthStatusPatch.payment_choice = parsePaymentChoice(patch.payment_choice)
       }
 
-      setPaymentCards((prev) =>
-        prev.map((card) =>
-          card.id === id
-            ? toCard({
-                ...card,
-                ...patch,
-              } as PaymentCard)
-            : card,
-        ),
-      )
+      const {
+        payment_paid: _paid,
+        payment_choice: _choice,
+        ...cardPatch
+      } = patch
+
+      if (Object.keys(monthStatusPatch).length > 0) {
+        if (!selectedMonthId) {
+          setBusy(false)
+          setError('Select a month before updating payment status.')
+          return
+        }
+
+        const existing = cardMonthStatus.find((row) => row.card_id === id)
+        const nextPaid =
+          monthStatusPatch.payment_paid ?? existing?.payment_paid ?? false
+        const nextChoice =
+          'payment_choice' in monthStatusPatch
+            ? monthStatusPatch.payment_choice ?? null
+            : (existing?.payment_choice ?? null)
+
+        const { data, error: statusErr } = await supabase
+          .from('card_month_status')
+          .upsert(
+            {
+              month_id: selectedMonthId,
+              card_id: id,
+              payment_paid: nextPaid,
+              payment_choice: nextChoice,
+            },
+            { onConflict: 'month_id,card_id' },
+          )
+          .select('*')
+          .single()
+
+        if (statusErr) {
+          setBusy(false)
+          setError(statusErr.message)
+          return
+        }
+
+        const saved = data as CardMonthStatus
+        setCardMonthStatus((prev) => {
+          const without = prev.filter((row) => row.card_id !== id)
+          return [
+            ...without,
+            {
+              id: saved.id,
+              month_id: selectedMonthId,
+              card_id: id,
+              payment_paid: Boolean(saved.payment_paid),
+              payment_choice: parsePaymentChoice(saved.payment_choice),
+            },
+          ]
+        })
+      }
+
+      if (Object.keys(cardPatch).length > 0) {
+        const { error: err } = await supabase
+          .from('payment_cards')
+          .update(cardPatch)
+          .eq('id', id)
+
+        if (err) {
+          setBusy(false)
+          setError(err.message)
+          return
+        }
+
+        setPaymentCards((prev) =>
+          prev.map((card) =>
+            card.id === id
+              ? toCard({
+                  ...card,
+                  ...cardPatch,
+                } as PaymentCard)
+              : card,
+          ),
+        )
+      }
+
+      setBusy(false)
     },
-    [],
+    [selectedMonthId, cardMonthStatus],
   )
 
   const deletePaymentCard = useCallback(async (id: string) => {
@@ -1119,6 +1228,21 @@ export function useBudget(userId: string) {
     ],
   )
 
+  const paymentCardsForMonth = useMemo(() => {
+    const statusByCard = new Map(
+      cardMonthStatus.map((row) => [row.card_id, row] as const),
+    )
+    return paymentCards.map((card) => {
+      const status = statusByCard.get(card.id)
+      return {
+        ...card,
+        // Fresh each month until you set it for that month.
+        payment_paid: status?.payment_paid ?? false,
+        payment_choice: status?.payment_choice ?? null,
+      }
+    })
+  }, [paymentCards, cardMonthStatus])
+
   return {
     months,
     selectedMonth,
@@ -1128,7 +1252,7 @@ export function useBudget(userId: string) {
     entriesByCategory,
     dailySpendTotals,
     cardSpendTotals,
-    paymentCards,
+    paymentCards: paymentCardsForMonth,
     summary,
     payCycle,
     monthlySpendBuffer,
