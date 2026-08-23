@@ -147,8 +147,8 @@ export function BudgetSectionView({
               <p className="section-summary-empty muted">No categories yet</p>
             ) : (
               <>
-                <div className="section-summary-cols" aria-hidden="true">
-                  <span className="section-summary-check-col" />
+                <div className="section-summary-cols">
+                  <span className="section-summary-check-col">On</span>
                   <span>Category</span>
                   <span>Budgeted</span>
                   <span>Spent</span>
@@ -159,33 +159,35 @@ export function BudgetSectionView({
                     const left = cat.budgeted_amount - cat.actual_amount
                     const leftClass =
                       left > 0 ? 'positive' : left < 0 ? 'negative' : ''
+                    const included = !cat.excluded_from_budget
                     return (
                       <li
                         key={cat.id}
                         className={
-                          cat.excluded_from_budget
-                            ? 'section-summary-row is-excluded'
-                            : 'section-summary-row'
+                          included
+                            ? 'section-summary-row'
+                            : 'section-summary-row is-excluded'
                         }
                       >
                         {!isIncome ? (
-                          <input
-                            type="checkbox"
-                            className="include-check section-summary-check"
-                            checked={!cat.excluded_from_budget}
-                            disabled={busy}
-                            title={
-                              cat.excluded_from_budget
-                                ? 'Off: shown only, not in totals'
-                                : 'On: included in totals'
-                            }
-                            aria-label={`Include ${cat.name} in budget totals`}
-                            onChange={(e) => {
-                              void onSave(cat.id, {
-                                excluded_from_budget: !e.target.checked,
-                              })
-                            }}
-                          />
+                          <label className="section-summary-toggle">
+                            <input
+                              type="checkbox"
+                              className="section-summary-toggle-input"
+                              checked={included}
+                              disabled={busy}
+                              aria-label={`Include ${cat.name} in budget totals`}
+                              onChange={(e) => {
+                                void onSave(cat.id, {
+                                  excluded_from_budget: !e.target.checked,
+                                })
+                              }}
+                            />
+                            <span
+                              className="section-summary-toggle-ui"
+                              aria-hidden="true"
+                            />
+                          </label>
                         ) : (
                           <span className="section-summary-check-col" />
                         )}
