@@ -95,7 +95,7 @@
   margin-bottom: 0;
   background: none;
   display: grid;
-  grid-template-columns: minmax(11.5rem, 15.5rem) minmax(0, 1fr);
+  grid-template-columns: minmax(14rem, 19rem) minmax(0, 1fr);
   gap: 0.45rem;
   flex-shrink: 0;
   align-items: stretch;
@@ -105,13 +105,14 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  justify-content: center;
   gap: 0.4rem;
   background: linear-gradient(135deg, #f0fdfa 0%, var(--surface) 55%);
   border: 1px solid #99f6e4;
   border-left: 4px solid var(--income);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 0.4rem 0.5rem;
+  padding: 0.45rem 0.55rem;
   min-width: 0;
 }
 
@@ -119,8 +120,8 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.4rem;
+  justify-content: center;
+  gap: 0.45rem;
   min-width: 0;
 }
 
@@ -152,6 +153,7 @@
   font-weight: 700;
   letter-spacing: 0.01em;
   line-height: 1.2;
+  text-align: center;
   cursor: pointer;
 }
 
@@ -172,6 +174,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--income);
+  text-align: center;
 }
 
 .income-header-grid {
@@ -186,8 +189,9 @@
   background: var(--income-soft);
   border: 1px solid #99f6e4;
   border-radius: 8px;
-  padding: 0.3rem 0.5rem;
+  padding: 0.35rem 0.45rem;
   min-width: 0;
+  text-align: center;
 }
 
 .income-block h3 {
@@ -198,12 +202,14 @@
 .income-figures {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 0.2rem;
 }
 
 .income-figures > div {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 0;
   min-width: 0;
 }
@@ -263,13 +269,15 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 0.35rem 0.65rem;
+  padding: 0.4rem 0.65rem;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 0;
   position: relative;
   justify-content: center;
   min-width: 0;
+  text-align: center;
 }
 
 .summary-item.tone-done {
@@ -325,23 +333,26 @@
 .summary-buffer {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 0.05rem;
   margin-top: 0.25rem;
   padding-top: 0.25rem;
   border-top: 1px dashed var(--border);
+  width: 100%;
+  text-align: center;
 }
 
 .summary-buffer-edit-btn {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.05rem;
   width: 100%;
   margin: 0;
   padding: 0;
   border: none;
   background: transparent;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
   font: inherit;
   color: inherit;
@@ -359,12 +370,14 @@
 .summary-buffer-edit {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 0.25rem;
   width: 100%;
 }
 
 .summary-buffer-money {
   max-width: 8.5rem;
+  margin-inline: auto;
 }
 
 .summary-buffer-label {
