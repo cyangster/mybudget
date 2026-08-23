@@ -1141,6 +1141,8 @@ export function useBudget(userId: string) {
         }
 
         const existing = cardMonthStatus.find((row) => row.card_id === id)
+        const spendDisplay =
+          cardSpendTotals.find((c) => c.cardId === id)?.display ?? 0
         const nextRow = {
           month_id: selectedMonthId,
           card_id: id,
@@ -1151,7 +1153,9 @@ export function useBudget(userId: string) {
               ? (monthStatusPatch.payment_choice ?? null)
               : (existing?.payment_choice ?? null),
           total_balance:
-            monthStatusPatch.total_balance ?? existing?.total_balance ?? 0,
+            monthStatusPatch.total_balance ??
+            existing?.total_balance ??
+            spendDisplay,
           statement_balance:
             monthStatusPatch.statement_balance ??
             existing?.statement_balance ??
@@ -1219,7 +1223,7 @@ export function useBudget(userId: string) {
 
       setBusy(false)
     },
-    [selectedMonthId, cardMonthStatus],
+    [selectedMonthId, cardMonthStatus, cardSpendTotals],
   )
 
   const deletePaymentCard = useCallback(async (id: string) => {
@@ -1308,12 +1312,17 @@ export function useBudget(userId: string) {
     const statusByCard = new Map(
       cardMonthStatus.map((row) => [row.card_id, row] as const),
     )
+    const spendByCard = new Map(
+      cardSpendTotals.map((row) => [row.cardId, row] as const),
+    )
     return paymentCards.map((card) => {
       const status = statusByCard.get(card.id)
-      // Fresh each month until you enter values for that month.
+      const spend = spendByCard.get(card.id)
+      // Total balance is linked to budget-page card totals (same card id/name).
+      const linkedTotal = spend?.display ?? status?.total_balance ?? 0
       return {
         ...card,
-        total_balance: status?.total_balance ?? 0,
+        total_balance: linkedTotal,
         statement_balance: status?.statement_balance ?? 0,
         statement_balance_as_of: status?.statement_balance_as_of ?? null,
         minimum_payment: status?.minimum_payment ?? 0,
@@ -1323,7 +1332,7 @@ export function useBudget(userId: string) {
         custom_fields: status?.custom_fields ?? {},
       }
     })
-  }, [paymentCards, cardMonthStatus])
+  }, [paymentCards, cardMonthStatus, cardSpendTotals])
 
   return {
     months,

@@ -103,6 +103,7 @@ function BudgetApp() {
           cardSpendTotals={cardSpendTotals}
           onAddPaymentCard={addPaymentCard}
           onUpdatePaymentCard={updatePaymentCard}
+          onSaveCardDisplayTotal={saveCardDisplayTotal}
           onDeletePaymentCard={deletePaymentCard}
           busy={busy}
         />

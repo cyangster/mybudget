@@ -41,6 +41,10 @@ interface CreditCardsPageProps {
       >
     >,
   ) => Promise<void>
+  onSaveCardDisplayTotal?: (
+    cardId: string,
+    displayTotal: number | null,
+  ) => Promise<void>
   onDeletePaymentCard: (id: string) => Promise<void>
   busy?: boolean
 }
@@ -87,6 +91,7 @@ export function CreditCardsPage({
   cardSpendTotals,
   onAddPaymentCard,
   onUpdatePaymentCard,
+  onSaveCardDisplayTotal,
   onDeletePaymentCard,
   busy,
 }: CreditCardsPageProps) {
@@ -301,6 +306,12 @@ export function CreditCardsPage({
       return
     }
     setDraft(card.id, field, String(next))
+    if (field === 'total_balance' && onSaveCardDisplayTotal) {
+      // Keep Cards page total linked with Budget page card totals.
+      await onSaveCardDisplayTotal(card.id, next)
+      await onUpdatePaymentCard(card.id, { total_balance: next })
+      return
+    }
     await onUpdatePaymentCard(card.id, { [field]: next })
   }
 
@@ -611,6 +622,17 @@ export function CreditCardsPage({
                           }}
                         />
                       </span>
+                      {(() => {
+                        const spend = spendByCard.get(card.id)
+                        if (!spend) return null
+                        return (
+                          <span className="credit-card-linked-hint muted">
+                            {spend.isOverridden
+                              ? `Linked to budget · adjusted (tracked ${formatCurrency(spend.tracked)})`
+                              : `Linked to budget spend · ${spend.entryCount} cost${spend.entryCount === 1 ? '' : 's'}`}
+                          </span>
+                        )
+                      })()}
                     </label>
                   )}
                   {show('statement_balance') && (
