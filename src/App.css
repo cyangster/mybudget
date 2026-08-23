@@ -104,54 +104,65 @@
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 0.65rem;
+  align-items: stretch;
+  gap: 0.55rem;
   background: linear-gradient(135deg, #f0fdfa 0%, var(--surface) 55%);
   border: 1px solid #99f6e4;
   border-left: 4px solid var(--income);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 0.35rem 0.55rem;
+  padding: 0.4rem 0.55rem;
   min-width: 0;
 }
 
 .income-header-top {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: center;
-  gap: 0.2rem;
-  flex-shrink: 0;
+  gap: 0.3rem;
+  flex: 0 0 auto;
+  min-width: 7.25rem;
 }
 
 .income-cycle-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
+  display: block;
   min-width: 0;
   width: 100%;
-  max-width: 11rem;
-}
-
-.income-cycle-label {
-  font-size: 0.58rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
+  margin: 0;
 }
 
 .income-cycle-select {
+  appearance: none;
+  -webkit-appearance: none;
   width: 100%;
   box-sizing: border-box;
-  padding: 0.25rem 0.35rem;
-  border: 1px solid #99f6e4;
-  border-radius: 6px;
-  background: var(--surface);
-  color: var(--text);
+  margin: 0;
+  padding: 0.28rem 1.55rem 0.28rem 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--income) 28%, var(--border));
+  border-radius: 999px;
+  background-color: var(--surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%230f766e' d='M1.1 1.2 6 6.1l4.9-4.9 1.1 1.1L6 8.3.01 2.3z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.55rem center;
+  background-size: 0.65rem;
+  color: var(--income);
   font: inherit;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.income-cycle-select:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--income) 45%, var(--border));
+  background-color: #f0fdfa;
+}
+
+.income-cycle-select:focus {
+  outline: 2px solid color-mix(in srgb, var(--income) 45%, transparent);
+  outline-offset: 1px;
 }
 
 .income-header-title {
@@ -167,7 +178,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.35rem;
-  flex: 1 1 14rem;
+  flex: 1 1 12rem;
   min-width: 0;
 }
 
@@ -175,36 +186,42 @@
   background: var(--income-soft);
   border: 1px solid #99f6e4;
   border-radius: 8px;
-  padding: 0.25rem 0.45rem;
+  padding: 0.3rem 0.5rem;
+  min-width: 0;
 }
 
 .income-block h3 {
-  margin: 0 0 0.1rem;
-  font-size: 0.75rem;
+  margin: 0 0 0.15rem;
+  font-size: 0.72rem;
 }
 
 .income-figures {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
 .income-figures > div {
   display: flex;
   flex-direction: column;
   gap: 0;
+  min-width: 0;
 }
 
 .income-period {
-  font-size: 0.62rem;
+  font-size: 0.58rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
   color: var(--muted);
 }
 
 .income-amount {
-  font-size: clamp(1.15rem, 2vw, 1.45rem);
+  font-size: clamp(0.98rem, 1.5vw, 1.2rem);
   font-weight: 700;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
+  line-height: 1.2;
 }
 
 .income-edit-form {
@@ -2199,16 +2216,16 @@ button.icon-btn.danger:hover:not(:disabled) {
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    min-width: 0;
     gap: 0.35rem 0.55rem;
   }
 
   .income-cycle-field {
-    max-width: none;
-    flex: 1 1 8rem;
+    flex: 0 1 9rem;
+    width: auto;
   }
 
   .income-header-grid,
-  .income-figures,
   .income-edit-form {
     width: 100%;
   }

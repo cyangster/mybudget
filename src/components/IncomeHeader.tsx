@@ -59,7 +59,7 @@ export function IncomeHeader({
       <div className="income-header-top">
         <h2 className="income-header-title">Income</h2>
         <label className="income-cycle-field">
-          <span className="income-cycle-label">Pay cycle</span>
+          <span className="visually-hidden">Pay cycle</span>
           <select
             className="income-cycle-select"
             value={payCycle}
@@ -76,16 +76,6 @@ export function IncomeHeader({
             ))}
           </select>
         </label>
-        {!editing ? (
-          <button
-            type="button"
-            className="ghost small"
-            onClick={() => setEditing(true)}
-            disabled={busy || (!grossCategoryId && !netCategoryId)}
-          >
-            Edit
-          </button>
-        ) : null}
       </div>
 
       {editing ? (
