@@ -78,6 +78,50 @@ function parsePaymentChoice(value: unknown): PaymentChoice | null {
   return null
 }
 
+function parseCustomFields(raw: unknown): Record<string, number> {
+  const custom_fields: Record<string, number> = {}
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+      const n = Number(value)
+      if (Number.isFinite(n)) custom_fields[key] = n
+    }
+  }
+  return custom_fields
+}
+
+function toCardMonthStatus(row: Partial<CardMonthStatus> & { card_id: string; month_id: string }): CardMonthStatus {
+  return {
+    id: row.id ?? '',
+    month_id: row.month_id,
+    card_id: row.card_id,
+    payment_paid: Boolean(row.payment_paid),
+    payment_choice: parsePaymentChoice(row.payment_choice),
+    total_balance: Number(row.total_balance ?? 0),
+    statement_balance: Number(row.statement_balance ?? 0),
+    statement_balance_as_of: row.statement_balance_as_of ?? null,
+    minimum_payment: Number(row.minimum_payment ?? 0),
+    payment_due_date: row.payment_due_date ?? null,
+    custom_fields: parseCustomFields(row.custom_fields),
+  }
+}
+
+const MONTH_CARD_FIELDS = [
+  'payment_paid',
+  'payment_choice',
+  'total_balance',
+  'statement_balance',
+  'statement_balance_as_of',
+  'minimum_payment',
+  'payment_due_date',
+  'custom_fields',
+] as const
+
+type MonthCardField = (typeof MONTH_CARD_FIELDS)[number]
+
+function isMonthCardField(key: string): key is MonthCardField {
+  return (MONTH_CARD_FIELDS as readonly string[]).includes(key)
+}
+
 function toCard(row: PaymentCard): PaymentCard {
   const paymentDueDay =
     row.payment_due_day != null
@@ -93,13 +137,7 @@ function toCard(row: PaymentCard): PaymentCard {
         : null
 
   const rawCustom = row.custom_fields
-  const custom_fields: Record<string, number> = {}
-  if (rawCustom && typeof rawCustom === 'object' && !Array.isArray(rawCustom)) {
-    for (const [key, value] of Object.entries(rawCustom)) {
-      const n = Number(value)
-      if (Number.isFinite(n)) custom_fields[key] = n
-    }
-  }
+  const custom_fields = parseCustomFields(rawCustom)
 
   return {
     ...row,
@@ -295,14 +333,9 @@ export function useBudget(userId: string) {
     }
 
     setCardMonthStatus(
-      (data ?? []).map((row) => {
-        const r = row as CardMonthStatus
-        return {
-          ...r,
-          payment_paid: Boolean(r.payment_paid),
-          payment_choice: parsePaymentChoice(r.payment_choice),
-        }
-      }),
+      (data ?? []).map((row) =>
+        toCardMonthStatus(row as CardMonthStatus),
+      ),
     )
   }, [])
 
@@ -1060,47 +1093,86 @@ export function useBudget(userId: string) {
       setError(null)
 
       const monthStatusPatch: Partial<
-        Pick<CardMonthStatus, 'payment_paid' | 'payment_choice'>
+        Pick<
+          CardMonthStatus,
+          | 'payment_paid'
+          | 'payment_choice'
+          | 'total_balance'
+          | 'statement_balance'
+          | 'statement_balance_as_of'
+          | 'minimum_payment'
+          | 'payment_due_date'
+          | 'custom_fields'
+        >
       > = {}
-      if ('payment_paid' in patch) {
-        monthStatusPatch.payment_paid = Boolean(patch.payment_paid)
-      }
-      if ('payment_choice' in patch) {
-        monthStatusPatch.payment_choice = parsePaymentChoice(patch.payment_choice)
-      }
+      const cardPatch: Record<string, unknown> = {}
 
-      const {
-        payment_paid: _paid,
-        payment_choice: _choice,
-        ...cardPatch
-      } = patch
+      for (const [key, value] of Object.entries(patch)) {
+        if (isMonthCardField(key)) {
+          if (key === 'payment_choice') {
+            monthStatusPatch.payment_choice = parsePaymentChoice(value)
+          } else if (key === 'payment_paid') {
+            monthStatusPatch.payment_paid = Boolean(value)
+          } else if (key === 'custom_fields') {
+            monthStatusPatch.custom_fields = parseCustomFields(value)
+          } else if (
+            key === 'total_balance' ||
+            key === 'statement_balance' ||
+            key === 'minimum_payment'
+          ) {
+            monthStatusPatch[key] = Number(value ?? 0)
+          } else if (
+            key === 'statement_balance_as_of' ||
+            key === 'payment_due_date'
+          ) {
+            monthStatusPatch[key] =
+              typeof value === 'string' && value.trim() ? value : null
+          }
+        } else {
+          cardPatch[key] = value
+        }
+      }
 
       if (Object.keys(monthStatusPatch).length > 0) {
         if (!selectedMonthId) {
           setBusy(false)
-          setError('Select a month before updating payment status.')
+          setError('Select a month before updating card payment info.')
           return
         }
 
         const existing = cardMonthStatus.find((row) => row.card_id === id)
-        const nextPaid =
-          monthStatusPatch.payment_paid ?? existing?.payment_paid ?? false
-        const nextChoice =
-          'payment_choice' in monthStatusPatch
-            ? monthStatusPatch.payment_choice ?? null
-            : (existing?.payment_choice ?? null)
+        const nextRow = {
+          month_id: selectedMonthId,
+          card_id: id,
+          payment_paid:
+            monthStatusPatch.payment_paid ?? existing?.payment_paid ?? false,
+          payment_choice:
+            'payment_choice' in monthStatusPatch
+              ? (monthStatusPatch.payment_choice ?? null)
+              : (existing?.payment_choice ?? null),
+          total_balance:
+            monthStatusPatch.total_balance ?? existing?.total_balance ?? 0,
+          statement_balance:
+            monthStatusPatch.statement_balance ??
+            existing?.statement_balance ??
+            0,
+          statement_balance_as_of:
+            'statement_balance_as_of' in monthStatusPatch
+              ? (monthStatusPatch.statement_balance_as_of ?? null)
+              : (existing?.statement_balance_as_of ?? null),
+          minimum_payment:
+            monthStatusPatch.minimum_payment ?? existing?.minimum_payment ?? 0,
+          payment_due_date:
+            'payment_due_date' in monthStatusPatch
+              ? (monthStatusPatch.payment_due_date ?? null)
+              : (existing?.payment_due_date ?? null),
+          custom_fields:
+            monthStatusPatch.custom_fields ?? existing?.custom_fields ?? {},
+        }
 
         const { data, error: statusErr } = await supabase
           .from('card_month_status')
-          .upsert(
-            {
-              month_id: selectedMonthId,
-              card_id: id,
-              payment_paid: nextPaid,
-              payment_choice: nextChoice,
-            },
-            { onConflict: 'month_id,card_id' },
-          )
+          .upsert(nextRow, { onConflict: 'month_id,card_id' })
           .select('*')
           .single()
 
@@ -1108,25 +1180,16 @@ export function useBudget(userId: string) {
           setBusy(false)
           setError(
             isMissingRelationError(statusErr.message)
-              ? 'Missing database table card_month_status. Run supabase/migrations/015_card_month_status.sql in the Supabase SQL editor, then refresh.'
+              ? 'Missing card month columns. Run supabase/migrations/015_card_month_status.sql and 016_card_month_snapshot.sql in the Supabase SQL editor, then refresh.'
               : statusErr.message,
           )
           return
         }
 
-        const saved = data as CardMonthStatus
+        const saved = toCardMonthStatus(data as CardMonthStatus)
         setCardMonthStatus((prev) => {
           const without = prev.filter((row) => row.card_id !== id)
-          return [
-            ...without,
-            {
-              id: saved.id,
-              month_id: selectedMonthId,
-              card_id: id,
-              payment_paid: Boolean(saved.payment_paid),
-              payment_choice: parsePaymentChoice(saved.payment_choice),
-            },
-          ]
+          return [...without, saved]
         })
       }
 
@@ -1247,11 +1310,17 @@ export function useBudget(userId: string) {
     )
     return paymentCards.map((card) => {
       const status = statusByCard.get(card.id)
+      // Fresh each month until you enter values for that month.
       return {
         ...card,
-        // Fresh each month until you set it for that month.
+        total_balance: status?.total_balance ?? 0,
+        statement_balance: status?.statement_balance ?? 0,
+        statement_balance_as_of: status?.statement_balance_as_of ?? null,
+        minimum_payment: status?.minimum_payment ?? 0,
+        payment_due_date: status?.payment_due_date ?? null,
         payment_paid: status?.payment_paid ?? false,
         payment_choice: status?.payment_choice ?? null,
+        custom_fields: status?.custom_fields ?? {},
       }
     })
   }, [paymentCards, cardMonthStatus])

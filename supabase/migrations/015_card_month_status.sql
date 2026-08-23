@@ -10,6 +10,12 @@ create table public.card_month_status (
       payment_choice is null
       or payment_choice in ('total', 'statement', 'minimum')
     ),
+  total_balance numeric(12, 2) not null default 0,
+  statement_balance numeric(12, 2) not null default 0,
+  statement_balance_as_of date,
+  minimum_payment numeric(12, 2) not null default 0,
+  payment_due_date date,
+  custom_fields jsonb not null default '{}'::jsonb,
   unique (month_id, card_id)
 );
 
