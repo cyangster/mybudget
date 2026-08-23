@@ -1113,6 +1113,34 @@
   color: var(--text);
 }
 
+.section-summary-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.section-summary-open-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: center;
+}
+
+.section-summary-open-zone:disabled {
+  cursor: default;
+}
+
 .section-summary-header {
   display: flex;
   flex-direction: column;
@@ -1120,6 +1148,10 @@
   gap: 0.45rem;
   padding: 0.55rem 0.65rem 0.6rem;
   border-bottom: 1px solid var(--border);
+}
+
+.section-summary-header .section-summary-open-zone {
+  gap: 0.45rem;
 }
 
 .section-summary-title-row {
@@ -1184,13 +1216,14 @@
 
 .section-summary-cols {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) repeat(3, minmax(3.25rem, 1fr));
+  grid-template-columns: 1.15rem minmax(0, 1.35fr) repeat(3, minmax(3.1rem, 1fr));
   gap: 0.3rem;
   padding: 0.15rem 0.45rem 0.35rem;
   font-size: 0.64rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--muted);
+  align-items: center;
 }
 
 .section-summary-cols span,
@@ -1198,9 +1231,13 @@
   text-align: center;
 }
 
-.section-summary-cols span:first-child,
+.section-summary-cols span:nth-child(2),
 .section-summary-row .section-summary-name {
   text-align: left;
+}
+
+.section-summary-check-col {
+  width: 1.15rem;
 }
 
 .section-summary-list ul {
@@ -1214,7 +1251,7 @@
 
 .section-summary-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) repeat(3, minmax(3.25rem, 1fr));
+  grid-template-columns: 1.15rem minmax(0, 1.35fr) repeat(3, minmax(3.1rem, 1fr));
   gap: 0.3rem;
   align-items: center;
   padding: 0.4rem 0.45rem;
@@ -1227,14 +1264,39 @@
   opacity: 0.55;
 }
 
+.section-summary-check {
+  margin: 0;
+  width: 0.95rem;
+  height: 0.95rem;
+  justify-self: center;
+  accent-color: var(--accent, #0f766e);
+  cursor: pointer;
+}
+
 .section-summary-name {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.section-summary-name:disabled {
+  cursor: default;
+}
+
+.section-summary-name:hover:not(:disabled) {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .section-summary-amount {
@@ -1262,10 +1324,16 @@
 .section-summary-footer {
   padding: 0.35rem 0.75rem 0.5rem;
   border-top: 1px dashed var(--border);
+}
+
+.section-summary-footer .section-summary-open-zone {
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--muted);
-  text-align: center;
+}
+
+.section-summary-footer .section-summary-open-zone:hover {
+  color: var(--text);
 }
 
 .section-income .section-summary-header,

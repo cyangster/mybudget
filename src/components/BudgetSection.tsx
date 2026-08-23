@@ -91,53 +91,55 @@ export function BudgetSectionView({
       <section
         className={`budget-section section-summary-card section-${section} status-${isIncome ? 'empty' : sectionStatus}`}
       >
-        <button
-          type="button"
-          className="section-summary-hit"
-          onClick={openSection}
-          disabled={isIncome}
-          aria-haspopup={isIncome ? undefined : 'dialog'}
-          title={isIncome ? undefined : `Open ${SECTION_LABELS[section]}`}
-        >
+        <div className="section-summary-body">
           <header className="section-summary-header">
-            <div className="section-summary-title-row">
-              <h2>{SECTION_LABELS[section]}</h2>
-              {!isIncome && sectionStatus !== 'empty' && (
-                <span className={`status-pill status-${sectionStatus}`}>
-                  {statusLabel(sectionStatus)}
-                </span>
-              )}
-            </div>
-            {!isIncome && (
-              <div className="section-summary-totals">
-                <span>
-                  <span className="section-summary-total-label">Budgeted</span>
-                  <span className="section-summary-total-value amount-budgeted">
-                    {formatCurrency(totals.budgeted)}
+            <button
+              type="button"
+              className="section-summary-open-zone"
+              onClick={openSection}
+              disabled={isIncome}
+              aria-haspopup={isIncome ? undefined : 'dialog'}
+              title={isIncome ? undefined : `Open ${SECTION_LABELS[section]}`}
+            >
+              <div className="section-summary-title-row">
+                <h2>{SECTION_LABELS[section]}</h2>
+                {!isIncome && sectionStatus !== 'empty' && (
+                  <span className={`status-pill status-${sectionStatus}`}>
+                    {statusLabel(sectionStatus)}
                   </span>
-                </span>
-                <span>
-                  <span className="section-summary-total-label">Spent</span>
-                  <span className="section-summary-total-value amount-spent">
-                    {formatCurrency(totals.spent)}
-                  </span>
-                </span>
-                <span>
-                  <span className="section-summary-total-label">Left</span>
-                  <span
-                    className={`section-summary-total-value ${
-                      totals.remaining > 0
-                        ? 'positive'
-                        : totals.remaining < 0
-                          ? 'negative'
-                          : ''
-                    }`}
-                  >
-                    {formatCurrency(totals.remaining)}
-                  </span>
-                </span>
+                )}
               </div>
-            )}
+              {!isIncome && (
+                <div className="section-summary-totals">
+                  <span>
+                    <span className="section-summary-total-label">Budgeted</span>
+                    <span className="section-summary-total-value amount-budgeted">
+                      {formatCurrency(totals.budgeted)}
+                    </span>
+                  </span>
+                  <span>
+                    <span className="section-summary-total-label">Spent</span>
+                    <span className="section-summary-total-value amount-spent">
+                      {formatCurrency(totals.spent)}
+                    </span>
+                  </span>
+                  <span>
+                    <span className="section-summary-total-label">Left</span>
+                    <span
+                      className={`section-summary-total-value ${
+                        totals.remaining > 0
+                          ? 'positive'
+                          : totals.remaining < 0
+                            ? 'negative'
+                            : ''
+                      }`}
+                    >
+                      {formatCurrency(totals.remaining)}
+                    </span>
+                  </span>
+                </div>
+              )}
+            </button>
           </header>
 
           <div className="section-summary-list">
@@ -146,6 +148,7 @@ export function BudgetSectionView({
             ) : (
               <>
                 <div className="section-summary-cols" aria-hidden="true">
+                  <span className="section-summary-check-col" />
                   <span>Category</span>
                   <span>Budgeted</span>
                   <span>Spent</span>
@@ -165,7 +168,36 @@ export function BudgetSectionView({
                             : 'section-summary-row'
                         }
                       >
-                        <span className="section-summary-name">{cat.name}</span>
+                        {!isIncome ? (
+                          <input
+                            type="checkbox"
+                            className="include-check section-summary-check"
+                            checked={!cat.excluded_from_budget}
+                            disabled={busy}
+                            title={
+                              cat.excluded_from_budget
+                                ? 'Off: shown only, not in totals'
+                                : 'On: included in totals'
+                            }
+                            aria-label={`Include ${cat.name} in budget totals`}
+                            onChange={(e) => {
+                              void onSave(cat.id, {
+                                excluded_from_budget: !e.target.checked,
+                              })
+                            }}
+                          />
+                        ) : (
+                          <span className="section-summary-check-col" />
+                        )}
+                        <button
+                          type="button"
+                          className="section-summary-name"
+                          onClick={openSection}
+                          disabled={isIncome || busy}
+                          title={`Open ${cat.name}`}
+                        >
+                          {cat.name}
+                        </button>
                         <span className="section-summary-amount amount-budgeted">
                           {formatCurrency(cat.budgeted_amount)}
                         </span>
@@ -187,10 +219,17 @@ export function BudgetSectionView({
 
           {!isIncome && (
             <footer className="section-summary-footer">
-              <span className="muted">Open for details</span>
+              <button
+                type="button"
+                className="section-summary-open-zone"
+                onClick={openSection}
+                aria-haspopup="dialog"
+              >
+                Open for details
+              </button>
             </footer>
           )}
-        </button>
+        </div>
       </section>
 
       {!isIncome && (
