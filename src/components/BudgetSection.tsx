@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useMemo, useState } from 'react'
 import { formatCurrency } from '../lib/format'
 import { amountStatus, statusLabel } from '../lib/status'
 import type {
@@ -8,9 +8,7 @@ import type {
   PaymentCard,
 } from '../types'
 import { SECTION_LABELS } from '../types'
-import { CategoryRow } from './CategoryRow'
 import { SectionModal } from './SectionModal'
-import { SectionSpendModal } from './SectionSpendModal'
 
 interface BudgetSectionProps {
   section: BudgetSection
@@ -68,12 +66,7 @@ export function BudgetSectionView({
   busy,
 }: BudgetSectionProps) {
   const isIncome = section === 'income'
-  const [adding, setAdding] = useState(false)
-  const [newName, setNewName] = useState('')
   const [sectionOpen, setSectionOpen] = useState(false)
-  const [spendOpen, setSpendOpen] = useState(false)
-  const [draggingId, setDraggingId] = useState<string | null>(null)
-  const [dropTargetId, setDropTargetId] = useState<string | null>(null)
 
   const totals = useMemo(() => {
     const counted = categories.filter((c) => !c.excluded_from_budget)
@@ -86,250 +79,92 @@ export function BudgetSectionView({
     }
   }, [categories])
 
-  const remainingClass =
-    totals.remaining > 0
-      ? 'positive'
-      : totals.remaining < 0
-        ? 'negative'
-        : ''
-
   const sectionStatus = amountStatus(totals.budgeted, totals.spent)
 
-  async function handleAdd(e: FormEvent) {
-    e.preventDefault()
-    await onAdd(section, newName.trim() || 'New category')
-    setNewName('')
-    setAdding(false)
-  }
-
-  function handleDragStart(id: string) {
-    setDraggingId(id)
-  }
-
-  function handleDragOver(id: string) {
-    if (!draggingId || draggingId === id) return
-    setDropTargetId(id)
-  }
-
-  async function handleDrop(targetId: string) {
-    if (!draggingId || draggingId === targetId) {
-      setDraggingId(null)
-      setDropTargetId(null)
-      return
-    }
-
-    const ids = categories.map((c) => c.id)
-    const from = ids.indexOf(draggingId)
-    const to = ids.indexOf(targetId)
-    if (from < 0 || to < 0) {
-      setDraggingId(null)
-      setDropTargetId(null)
-      return
-    }
-
-    const next = [...ids]
-    const [moved] = next.splice(from, 1)
-    next.splice(to, 0, moved)
-
-    setDraggingId(null)
-    setDropTargetId(null)
-    await onReorder(section, next)
-  }
-
-  function handleDragEnd() {
-    setDraggingId(null)
-    setDropTargetId(null)
+  function openSection() {
+    if (isIncome) return
+    setSectionOpen(true)
   }
 
   return (
     <>
       <section
-        className={`budget-section section-${section} status-${isIncome ? 'empty' : sectionStatus}`}
+        className={`budget-section section-summary-card section-${section} status-${isIncome ? 'empty' : sectionStatus}`}
       >
-        <header className="section-header">
-          <div className="section-title-row">
-            <button
-              type="button"
-              className="section-open-btn"
-              onClick={() => !isIncome && setSectionOpen(true)}
-              disabled={isIncome}
-              aria-haspopup={isIncome ? undefined : 'dialog'}
-              title={isIncome ? undefined : `Open ${SECTION_LABELS[section]}`}
-            >
+        <button
+          type="button"
+          className="section-summary-hit"
+          onClick={openSection}
+          disabled={isIncome}
+          aria-haspopup={isIncome ? undefined : 'dialog'}
+          title={isIncome ? undefined : `Open ${SECTION_LABELS[section]}`}
+        >
+          <header className="section-summary-header">
+            <div className="section-summary-title-row">
               <h2>{SECTION_LABELS[section]}</h2>
-            </button>
+              {!isIncome && sectionStatus !== 'empty' && (
+                <span className={`status-pill status-${sectionStatus}`}>
+                  {statusLabel(sectionStatus)}
+                </span>
+              )}
+            </div>
             {!isIncome && (
-              <button
-                type="button"
-                className="section-spent-chip"
-                onClick={() => setSpendOpen(true)}
-                aria-haspopup="dialog"
-                title={`View ${SECTION_LABELS[section]} costs`}
-              >
+              <span className="section-summary-spent">
                 {formatCurrency(totals.spent)}
-              </button>
-            )}
-            {!isIncome && sectionStatus !== 'empty' && (
-              <span className={`status-pill status-${sectionStatus}`}>
-                {statusLabel(sectionStatus)}
               </span>
             )}
-            {!isIncome && (
-              <button
-                type="button"
-                className="ghost small section-expand-chip"
-                onClick={() => setSectionOpen(true)}
-              >
-                Open
-              </button>
-            )}
-          </div>
-          {!isIncome && (
-            <div
-              className="section-totals"
-              aria-label={`${SECTION_LABELS[section]} totals`}
-            >
-              <div>
-                <span className="section-total-label">Budgeted</span>
-                <span className="section-total-value amount-budgeted">
-                  {formatCurrency(totals.budgeted)}
-                </span>
-              </div>
-              <div>
-                <span className="section-total-label">Spent</span>
-                <span className="section-total-value amount-spent">
-                  {formatCurrency(totals.spent)}
-                </span>
-              </div>
-              <div>
-                <span className="section-total-label">Left over</span>
-                <span className={`section-total-value ${remainingClass}`}>
-                  {formatCurrency(totals.remaining)}
-                </span>
-              </div>
-            </div>
-          )}
-        </header>
+          </header>
 
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                {!isIncome && <th className="reorder-col" aria-label="Reorder" />}
-                <th>Category</th>
-                {isIncome ? (
-                  <th className="num">Amount</th>
-                ) : (
-                  <>
-                    <th className="num th-budgeted">Budgeted</th>
-                    <th className="num th-spent">Spent</th>
-                    <th className="num">Remaining</th>
-                  </>
-                )}
-                <th className="actions-col" />
-              </tr>
-            </thead>
-            <tbody>
-              {categories.length === 0 && (
-                <tr>
-                  <td colSpan={isIncome ? 3 : 6} className="empty">
-                    No categories yet.
-                  </td>
-                </tr>
-              )}
-              {categories.map((cat) => (
-                <CategoryRow
-                  key={cat.id}
-                  category={cat}
-                  entries={entriesByCategory[cat.id] ?? []}
-                  paymentCards={paymentCards}
-                  isIncome={isIncome}
-                  isDragging={draggingId === cat.id}
-                  isDropTarget={dropTargetId === cat.id}
-                  onDragStart={isIncome ? undefined : handleDragStart}
-                  onDragOver={isIncome ? undefined : handleDragOver}
-                  onDrop={isIncome ? undefined : handleDrop}
-                  onDragEnd={isIncome ? undefined : handleDragEnd}
-                  onSave={onSave}
-                  onDelete={isIncome ? undefined : onDelete}
-                  onAddEntry={isIncome ? undefined : onAddEntry}
-                  onUpdateEntry={isIncome ? undefined : onUpdateEntry}
-                  onDeleteEntry={isIncome ? undefined : onDeleteEntry}
-                  onAddPaymentCard={isIncome ? undefined : onAddPaymentCard}
-                  busy={busy}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {!isIncome && (
-          <div className="section-footer">
-            {adding ? (
-              <form className="add-form" onSubmit={handleAdd}>
-                <input
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="Category name"
-                  autoFocus
-                />
-                <button type="submit" disabled={busy}>
-                  Add
-                </button>
-                <button
-                  type="button"
-                  className="ghost"
-                  onClick={() => {
-                    setAdding(false)
-                    setNewName('')
-                  }}
-                  disabled={busy}
-                >
-                  Cancel
-                </button>
-              </form>
+          <div className="section-summary-list">
+            {categories.length === 0 ? (
+              <p className="section-summary-empty muted">No categories yet</p>
             ) : (
-              <button
-                type="button"
-                className="ghost"
-                onClick={() => setAdding(true)}
-                disabled={busy}
-              >
-                + Add category
-              </button>
+              <ul>
+                {categories.map((cat) => (
+                  <li
+                    key={cat.id}
+                    className={
+                      cat.excluded_from_budget
+                        ? 'section-summary-row is-excluded'
+                        : 'section-summary-row'
+                    }
+                  >
+                    <span className="section-summary-name">{cat.name}</span>
+                    <span className="section-summary-amount amount-spent">
+                      {formatCurrency(cat.actual_amount)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
-        )}
+
+          {!isIncome && (
+            <footer className="section-summary-footer">
+              <span className="muted">Open for details</span>
+            </footer>
+          )}
+        </button>
       </section>
 
       {!isIncome && (
-        <>
-          <SectionModal
-            section={section}
-            categories={categories}
-            entriesByCategory={entriesByCategory}
-            paymentCards={paymentCards}
-            open={sectionOpen}
-            onClose={() => setSectionOpen(false)}
-            onAdd={onAdd}
-            onSave={onSave}
-            onDelete={onDelete}
-            onAddEntry={onAddEntry}
-            onUpdateEntry={onUpdateEntry}
-            onDeleteEntry={onDeleteEntry}
-            onAddPaymentCard={onAddPaymentCard}
-            onReorder={onReorder}
-            busy={busy}
-          />
-          <SectionSpendModal
-            section={section}
-            categories={categories}
-            entriesByCategory={entriesByCategory}
-            totalSpent={totals.spent}
-            open={spendOpen}
-            onClose={() => setSpendOpen(false)}
-          />
-        </>
+        <SectionModal
+          section={section}
+          categories={categories}
+          entriesByCategory={entriesByCategory}
+          paymentCards={paymentCards}
+          open={sectionOpen}
+          onClose={() => setSectionOpen(false)}
+          onAdd={onAdd}
+          onSave={onSave}
+          onDelete={onDelete}
+          onAddEntry={onAddEntry}
+          onUpdateEntry={onUpdateEntry}
+          onDeleteEntry={onDeleteEntry}
+          onAddPaymentCard={onAddPaymentCard}
+          onReorder={onReorder}
+          busy={busy}
+        />
       )}
     </>
   )

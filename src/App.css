@@ -961,8 +961,8 @@
   height: 100%;
   max-height: 100%;
   overflow: hidden;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .sections-grid .section-header {
@@ -1076,6 +1076,155 @@
   box-shadow: var(--shadow);
   overflow: hidden;
   border-left: 4px solid var(--border);
+}
+
+.section-summary-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.section-summary-hit {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.section-summary-hit:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.section-summary-hit:hover:not(:disabled) .section-summary-footer {
+  color: var(--text);
+}
+
+.section-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-summary-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.section-summary-title-row h2 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.section-summary-spent {
+  flex-shrink: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.section-summary-spent,
+.section-summary-amount.amount-spent {
+  color: var(--variable);
+}
+
+.section-summary-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.35rem 0.55rem;
+}
+
+.section-summary-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.section-summary-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  align-items: baseline;
+  padding: 0.35rem 0.4rem;
+  border-radius: 8px;
+}
+
+.section-summary-row.is-excluded {
+  opacity: 0.55;
+}
+
+.section-summary-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.section-summary-amount {
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.section-summary-empty {
+  margin: 0.75rem 0.4rem;
+  font-size: 0.85rem;
+}
+
+.section-summary-footer {
+  padding: 0.4rem 0.75rem 0.55rem;
+  border-top: 1px dashed var(--border);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.section-income .section-summary-header,
+.section-income .section-header {
+  background: var(--income-soft);
+}
+
+.section-fixed .section-summary-header,
+.section-fixed .section-header {
+  background: var(--fixed-soft);
+}
+
+.section-variable .section-summary-header,
+.section-variable .section-header {
+  background: var(--variable-soft);
+}
+
+.section-investments .section-summary-header,
+.section-investments .section-header {
+  background: var(--investments-soft);
+}
+
+.section-savings .section-summary-header,
+.section-savings .section-header {
+  background: var(--savings-soft);
 }
 
 .budget-section.section-income {
