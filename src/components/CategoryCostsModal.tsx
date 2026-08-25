@@ -213,94 +213,98 @@ export function CategoryCostsModal({
       onClick={onClose}
     >
       <div
-        className="costs-modal"
+        className="costs-modal category-costs-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby={`costs-modal-title-${category.id}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="costs-modal-header">
-          <div className="costs-modal-title-block">
-            <p className="muted costs-modal-kicker">Category details</p>
-            {onSaveCategory ? (
-              <input
-                id={`costs-modal-title-${category.id}`}
-                className="costs-category-name-input"
-                value={categoryName}
-                onChange={(e) => setCategoryName(e.target.value)}
-                onBlur={() => void commitCategoryName()}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') e.currentTarget.blur()
-                }}
-                disabled={busy}
-                aria-label="Category name"
-              />
-            ) : (
-              <h2 id={`costs-modal-title-${category.id}`}>{category.name}</h2>
-            )}
-          </div>
-          <button
-            type="button"
-            className="ghost small"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            Close
-          </button>
-        </header>
-
-        <div className="costs-modal-stats">
-          <div>
-            <span className="section-total-label">Budgeted</span>
-            {onSaveCategory ? (
-              <input
-                type="number"
-                step="0.01"
-                inputMode="decimal"
-                className="costs-stat-input amount-budgeted"
-                value={categoryBudgeted}
-                onChange={(e) => setCategoryBudgeted(e.target.value)}
-                onBlur={() => void commitCategoryBudgeted()}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') e.currentTarget.blur()
-                }}
-                disabled={busy}
-                aria-label="Budgeted amount"
-              />
-            ) : (
-              <span className="section-total-value amount-budgeted">
-                {formatCurrency(category.budgeted_amount)}
-              </span>
-            )}
-          </div>
-          <div>
-            <span className="section-total-label">Spent</span>
-            <span className="section-total-value amount-spent">
-              {formatCurrency(category.actual_amount)}
-            </span>
-          </div>
-          <div>
-            <span className="section-total-label">Left over</span>
-            <span
-              className={`section-total-value ${
-                remaining > 0
-                  ? 'positive'
-                  : remaining < 0
-                    ? 'negative'
-                    : 'positive'
-              }`}
+        <div className="category-costs-hero">
+          <header className="category-costs-hero-top">
+            <div className="category-costs-hero-title">
+              <p className="category-costs-hero-kicker">Category costs</p>
+              <div className="category-costs-hero-name-row">
+                {onSaveCategory ? (
+                  <input
+                    id={`costs-modal-title-${category.id}`}
+                    className="costs-category-name-input"
+                    value={categoryName}
+                    onChange={(e) => setCategoryName(e.target.value)}
+                    onBlur={() => void commitCategoryName()}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') e.currentTarget.blur()
+                    }}
+                    disabled={busy}
+                    aria-label="Category name"
+                  />
+                ) : (
+                  <h2 id={`costs-modal-title-${category.id}`}>{category.name}</h2>
+                )}
+                {status !== 'empty' && (
+                  <span className={`status-pill status-${status}`}>
+                    {statusLabel(status)}
+                  </span>
+                )}
+              </div>
+            </div>
+            <button
+              type="button"
+              className="section-modal-close"
+              onClick={onClose}
+              aria-label="Close"
             >
-              {formatCurrency(remaining)}
-            </span>
+              ×
+            </button>
+          </header>
+
+          <div className="category-costs-hero-stats">
+            <div className="category-costs-stat">
+              <span className="category-costs-stat-label">Budgeted</span>
+              {onSaveCategory ? (
+                <input
+                  type="number"
+                  step="0.01"
+                  inputMode="decimal"
+                  className="costs-stat-input amount-budgeted"
+                  value={categoryBudgeted}
+                  onChange={(e) => setCategoryBudgeted(e.target.value)}
+                  onBlur={() => void commitCategoryBudgeted()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') e.currentTarget.blur()
+                  }}
+                  disabled={busy}
+                  aria-label="Budgeted amount"
+                />
+              ) : (
+                <span className="category-costs-stat-value amount-budgeted">
+                  {formatCurrency(category.budgeted_amount)}
+                </span>
+              )}
+            </div>
+            <div className="category-costs-stat">
+              <span className="category-costs-stat-label">Spent</span>
+              <span className="category-costs-stat-value amount-spent">
+                {formatCurrency(category.actual_amount)}
+              </span>
+            </div>
+            <div className="category-costs-stat">
+              <span className="category-costs-stat-label">Left over</span>
+              <span
+                className={`category-costs-stat-value ${
+                  remaining > 0
+                    ? 'positive'
+                    : remaining < 0
+                      ? 'negative'
+                      : ''
+                }`}
+              >
+                {formatCurrency(remaining)}
+              </span>
+            </div>
           </div>
-          {status !== 'empty' && (
-            <span className={`status-pill status-${status}`}>
-              {statusLabel(status)}
-            </span>
-          )}
         </div>
 
-        <div className="costs-modal-body">
+        <div className="costs-modal-body category-costs-list">
           {entries.length === 0 ? (
             <p className="muted entry-empty">
               No costs yet. Add each payment (e.g. $400 + $400).
@@ -445,69 +449,94 @@ export function CategoryCostsModal({
         </div>
 
         {onAddEntry && (
-          <form className="add-entry-form costs-modal-add" onSubmit={handleAddEntry}>
-            <input
-              type="date"
-              value={entryDate}
-              onChange={(e) => setEntryDate(e.target.value)}
-              required
-              aria-label="Date"
-            />
-            <input
-              type="number"
-              step="0.01"
-              inputMode="decimal"
-              placeholder="Amount"
-              value={entryAmount}
-              onChange={(e) => setEntryAmount(e.target.value)}
-              required
-              aria-label="Amount"
-            />
-            <input
-              type="text"
-              placeholder="Label (optional)"
-              value={entryLabel}
-              onChange={(e) => setEntryLabel(e.target.value)}
-            />
-            <div className="card-tag-row">
-              <label className="card-tag-label" htmlFor={`card-tag-${category.id}`}>
-                Card
+          <div className="category-costs-add-panel">
+            <h3 className="category-costs-add-heading">Add cost</h3>
+            <form
+              className="add-entry-form category-costs-add-form"
+              onSubmit={handleAddEntry}
+            >
+              <label className="category-costs-field">
+                <span>Date</span>
+                <input
+                  type="date"
+                  value={entryDate}
+                  onChange={(e) => setEntryDate(e.target.value)}
+                  required
+                />
               </label>
-              <select
-                id={`card-tag-${category.id}`}
-                value={entryCardId || defaultCardId}
-                onChange={(e) => setEntryCardId(e.target.value)}
-                aria-label="Card used"
+              <label className="category-costs-field">
+                <span>Amount</span>
+                <span className="money-input">
+                  <span className="money-input-prefix" aria-hidden="true">
+                    $
+                  </span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    value={entryAmount}
+                    onChange={(e) => setEntryAmount(e.target.value)}
+                    required
+                  />
+                </span>
+              </label>
+              <label className="category-costs-field category-costs-field-grow">
+                <span>Label</span>
+                <input
+                  type="text"
+                  placeholder="Optional"
+                  value={entryLabel}
+                  onChange={(e) => setEntryLabel(e.target.value)}
+                />
+              </label>
+              <label className="category-costs-field category-costs-field-card">
+                <span>Card</span>
+                <div className="category-costs-card-row">
+                  <select
+                    id={`card-tag-${category.id}`}
+                    value={entryCardId || defaultCardId}
+                    onChange={(e) => setEntryCardId(e.target.value)}
+                    aria-label="Card used"
+                  >
+                    {paymentCards.map((card) => (
+                      <option key={card.id} value={card.id}>
+                        {card.name}
+                      </option>
+                    ))}
+                  </select>
+                  {onAddPaymentCard && (
+                    <button
+                      type="button"
+                      className="ghost small"
+                      onClick={() => void handleAddCard()}
+                      disabled={busy}
+                      title="Add another card"
+                    >
+                      +
+                    </button>
+                  )}
+                </div>
+              </label>
+              <label className="category-costs-field category-costs-field-notes">
+                <span>Note</span>
+                <textarea
+                  className="entry-notes-input"
+                  placeholder="Optional"
+                  value={entryNotes}
+                  onChange={(e) => setEntryNotes(e.target.value)}
+                  rows={2}
+                />
+              </label>
+              <button
+                type="submit"
+                className="category-costs-submit"
+                disabled={busy}
               >
-                {paymentCards.map((card) => (
-                  <option key={card.id} value={card.id}>
-                    {card.name}
-                  </option>
-                ))}
-              </select>
-              {onAddPaymentCard && (
-                <button
-                  type="button"
-                  className="ghost small"
-                  onClick={() => void handleAddCard()}
-                  disabled={busy}
-                  title="Add another card"
-                >
-                  +
-                </button>
-              )}
-            </div>
-            <textarea
-              className="entry-notes-input"
-              placeholder="Note (optional)"
-              value={entryNotes}
-              onChange={(e) => setEntryNotes(e.target.value)}
-              rows={2}
-            />
-            <button type="submit" disabled={busy}>
-              + Add cost
-            </button>
-          </form>
+                + Add cost
+              </button>
+            </form>
+          </div>
         )}
       </div>
     </div>,
