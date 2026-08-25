@@ -10,6 +10,7 @@ import {
   isPayCycle,
   toMonthly,
 } from '../lib/payCycle'
+import { formatAppError } from '../lib/errors'
 import { supabase } from '../lib/supabase'
 import type {
   BudgetSection,
@@ -173,7 +174,10 @@ export function useBudget(userId: string) {
     DEFAULT_MONTHLY_SPEND_BUFFER,
   )
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setErrorState] = useState<string | null>(null)
+  const setError = useCallback((message: string | null) => {
+    setErrorState(message == null ? null : formatAppError(message))
+  }, [])
   const [busy, setBusy] = useState(false)
 
   const selectedMonth = useMemo(
