@@ -339,64 +339,86 @@ export function CategoryCostsModal({
                     className="entry-editing"
                     ref={editingRowRef}
                   >
-                    <form className="edit-entry-form" onSubmit={handleUpdateEntry}>
-                      <input
-                        type="date"
-                        value={editDate}
-                        onChange={(e) => setEditDate(e.target.value)}
-                        required
-                        aria-label="Date"
-                      />
-                      <input
-                        type="number"
-                        step="0.01"
-                        inputMode="decimal"
-                        placeholder="Amount"
-                        value={editAmount}
-                        onChange={(e) => setEditAmount(e.target.value)}
-                        required
-                        aria-label="Amount"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Label"
-                        value={editLabel}
-                        onChange={(e) => setEditLabel(e.target.value)}
-                      />
-                      <div className="card-tag-row">
-                        <select
-                          value={editCardId}
-                          onChange={(e) => setEditCardId(e.target.value)}
-                          aria-label="Card"
-                        >
-                          {paymentCards.map((card) => (
-                            <option key={card.id} value={card.id}>
-                              {card.name}
-                            </option>
-                          ))}
-                        </select>
-                        {onAddPaymentCard && (
-                          <button
-                            type="button"
-                            className="ghost small"
-                            onClick={() => void handleAddCard()}
-                            disabled={busy}
-                            title="Add card"
+                    <p className="category-costs-edit-heading">Editing cost</p>
+                    <form
+                      className="edit-entry-form category-costs-form"
+                      onSubmit={handleUpdateEntry}
+                    >
+                      <label className="category-costs-field">
+                        <span>Date</span>
+                        <input
+                          type="date"
+                          value={editDate}
+                          onChange={(e) => setEditDate(e.target.value)}
+                          required
+                        />
+                      </label>
+                      <label className="category-costs-field">
+                        <span>Amount</span>
+                        <span className="money-input">
+                          <span className="money-input-prefix" aria-hidden="true">
+                            $
+                          </span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            inputMode="decimal"
+                            placeholder="0.00"
+                            value={editAmount}
+                            onChange={(e) => setEditAmount(e.target.value)}
+                            required
+                          />
+                        </span>
+                      </label>
+                      <label className="category-costs-field category-costs-field-grow">
+                        <span>Label</span>
+                        <input
+                          type="text"
+                          placeholder="Optional"
+                          value={editLabel}
+                          onChange={(e) => setEditLabel(e.target.value)}
+                        />
+                      </label>
+                      <label className="category-costs-field category-costs-field-card">
+                        <span>Card</span>
+                        <div className="category-costs-card-row">
+                          <select
+                            value={editCardId}
+                            onChange={(e) => setEditCardId(e.target.value)}
+                            aria-label="Card"
                           >
-                            +
-                          </button>
-                        )}
-                      </div>
-                      <textarea
-                        className="entry-notes-input"
-                        placeholder="Note (optional)"
-                        value={editNotes}
-                        onChange={(e) => setEditNotes(e.target.value)}
-                        rows={2}
-                      />
-                      <div className="inline-actions">
+                            {paymentCards.map((card) => (
+                              <option key={card.id} value={card.id}>
+                                {card.name}
+                              </option>
+                            ))}
+                          </select>
+                          {onAddPaymentCard && (
+                            <button
+                              type="button"
+                              className="ghost small"
+                              onClick={() => void handleAddCard()}
+                              disabled={busy}
+                              title="Add card"
+                            >
+                              +
+                            </button>
+                          )}
+                        </div>
+                      </label>
+                      <label className="category-costs-field category-costs-field-notes">
+                        <span>Note</span>
+                        <textarea
+                          className="entry-notes-input"
+                          placeholder="Optional"
+                          value={editNotes}
+                          onChange={(e) => setEditNotes(e.target.value)}
+                          rows={2}
+                        />
+                      </label>
+                      <div className="category-costs-form-actions">
                         <button type="submit" disabled={busy}>
-                          Save
+                          Save changes
                         </button>
                         <button
                           type="button"
@@ -476,7 +498,7 @@ export function CategoryCostsModal({
           <div className="app-modal-panel category-costs-add-panel">
             <h3 className="category-costs-add-heading">Add cost</h3>
             <form
-              className="add-entry-form category-costs-add-form"
+              className="add-entry-form category-costs-form"
               onSubmit={handleAddEntry}
             >
               <label className="category-costs-field">
