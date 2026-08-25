@@ -1975,7 +1975,7 @@ tbody tr:last-child td {
 }
 
 .category-costs-modal .entry-list li.entry-editing {
-  padding: 0.95rem 1rem 1rem;
+  padding: 0.85rem 0.95rem;
   border-radius: 12px;
   background: linear-gradient(
     135deg,
@@ -1986,21 +1986,6 @@ tbody tr:last-child td {
   box-shadow:
     inset 3px 0 0 #0284c7,
     0 1px 4px rgba(2, 132, 199, 0.08);
-}
-
-.category-costs-modal .entry-editing .category-costs-field input,
-.category-costs-modal .entry-editing .category-costs-field select,
-.category-costs-modal .entry-editing .category-costs-field textarea {
-  background: var(--surface);
-  border-color: color-mix(in srgb, #0284c7 18%, var(--border));
-}
-
-.category-costs-modal .entry-editing .category-costs-field input:focus,
-.category-costs-modal .entry-editing .category-costs-field select:focus,
-.category-costs-modal .entry-editing .category-costs-field textarea:focus {
-  outline: none;
-  border-color: #0284c7;
-  box-shadow: 0 0 0 2px color-mix(in srgb, #0284c7 16%, transparent);
 }
 
 .entry-main {
@@ -2672,40 +2657,6 @@ button.icon-btn.danger:hover:not(:disabled) {
   background: color-mix(in srgb, var(--surface) 96%, var(--bg));
 }
 
-.category-costs-edit-heading {
-  margin: 0 0 0.65rem;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #0369a1;
-}
-
-.category-costs-form {
-  display: grid;
-  grid-template-columns: minmax(9rem, 1fr) minmax(8rem, 1fr) minmax(0, 1.4fr);
-  gap: 0.65rem 0.75rem;
-  align-items: end;
-  width: 100%;
-}
-
-.category-costs-form-actions {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: center;
-  margin-top: 0.15rem;
-  padding-top: 0.55rem;
-  border-top: 1px solid color-mix(in srgb, #0284c7 15%, var(--border));
-}
-
-.category-costs-form-actions button[type='submit'] {
-  padding: 0.55rem 1.1rem;
-  font-size: 0.92rem;
-  font-weight: 700;
-}
-
 .category-costs-add-heading {
   margin: 0 0 0.75rem;
   font-size: 0.72rem;
@@ -2713,6 +2664,13 @@ button.icon-btn.danger:hover:not(:disabled) {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+.category-costs-add-form {
+  display: grid;
+  grid-template-columns: minmax(9rem, 1fr) minmax(8rem, 1fr) minmax(0, 1.4fr);
+  gap: 0.65rem 0.75rem;
+  align-items: end;
 }
 
 .category-costs-field {
@@ -2775,6 +2733,36 @@ button.icon-btn.danger:hover:not(:disabled) {
   padding: 0.55rem 1.1rem;
   font-size: 0.92rem;
   font-weight: 700;
+}
+
+.category-costs-modal .edit-entry-form {
+  display: grid;
+  grid-template-columns: minmax(9rem, 1fr) minmax(8rem, 1fr) minmax(0, 1.4fr);
+  gap: 0.55rem 0.65rem;
+  align-items: end;
+}
+
+.category-costs-modal .edit-entry-form input[type='date'],
+.category-costs-modal .edit-entry-form input[type='number'],
+.category-costs-modal .edit-entry-form input[type='text'],
+.category-costs-modal .edit-entry-form select,
+.category-costs-modal .edit-entry-form .entry-notes-input {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.category-costs-modal .edit-entry-form .card-tag-row {
+  grid-column: 1 / -1;
+}
+
+.category-costs-modal .edit-entry-form .entry-notes-input {
+  grid-column: 1 / -1;
+}
+
+.category-costs-modal .edit-entry-form .inline-actions {
+  grid-column: 1 / -1;
 }
 
 .card-tag-row {
@@ -3120,7 +3108,7 @@ button.icon-btn.danger:hover:not(:disabled) {
     padding: 0.75rem 0.85rem 0.9rem;
   }
 
-  .category-costs-form,
+  .category-costs-add-form,
   .category-costs-modal .edit-entry-form {
     grid-template-columns: 1fr;
   }
@@ -3128,18 +3116,10 @@ button.icon-btn.danger:hover:not(:disabled) {
   .category-costs-field-card,
   .category-costs-field-notes,
   .category-costs-submit,
-  .category-costs-form-actions {
+  .category-costs-modal .edit-entry-form .card-tag-row,
+  .category-costs-modal .edit-entry-form .entry-notes-input,
+  .category-costs-modal .edit-entry-form .inline-actions {
     grid-column: 1;
-  }
-
-  .category-costs-form-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .category-costs-form-actions button[type='submit'],
-  .category-costs-form-actions .ghost {
-    width: 100%;
   }
 
   .category-costs-submit {
