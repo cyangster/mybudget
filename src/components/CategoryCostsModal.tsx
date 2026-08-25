@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { createPortal } from 'react-dom'
 import {
   displayEntryDate,
@@ -72,6 +72,8 @@ export function CategoryCostsModal({
   const [editDate, setEditDate] = useState(todayDateInput())
   const [editNotes, setEditNotes] = useState('')
   const [editCardId, setEditCardId] = useState('')
+  const listRef = useRef<HTMLDivElement>(null)
+  const editingRowRef = useRef<HTMLLIElement>(null)
 
   const remaining = category.budgeted_amount - category.actual_amount
   const status = amountStatus(category.budgeted_amount, category.actual_amount)
@@ -123,6 +125,39 @@ export function CategoryCostsModal({
     if (!open) return
     if (!entryCardId && defaultCardId) setEntryCardId(defaultCardId)
   }, [open, defaultCardId, entryCardId])
+
+  useEffect(() => {
+    if (!editingEntryId) return
+    const list = listRef.current
+    const row = editingRowRef.current
+    if (!list || !row) return
+
+    let cancelled = false
+    const centerRow = () => {
+      if (cancelled) return
+      const listRect = list.getBoundingClientRect()
+      const rowRect = row.getBoundingClientRect()
+      const offset =
+        rowRect.top -
+        listRect.top -
+        (listRect.height - rowRect.height) / 2
+      const reduceMotion = window.matchMedia(
+        '(prefers-reduced-motion: reduce)',
+      ).matches
+      list.scrollBy({
+        top: offset,
+        behavior: reduceMotion ? 'auto' : 'smooth',
+      })
+    }
+
+    const frame = requestAnimationFrame(() => {
+      requestAnimationFrame(centerRow)
+    })
+    return () => {
+      cancelled = true
+      cancelAnimationFrame(frame)
+    }
+  }, [editingEntryId])
 
   if (!open) return null
 
@@ -304,7 +339,7 @@ export function CategoryCostsModal({
           </div>
         </div>
 
-        <div className="costs-modal-body category-costs-list">
+        <div className="costs-modal-body category-costs-list" ref={listRef}>
           {entries.length === 0 ? (
             <p className="muted entry-empty">
               No costs yet. Add each payment (e.g. $400 + $400).
@@ -313,7 +348,11 @@ export function CategoryCostsModal({
             <ul className="entry-list modal-entry-list">
               {entries.map((entry, i) =>
                 editingEntryId === entry.id ? (
-                  <li key={entry.id} className="entry-editing">
+                  <li
+                    key={entry.id}
+                    className="entry-editing"
+                    ref={editingRowRef}
+                  >
                     <form className="edit-entry-form" onSubmit={handleUpdateEntry}>
                       <input
                         type="date"
@@ -330,7 +369,6 @@ export function CategoryCostsModal({
                         value={editAmount}
                         onChange={(e) => setEditAmount(e.target.value)}
                         required
-                        autoFocus
                         aria-label="Amount"
                       />
                       <input
