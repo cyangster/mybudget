@@ -1963,10 +1963,25 @@ tbody tr:last-child td {
 .entry-list li.entry-editing {
   grid-template-columns: 1fr;
   display: block;
-  padding: 0.55rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  background: color-mix(in srgb, var(--open-bg) 75%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--open-border) 80%, var(--border));
+  border-radius: 10px;
+  box-shadow: inset 3px 0 0 var(--open);
+}
+
+.category-costs-modal .entry-list li.entry-editing {
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #e0f2fe 88%, var(--surface)) 0%,
+    color-mix(in srgb, #f0f9ff 55%, var(--surface)) 100%
+  );
+  border-color: color-mix(in srgb, #0284c7 22%, var(--border));
+  box-shadow:
+    inset 3px 0 0 #0284c7,
+    0 1px 4px rgba(2, 132, 199, 0.08);
 }
 
 .entry-main {
@@ -2571,10 +2586,13 @@ button.icon-btn.danger:hover:not(:disabled) {
 
 .category-costs-modal .edit-entry-form input[type='date'],
 .category-costs-modal .edit-entry-form input[type='number'],
-.category-costs-modal .edit-entry-form input[type='text'] {
+.category-costs-modal .edit-entry-form input[type='text'],
+.category-costs-modal .edit-entry-form select,
+.category-costs-modal .edit-entry-form .entry-notes-input {
   width: 100%;
   padding: 0.5rem 0.6rem;
   border-radius: 10px;
+  background: var(--surface);
 }
 
 .category-costs-modal .edit-entry-form .card-tag-row {
