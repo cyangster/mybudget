@@ -3,22 +3,22 @@ import { createPortal } from 'react-dom'
 import { formatCurrency } from '../lib/format'
 import { amountStatus, statusLabel } from '../lib/status'
 import type {
-  BudgetSection,
   Category,
   CategoryEntry,
   PaymentCard,
 } from '../types'
 import { SECTION_LABELS } from '../types'
 import { CategoryRow } from './CategoryRow'
+import { ModalHero, sectionModalTone } from './ModalHero'
 
 interface SectionModalProps {
-  section: BudgetSection
+  section: 'fixed' | 'variable' | 'investments' | 'savings'
   categories: Category[]
   entriesByCategory: Record<string, CategoryEntry[]>
   paymentCards: PaymentCard[]
   open: boolean
   onClose: () => void
-  onAdd: (section: BudgetSection, name: string) => Promise<void>
+  onAdd: (section: 'fixed' | 'variable' | 'investments' | 'savings', name: string) => Promise<void>
   onSave: (
     id: string,
     patch: Partial<
@@ -49,7 +49,10 @@ interface SectionModalProps {
   ) => Promise<void>
   onDeleteEntry: (entryId: string, categoryId: string) => Promise<void>
   onAddPaymentCard: (name: string) => Promise<PaymentCard | null>
-  onReorder: (section: BudgetSection, orderedIds: string[]) => Promise<void>
+  onReorder: (
+    section: 'fixed' | 'variable' | 'investments' | 'savings',
+    orderedIds: string[],
+  ) => Promise<void>
   busy?: boolean
 }
 
@@ -161,60 +164,48 @@ export function SectionModal({
       onClick={onClose}
     >
       <div
-        className={`costs-modal section-modal section-${section}`}
+        className={`costs-modal app-modal app-modal--wide section-modal section-${section}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={`section-modal-title-${section}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="section-modal-hero">
-          <header className="section-modal-hero-top">
-            <div className="section-modal-hero-title">
-              <p className="section-modal-hero-kicker">Budget section</p>
-              <div className="section-modal-hero-name-row">
-                <h2 id={`section-modal-title-${section}`}>
-                  {SECTION_LABELS[section]}
-                </h2>
-                {sectionStatus !== 'empty' && (
-                  <span className={`status-pill status-${sectionStatus}`}>
-                    {statusLabel(sectionStatus)}
-                  </span>
-                )}
-              </div>
-            </div>
-            <button
-              type="button"
-              className="section-modal-close"
-              onClick={onClose}
-              aria-label="Close"
-            >
-              ×
-            </button>
-          </header>
+        <ModalHero
+          kicker="Budget section"
+          tone={sectionModalTone(section)}
+          onClose={onClose}
+          title={
+            <>
+              <h2 id={`section-modal-title-${section}`}>
+                {SECTION_LABELS[section]}
+              </h2>
+              {sectionStatus !== 'empty' && (
+                <span className={`status-pill status-${sectionStatus}`}>
+                  {statusLabel(sectionStatus)}
+                </span>
+              )}
+            </>
+          }
+          stats={[
+            {
+              label: 'Budgeted',
+              value: formatCurrency(budgeted),
+              valueClassName: 'amount-budgeted',
+            },
+            {
+              label: 'Spent',
+              value: formatCurrency(spent),
+              valueClassName: 'amount-spent',
+            },
+            {
+              label: 'Left over',
+              value: formatCurrency(remaining),
+              valueClassName: remainingClass,
+            },
+          ]}
+        />
 
-          <div className="section-modal-hero-stats">
-            <div className="section-modal-stat">
-              <span className="section-modal-stat-label">Budgeted</span>
-              <span className="section-modal-stat-value amount-budgeted">
-                {formatCurrency(budgeted)}
-              </span>
-            </div>
-            <div className="section-modal-stat">
-              <span className="section-modal-stat-label">Spent</span>
-              <span className="section-modal-stat-value amount-spent">
-                {formatCurrency(spent)}
-              </span>
-            </div>
-            <div className="section-modal-stat">
-              <span className="section-modal-stat-label">Left over</span>
-              <span className={`section-modal-stat-value ${remainingClass}`}>
-                {formatCurrency(remaining)}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="section-modal-body table-wrap">
+        <div className="app-modal-body section-modal-body table-wrap">
           <table>
             <thead>
               <tr>
@@ -259,7 +250,7 @@ export function SectionModal({
           </table>
         </div>
 
-        <div className="section-footer">
+        <div className="app-modal-panel section-footer">
           {adding ? (
             <form className="add-form" onSubmit={handleAdd}>
               <input

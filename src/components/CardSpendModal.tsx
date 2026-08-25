@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { displayEntryDate, formatCurrency, parseAmount } from '../lib/format'
 import type { CardSpendTotal, Category, CategoryEntry } from '../types'
+import { ModalHero } from './ModalHero'
 
 interface CardSpendModalProps {
   card: CardSpendTotal
@@ -98,32 +99,39 @@ export function CardSpendModal({
       onClick={onClose}
     >
       <div
-        className="costs-modal section-spend-modal"
+        className="costs-modal app-modal app-modal--large card-spend-modal"
         role="dialog"
         aria-modal="true"
         aria-label={`${card.name} costs`}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="costs-modal-header">
-          <div className="costs-modal-title-block">
-            <p className="costs-modal-kicker">{card.name}</p>
-            <h2>{formatCurrency(Math.round(card.display))}</h2>
-          </div>
-          <button
-            type="button"
-            className="ghost small"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            Close
-          </button>
-        </header>
+        <ModalHero
+          kicker="Card spend"
+          title={card.name}
+          tone="card"
+          onClose={onClose}
+          stats={[
+            {
+              label: 'Total',
+              value: formatCurrency(Math.round(card.display)),
+              valueClassName: 'amount-spent',
+            },
+            {
+              label: 'Tracked',
+              value: formatCurrency(Math.round(card.tracked)),
+            },
+            {
+              label: 'Costs',
+              value: String(rows.length),
+            },
+          ]}
+        />
 
-        <div className="costs-modal-body">
+        <div className="app-modal-body">
           {rows.length === 0 ? (
-            <p className="muted center">No tagged costs on this card.</p>
+            <p className="app-modal-empty muted">No tagged costs on this card.</p>
           ) : (
-            <ul className="section-spend-list">
+            <ul className="section-spend-list app-modal-list">
               {rows.map((row) => (
                 <li key={row.id} className="section-spend-row">
                   <div className="section-spend-main">
@@ -144,7 +152,9 @@ export function CardSpendModal({
               ))}
             </ul>
           )}
+        </div>
 
+        <div className="app-modal-panel card-spend-adjust-panel">
           <div className="card-spend-adjust">
             <label className="card-spend-adjust-label">
               Card total

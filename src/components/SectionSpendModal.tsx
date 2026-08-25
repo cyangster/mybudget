@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { displayEntryDate, formatCurrency } from '../lib/format'
-import type { BudgetSection, Category, CategoryEntry } from '../types'
+import type { Category, CategoryEntry } from '../types'
 import { SECTION_LABELS } from '../types'
+import { ModalHero, sectionModalTone } from './ModalHero'
 
 interface SectionSpendModalProps {
-  section: BudgetSection
+  section: 'fixed' | 'variable' | 'investments' | 'savings'
   categories: Category[]
   entriesByCategory: Record<string, CategoryEntry[]>
   totalSpent: number
@@ -79,32 +80,35 @@ export function SectionSpendModal({
       onClick={onClose}
     >
       <div
-        className="costs-modal section-spend-modal"
+        className={`costs-modal app-modal app-modal--medium section-spend-modal section-${section}`}
         role="dialog"
         aria-modal="true"
         aria-label={`${SECTION_LABELS[section]} spend`}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="costs-modal-header">
-          <div className="costs-modal-title-block">
-            <p className="costs-modal-kicker">{SECTION_LABELS[section]}</p>
-            <h2>{formatCurrency(totalSpent)}</h2>
-          </div>
-          <button
-            type="button"
-            className="ghost small"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            Close
-          </button>
-        </header>
+        <ModalHero
+          kicker="Section spend"
+          title={SECTION_LABELS[section]}
+          tone={sectionModalTone(section)}
+          onClose={onClose}
+          stats={[
+            {
+              label: 'Total spent',
+              value: formatCurrency(totalSpent),
+              valueClassName: 'amount-spent',
+            },
+            {
+              label: 'Costs',
+              value: String(rows.length),
+            },
+          ]}
+        />
 
-        <div className="costs-modal-body">
+        <div className="app-modal-body">
           {rows.length === 0 ? (
-            <p className="muted center">No costs yet.</p>
+            <p className="app-modal-empty muted">No costs yet.</p>
           ) : (
-            <ul className="section-spend-list">
+            <ul className="section-spend-list app-modal-list">
               {rows.map((row) => (
                 <li key={row.id} className="section-spend-row">
                   <div className="section-spend-main">

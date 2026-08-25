@@ -7,6 +7,7 @@ import {
 import { displayMonthLabel, formatCurrency } from '../lib/format'
 import type { CardSpendTotal, Category, CategoryEntry } from '../types'
 import { CardSpendModal } from './CardSpendModal'
+import { ModalHero } from './ModalHero'
 
 interface SpendCalendarProps {
   monthId: string
@@ -378,35 +379,26 @@ export function SpendCalendar({
             onClick={() => setCardsOpen(false)}
           >
             <div
-              className="costs-modal spend-calendar-picker-modal"
+              className="costs-modal app-modal app-modal--medium spend-calendar-picker-modal"
               role="dialog"
               aria-modal="true"
               aria-label="Choose cards"
               onClick={(e) => e.stopPropagation()}
             >
-              <header className="costs-modal-header">
-                <div className="costs-modal-title-block">
-                  <p className="costs-modal-kicker">
-                    {displayMonthLabel(monthLabel)}
-                  </p>
-                  <h2>Cards</h2>
-                </div>
-                <button
-                  type="button"
-                  className="ghost small"
-                  onClick={closeCards}
-                >
-                  Close
-                </button>
-              </header>
-              <div className="costs-modal-body">
-                <p className="muted spend-calendar-picker-hint">
+              <ModalHero
+                kicker={displayMonthLabel(monthLabel)}
+                title="Cards"
+                tone="calendar"
+                onClose={closeCards}
+              />
+              <div className="app-modal-body">
+                <p className="spend-calendar-picker-hint">
                   Choose which cards show under the calendar this month.
                 </p>
                 {cardSpendTotals.length === 0 ? (
-                  <p className="muted">No cards yet. Add one below.</p>
+                  <p className="app-modal-empty muted">No cards yet. Add one below.</p>
                 ) : (
-                  <ul className="spend-calendar-picker-list">
+                  <ul className="spend-calendar-picker-list app-modal-list">
                     {cardSpendTotals.map((card) => {
                       const checked = visibleCardIds.includes(card.cardId)
                       return (
@@ -427,9 +419,11 @@ export function SpendCalendar({
                     })}
                   </ul>
                 )}
+              </div>
+              <div className="app-modal-panel spend-calendar-picker-footer">
                 <button
                   type="button"
-                  className="ghost small"
+                  className="ghost"
                   onClick={() => void handleAddCard()}
                   disabled={busy}
                 >
@@ -448,26 +442,19 @@ export function SpendCalendar({
             onClick={closeNotes}
           >
             <div
-              className="costs-modal notebook-modal"
+              className="costs-modal app-modal app-modal--notebook notebook-modal"
               role="dialog"
               aria-modal="true"
               aria-label="Month notes"
               onClick={(e) => e.stopPropagation()}
             >
-              <header className="costs-modal-header">
-                <div className="costs-modal-title-block">
-                  <p className="costs-modal-kicker">Notebook</p>
-                  <h2>{displayMonthLabel(monthLabel)}</h2>
-                </div>
-                <button
-                  type="button"
-                  className="ghost small"
-                  onClick={closeNotes}
-                >
-                  Close
-                </button>
-              </header>
-              <div className="notebook-page">
+              <ModalHero
+                kicker="Notebook"
+                title={displayMonthLabel(monthLabel)}
+                tone="notebook"
+                onClose={closeNotes}
+              />
+              <div className="app-modal-body notebook-page">
                 <textarea
                   className="notebook-textarea"
                   value={notesDraft}

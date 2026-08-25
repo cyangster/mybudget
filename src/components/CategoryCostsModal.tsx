@@ -9,6 +9,7 @@ import {
 import { amountStatus, statusLabel } from '../lib/status'
 import type { Category, CategoryEntry, PaymentCard } from '../types'
 import { IconEdit, IconTrash } from './Icons'
+import { ModalHero } from './ModalHero'
 
 interface CategoryCostsModalProps {
   category: Category
@@ -248,54 +249,45 @@ export function CategoryCostsModal({
       onClick={onClose}
     >
       <div
-        className="costs-modal category-costs-modal"
+        className="costs-modal app-modal app-modal--large category-costs-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby={`costs-modal-title-${category.id}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="category-costs-hero">
-          <header className="category-costs-hero-top">
-            <div className="category-costs-hero-title">
-              <p className="category-costs-hero-kicker">Category costs</p>
-              <div className="category-costs-hero-name-row">
-                {onSaveCategory ? (
-                  <input
-                    id={`costs-modal-title-${category.id}`}
-                    className="costs-category-name-input"
-                    value={categoryName}
-                    onChange={(e) => setCategoryName(e.target.value)}
-                    onBlur={() => void commitCategoryName()}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') e.currentTarget.blur()
-                    }}
-                    disabled={busy}
-                    aria-label="Category name"
-                  />
-                ) : (
-                  <h2 id={`costs-modal-title-${category.id}`}>{category.name}</h2>
-                )}
-                {status !== 'empty' && (
-                  <span className={`status-pill status-${status}`}>
-                    {statusLabel(status)}
-                  </span>
-                )}
-              </div>
-            </div>
-            <button
-              type="button"
-              className="section-modal-close"
-              onClick={onClose}
-              aria-label="Close"
-            >
-              ×
-            </button>
-          </header>
-
-          <div className="category-costs-hero-stats">
-            <div className="category-costs-stat">
-              <span className="category-costs-stat-label">Budgeted</span>
+        <ModalHero
+          kicker="Category costs"
+          tone="sky"
+          onClose={onClose}
+          title={
+            <>
               {onSaveCategory ? (
+                <input
+                  id={`costs-modal-title-${category.id}`}
+                  className="costs-category-name-input"
+                  value={categoryName}
+                  onChange={(e) => setCategoryName(e.target.value)}
+                  onBlur={() => void commitCategoryName()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') e.currentTarget.blur()
+                  }}
+                  disabled={busy}
+                  aria-label="Category name"
+                />
+              ) : (
+                <h2 id={`costs-modal-title-${category.id}`}>{category.name}</h2>
+              )}
+              {status !== 'empty' && (
+                <span className={`status-pill status-${status}`}>
+                  {statusLabel(status)}
+                </span>
+              )}
+            </>
+          }
+          stats={[
+            {
+              label: 'Budgeted',
+              value: onSaveCategory ? (
                 <input
                   type="number"
                   step="0.01"
@@ -311,37 +303,31 @@ export function CategoryCostsModal({
                   aria-label="Budgeted amount"
                 />
               ) : (
-                <span className="category-costs-stat-value amount-budgeted">
-                  {formatCurrency(category.budgeted_amount)}
-                </span>
-              )}
-            </div>
-            <div className="category-costs-stat">
-              <span className="category-costs-stat-label">Spent</span>
-              <span className="category-costs-stat-value amount-spent">
-                {formatCurrency(category.actual_amount)}
-              </span>
-            </div>
-            <div className="category-costs-stat">
-              <span className="category-costs-stat-label">Left over</span>
-              <span
-                className={`category-costs-stat-value ${
-                  remaining > 0
-                    ? 'positive'
-                    : remaining < 0
-                      ? 'negative'
-                      : ''
-                }`}
-              >
-                {formatCurrency(remaining)}
-              </span>
-            </div>
-          </div>
-        </div>
+                formatCurrency(category.budgeted_amount)
+              ),
+              valueClassName: onSaveCategory ? '' : 'amount-budgeted',
+            },
+            {
+              label: 'Spent',
+              value: formatCurrency(category.actual_amount),
+              valueClassName: 'amount-spent',
+            },
+            {
+              label: 'Left over',
+              value: formatCurrency(remaining),
+              valueClassName:
+                remaining > 0
+                  ? 'positive'
+                  : remaining < 0
+                    ? 'negative'
+                    : '',
+            },
+          ]}
+        />
 
-        <div className="costs-modal-body category-costs-list" ref={listRef}>
+        <div className="app-modal-body category-costs-list" ref={listRef}>
           {entries.length === 0 ? (
-            <p className="muted entry-empty">
+            <p className="app-modal-empty muted entry-empty">
               No costs yet. Add each payment (e.g. $400 + $400).
             </p>
           ) : (
@@ -487,7 +473,7 @@ export function CategoryCostsModal({
         </div>
 
         {onAddEntry && (
-          <div className="category-costs-add-panel">
+          <div className="app-modal-panel category-costs-add-panel">
             <h3 className="category-costs-add-heading">Add cost</h3>
             <form
               className="add-entry-form category-costs-add-form"
