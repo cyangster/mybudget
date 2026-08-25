@@ -167,47 +167,51 @@ export function SectionModal({
         aria-labelledby={`section-modal-title-${section}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="costs-modal-header">
-          <div>
-            <p className="muted costs-modal-kicker">Section details</p>
-            <h2 id={`section-modal-title-${section}`}>
-              {SECTION_LABELS[section]}
-            </h2>
-          </div>
-          <button
-            type="button"
-            className="ghost small"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            Close
-          </button>
-        </header>
+        <div className="section-modal-hero">
+          <header className="section-modal-hero-top">
+            <div className="section-modal-hero-title">
+              <p className="section-modal-hero-kicker">Budget section</p>
+              <div className="section-modal-hero-name-row">
+                <h2 id={`section-modal-title-${section}`}>
+                  {SECTION_LABELS[section]}
+                </h2>
+                {sectionStatus !== 'empty' && (
+                  <span className={`status-pill status-${sectionStatus}`}>
+                    {statusLabel(sectionStatus)}
+                  </span>
+                )}
+              </div>
+            </div>
+            <button
+              type="button"
+              className="section-modal-close"
+              onClick={onClose}
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </header>
 
-        <div className="costs-modal-stats">
-          <div>
-            <span className="section-total-label">Budgeted</span>
-            <span className="section-total-value amount-budgeted">
-              {formatCurrency(budgeted)}
-            </span>
+          <div className="section-modal-hero-stats">
+            <div className="section-modal-stat">
+              <span className="section-modal-stat-label">Budgeted</span>
+              <span className="section-modal-stat-value amount-budgeted">
+                {formatCurrency(budgeted)}
+              </span>
+            </div>
+            <div className="section-modal-stat">
+              <span className="section-modal-stat-label">Spent</span>
+              <span className="section-modal-stat-value amount-spent">
+                {formatCurrency(spent)}
+              </span>
+            </div>
+            <div className="section-modal-stat">
+              <span className="section-modal-stat-label">Left over</span>
+              <span className={`section-modal-stat-value ${remainingClass}`}>
+                {formatCurrency(remaining)}
+              </span>
+            </div>
           </div>
-          <div>
-            <span className="section-total-label">Spent</span>
-            <span className="section-total-value amount-spent">
-              {formatCurrency(spent)}
-            </span>
-          </div>
-          <div>
-            <span className="section-total-label">Left over</span>
-            <span className={`section-total-value ${remainingClass}`}>
-              {formatCurrency(remaining)}
-            </span>
-          </div>
-          {sectionStatus !== 'empty' && (
-            <span className={`status-pill status-${sectionStatus}`}>
-              {statusLabel(sectionStatus)}
-            </span>
-          )}
         </div>
 
         <div className="section-modal-body table-wrap">

@@ -2406,12 +2406,189 @@ button.icon-btn.danger:hover:not(:disabled) {
 .section-modal {
   width: min(100%, 920px);
   max-height: min(90dvh, 820px);
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+.section-modal-hero {
+  padding: 1.15rem 1.25rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+.section-modal.section-fixed .section-modal-hero {
+  background: linear-gradient(
+    180deg,
+    var(--fixed-soft) 0%,
+    color-mix(in srgb, var(--fixed-soft) 35%, var(--surface)) 100%
+  );
+}
+
+.section-modal.section-variable .section-modal-hero {
+  background: linear-gradient(
+    180deg,
+    var(--variable-soft) 0%,
+    color-mix(in srgb, var(--variable-soft) 35%, var(--surface)) 100%
+  );
+}
+
+.section-modal.section-investments .section-modal-hero {
+  background: linear-gradient(
+    180deg,
+    var(--investments-soft) 0%,
+    color-mix(in srgb, var(--investments-soft) 35%, var(--surface)) 100%
+  );
+}
+
+.section-modal.section-savings .section-modal-hero {
+  background: linear-gradient(
+    180deg,
+    var(--savings-soft) 0%,
+    color-mix(in srgb, var(--savings-soft) 35%, var(--surface)) 100%
+  );
+}
+
+.section-modal-hero-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.section-modal-hero-title {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.section-modal-hero-kicker {
+  margin: 0 0 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.section-modal-hero-name-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.55rem;
+}
+
+.section-modal-hero-name-row h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.section-modal.section-fixed .section-modal-hero-name-row h2 {
+  color: var(--fixed);
+}
+
+.section-modal.section-variable .section-modal-hero-name-row h2 {
+  color: var(--variable);
+}
+
+.section-modal.section-investments .section-modal-hero-name-row h2 {
+  color: var(--investments);
+}
+
+.section-modal.section-savings .section-modal-hero-name-row h2 {
+  color: var(--savings);
+}
+
+.section-modal-close {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  margin: 0;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  color: var(--muted);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease,
+    border-color 140ms ease;
+}
+
+.section-modal-close:hover {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.section-modal-close:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.section-modal-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.section-modal-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.18rem;
+  min-width: 0;
+  padding: 0.55rem 0.45rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  text-align: center;
+}
+
+.section-modal-stat-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.section-modal-stat-value {
+  font-size: 1.05rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.section-modal-stat-value.positive {
+  color: var(--positive);
+}
+
+.section-modal-stat-value.negative {
+  color: var(--negative);
 }
 
 .section-modal-body {
   flex: 1;
   min-height: 0;
   overflow: auto;
+  padding: 0 1.1rem;
+}
+
+.section-modal .section-footer {
+  padding: 0.75rem 1.1rem 1rem;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 96%, var(--bg));
 }
 
 .section-modal-body thead th {
@@ -2651,7 +2828,38 @@ button.icon-btn.danger:hover:not(:disabled) {
     max-width: none;
     max-height: calc(100dvh - 0.7rem);
     border-radius: 14px;
+  }
+
+  .costs-modal {
     padding: 0.85rem 0.8rem 1rem;
+  }
+
+  .section-modal-hero {
+    padding: 0.95rem 0.85rem 0.85rem;
+  }
+
+  .section-modal-hero-name-row h2 {
+    font-size: 1.25rem;
+  }
+
+  .section-modal-hero-stats {
+    gap: 0.4rem;
+  }
+
+  .section-modal-stat {
+    padding: 0.45rem 0.35rem;
+  }
+
+  .section-modal-stat-value {
+    font-size: 0.95rem;
+  }
+
+  .section-modal-body {
+    padding: 0 0.75rem;
+  }
+
+  .section-modal .section-footer {
+    padding: 0.65rem 0.75rem 0.85rem;
   }
 
   .costs-modal-stats {
